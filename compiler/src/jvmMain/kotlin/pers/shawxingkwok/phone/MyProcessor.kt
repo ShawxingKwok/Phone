@@ -56,8 +56,8 @@ internal object MyProcessor : KSProcessor{
                 status = Status.COPIED
 
                 allDo(
-                    listOf(Args.ServerPackagePath, Args.ServerPackageName, "PhoneCenter"),
-                    listOf(Args.ClientPackagePath, Args.ClientPackageName, "Calls"),
+                    listOf(Args.ServerPackagePath, Args.ServerPackageName, "Phone"),
+                    listOf(Args.ClientPackagePath, Args.ClientPackageName, "Phone"),
                 ){
                     (packagePath, packageName, fileName) ->
 

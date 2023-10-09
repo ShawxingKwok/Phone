@@ -8,7 +8,7 @@ import pers.shawxingkwok.ksputil.*
 internal fun buildServerConfig(all: List<KSClassDeclaration>){
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ServerPackageName,
-        fileName = "PhoneCenter",
+        fileName = "Phone",
         dependencies = Dependencies(true, *all.map{ it.containingFile!! }.toTypedArray()),
         header = Suppressing,
         extensionName = "",
@@ -22,7 +22,7 @@ internal fun buildServerConfig(all: List<KSClassDeclaration>){
         ),
     ){
         """
-        object PhoneCenter{
+        object Phone{
             ${all.joinToString("\n"){ "abstract class ${it.simpleName()}(val call: ApplicationCall) : ${it.qualifiedName()}" }}
             
             ${coder()}

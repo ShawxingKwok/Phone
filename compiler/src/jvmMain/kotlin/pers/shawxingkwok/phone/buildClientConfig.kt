@@ -11,7 +11,7 @@ internal fun buildClientConfig(all: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ClientPackageName,
         dependencies = Dependencies(true, *all.map{ it.containingFile!! }.toTypedArray()),
-        fileName = "Calls",
+        fileName = "Phone",
         header = Suppressing,
         extensionName = "",
         additionalImports =
@@ -25,7 +25,7 @@ internal fun buildClientConfig(all: List<KSClassDeclaration>) {
             )
     ) {
         """
-        class Calls(private val client: HttpClient) {
+        class Phone(private val client: HttpClient) {
             private companion object {
                 const val BASIC_URL = "${Args.BasicUrl}"
             }            
