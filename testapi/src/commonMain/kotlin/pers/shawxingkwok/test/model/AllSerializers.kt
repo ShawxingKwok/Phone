@@ -1,4 +1,4 @@
-package pers.shawxingkwok.phonesample.model
+package pers.shawxingkwok.test.model
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor

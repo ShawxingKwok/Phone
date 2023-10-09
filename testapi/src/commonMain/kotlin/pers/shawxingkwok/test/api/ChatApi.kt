@@ -1,4 +1,4 @@
-package pers.shawxingkwok.phonesample.api
+package pers.shawxingkwok.test.api
 
 import pers.shawxingkwok.phone.Phone
 

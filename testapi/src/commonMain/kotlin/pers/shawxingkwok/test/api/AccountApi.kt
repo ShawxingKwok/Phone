@@ -1,8 +1,8 @@
-package pers.shawxingkwok.phonesample.api
+package pers.shawxingkwok.test.api
 
 import pers.shawxingkwok.phone.Phone
-import pers.shawxingkwok.phonesample.model.LoginResult
-import pers.shawxingkwok.phonesample.model.User
+import pers.shawxingkwok.test.model.LoginResult
+import pers.shawxingkwok.test.model.User
 
 @Phone
 interface AccountApi {

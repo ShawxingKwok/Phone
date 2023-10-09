@@ -61,7 +61,9 @@ internal object MyProcessor : KSProcessor{
                 ){
                     (packagePath, packageName, fileName) ->
 
-                    val expectedEnd = packageName.replace(".", "/") + "/$fileName"
+                    packagePath ?: return@allDo
+
+                    val expectedEnd = packageName!!.replace(".", "/") + "/$fileName"
 
                     val file = Environment.codeGenerator
                         .previousGeneratedFiles

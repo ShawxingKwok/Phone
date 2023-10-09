@@ -7,9 +7,13 @@ ktor = "2.3.5"
 ktor = { id = "io.ktor.plugin", version.ref = "ktor"}
 ktMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kt" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kt" }
-publish = { id = "com.vanniktech.maven.publish", version = "0.25.2" }
+publish = { id = "com.vanniktech.maven.publish", version = "0.25.3" }
+ksp = { id = "com.google.devtools.ksp", version = "1.9.0-1.0.13"}
 
 [libraries]
 serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.0" }
-kt-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kt" }
 shawxing-ktUtil = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.2" }
+shawxing-kspUtil = { group = "io.github.shawxingkwok", name = "ksp-util", version = "1.0.2-SNAPSHOT" }
+ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version = "1.9.0-1.0.13" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor"}
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor"}

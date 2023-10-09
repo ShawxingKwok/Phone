@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     alias(libs.plugins.ktMultiplatform)
     alias(libs.plugins.publish)
@@ -15,8 +17,23 @@ kotlin {
         }
     }
     sourceSets {
-        val jvmMain by getting
+        val jvmMain by getting{
+            dependencies {
+                implementation(project(":runtime"))
+                implementation(libs.ksp)
+                implementation(libs.shawxing.kspUtil)
+                implementation(libs.shawxing.ktUtil)
+            }
+        }
     }
+}
+
+dependencies {
+    add("kspJvm", libs.shawxing.kspUtil)
+}
+
+tasks.withType<KotlinCompile>().configureEach{
+    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
 }
 
 mavenPublishing {

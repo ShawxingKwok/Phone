@@ -25,3 +25,5 @@ rootProject.name = "Phone"
 
 include(":runtime")
 include(":compiler")
+include("testapi")
+include("testcaller")
