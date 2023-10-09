@@ -1,0 +1,4 @@
+package pers.shawxingkwok.phone
+
+internal fun insertIf(condition: Boolean, getText: () -> String): String =
+    if (condition) getText() else ""

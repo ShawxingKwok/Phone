@@ -1,0 +1,15 @@
+[versions]
+agp = "7.4.2"
+kt = "1.9.0"
+ktor = "2.3.5"
+
+[plugins]
+ktor = { id = "io.ktor.plugin", version.ref = "ktor"}
+ktMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kt" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kt" }
+publish = { id = "com.vanniktech.maven.publish", version = "0.25.2" }
+
+[libraries]
+serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.0" }
+kt-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kt" }
+shawxing-ktUtil = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.2" }
