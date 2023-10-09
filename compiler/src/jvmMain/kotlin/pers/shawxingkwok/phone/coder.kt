@@ -8,8 +8,8 @@ import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.ksputil.text
 import kotlin.reflect.KClass
 
-internal fun KtGen.coder(): String {
-    return if (MyProcessor.allSerializersProp == null)
+internal fun KtGen.coder(): String =
+    if (MyProcessor.allSerializersProp == null)
         """
         private fun encode(value: Any): String =
             ~if (value is String) value
@@ -51,4 +51,3 @@ internal fun KtGen.coder(): String {
         }
         """.trimIndent()
     }
-}
