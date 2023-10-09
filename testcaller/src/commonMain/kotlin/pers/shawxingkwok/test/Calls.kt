@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName")
+@file:Suppress("LocalVariableName", "DuplicatedCode")
 
 package pers.shawxingkwok.test
 
