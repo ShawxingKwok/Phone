@@ -8,6 +8,8 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
+
     jvm {
         jvmToolchain(8)
         withJava()
