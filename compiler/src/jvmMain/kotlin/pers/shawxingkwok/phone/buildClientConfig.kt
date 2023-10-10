@@ -11,6 +11,7 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeArgument
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.phone.MyProcessor
+import sun.awt.image.BufferedImageDevice
 
 internal fun buildClientConfig(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
@@ -81,47 +82,42 @@ private fun KSFunctionDeclaration.getText() =
             }
             .let(::append)
 
-        val hasReturn = returnType!!.resolve() != resolver.builtIns.unitType
-        if (hasReturn)
-            append(": ${returnType!!.text} {\n")
-        else
+        mayEmbrace(
+            condition = returnType!!.resolve() != resolver.builtIns.unitType,
+            getStart = {
+                append(": ${returnType!!.text}")
+            },
+            getEnd = {
+                val returnType = returnType!!.resolve()
+
+                if (returnType.isMarkedNullable) {
+                    append("if(response.status != HttpStatusCode.NotFound)\n")
+                    append("~return null!~\n")
+                }
+                append("val text = response.bodyAsText()\n")
+                append("return decode(text, ${MyProcessor.serializers[returnType]?.text})\n")
+            },
+        ) {
             append(" {\n")
+            append("val response = client.get(\"$${"mBasicUrl"}/${simpleName()}\")")
 
-        append("val response = client.get(\"$${"mBasicUrl"}/${simpleName()}\")")
-
-        if (parameters.any()) {
-            append(" {\n")
-            parameters.forEach { ksParam ->
-                append("jsonParameter(\"${ksParam.name!!.asString()}\", ")
-                append("${ksParam.name!!.asString()}, ")
-                append("${ksParam.getSerializer()?.text})\n")
-            }
-            append("}")
-        }
-        append("\n")
-
-        append("""
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
-        """.trim())
-
-        append("\n")
-
-        if (hasReturn) {
-            val returnType = returnType!!.resolve()
-
-            if (returnType.isMarkedNullable) {
-                append("if(response.status != HttpStatusCode.NotFound)\n")
-                append("~return null!~\n")
+            if (parameters.any()) {
+                append(" {\n")
+                parameters.forEach { ksParam ->
+                    append("jsonParameter(\"${ksParam.name!!.asString()}\", ")
+                    append("${ksParam.name!!.asString()}, ")
+                    append("${ksParam.getSerializer()?.text})\n")
+                }
+                append("}")
             }
 
-            append("val text = response.bodyAsText()\n")
-
-            when(val serializer = MyProcessor.serializers[returnType]){
-                null -> append("return decode(text, null)\n")
-                else -> append("return decode(text, ${serializer.text})\n")
-            }
+            append(
+                """
+                check(response.status != HttpStatusCode.BadRequest){
+                    response.bodyAsText()
+                }
+                """
+            )
         }
 
         append("}")

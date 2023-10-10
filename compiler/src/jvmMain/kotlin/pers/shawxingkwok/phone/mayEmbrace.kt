@@ -11,3 +11,14 @@ internal inline fun mayEmbrace(
         append(getBody())
         if (condition) append(end)
     }
+
+internal inline fun mayEmbrace(
+    condition: Boolean,
+    getStart: () -> Unit,
+    getEnd: () -> Unit,
+    getBody: () -> Unit,
+) {
+    if (condition) getStart()
+    getBody()
+    if (condition) getEnd()
+}
