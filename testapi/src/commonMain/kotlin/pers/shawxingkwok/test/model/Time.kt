@@ -9,7 +9,7 @@ import kotlinx.serialization.json.Json
 import pers.shawxingkwok.phone.Phone
 
 // Suppose `class X` is from a third-party library
-// and is not the subclass of Serializable
+// and is not adapted with Kotlin Serializable
 class Time(val hour: Int, val min: Int, val sec: Int)
 
 @Phone.Serializer
