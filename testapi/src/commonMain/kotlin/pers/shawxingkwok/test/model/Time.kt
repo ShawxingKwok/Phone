@@ -15,9 +15,9 @@ class Time(val hour: Int, val min: Int, val sec: Int)
 @Phone.Serializer
 object TimeSerializer : KSerializer<Time> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Time") {
-        this.element<Int>("hour")
-        this.element<Int>("min")
-        this.element<Int>("sec")
+        element<Int>("hour")
+        element<Int>("min")
+        element<Int>("sec")
     }
 
     override fun deserialize(decoder: Decoder): Time =
