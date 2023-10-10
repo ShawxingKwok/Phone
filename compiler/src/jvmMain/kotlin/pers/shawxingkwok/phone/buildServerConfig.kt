@@ -40,10 +40,10 @@ internal fun buildServerConfig(
                     "get${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
                 }}    
             ){
-                ${phones.joinToString("\n\n"){ ksclassDecl ->
+                ${phones.joinToString("\n\n"){ ksclass ->
                     """
-                    routing.route("${ksclassDecl.simpleName()}"){
-                        ${ksclassDecl.getNeededFunctions().joinToString("\n\n"){ it.getText(serializers) }}
+                    routing.route("${ksclass.simpleName()}"){
+                        ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getText(serializers) }}
                     }
                     """.trim()
                 }}
@@ -98,34 +98,33 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
 
     val commandText = "get${parentDeclaration!!.simpleName()}(call).${simpleName()}(${parameters.joinToString(", "){ "_" + it.name!!.asString() }})"
 
-    val returnType = returnType!!.resolve()
+    when (val returnType = returnType!!.resolve()) {
+        resolver.builtIns.unitType ->
+            """
+            $commandText
+            call.response.status(HttpStatusCode.OK)                
+            """
+            .trimStart()
+        else -> {
+            append("val ret = $commandText\n")
 
-    if (returnType == resolver.builtIns.unitType)
-        """
-        $commandText
-        call.response.status(HttpStatusCode.OK)                
-        """
-        .trimStart()
-        .let(::append)
-    else {
-        append("val ret = $commandText\n")
-
-        mayEmbrace(
-            condition = returnType.isMarkedNullable,
-            start = """
+            mayEmbrace(
+                condition = returnType.isMarkedNullable,
+                start = """
                     if(ret == null)
                         ~call.response.status(HttpStatusCode.NotFound)!~
                     else{
-                    """.trim(),
-            end =  "}\n",
-        ){
-            """
-            val text = encode(ret, ${serializers[returnType]?.text})
-            call.respondText(text, status = HttpStatusCode.OK)
-            """
+                    """.trimStart(),
+                end =  "}\n",
+            ){
+                """
+                val text = encode(ret, ${serializers[returnType]?.text})
+                call.respondText(text, status = HttpStatusCode.OK)
+                """.trimStart()
+            }
         }
-        .let(::append)
     }
+    .let(::append)
 
     append("}")
 }

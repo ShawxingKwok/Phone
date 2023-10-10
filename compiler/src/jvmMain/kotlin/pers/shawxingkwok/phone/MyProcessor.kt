@@ -1,17 +1,20 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getClassDeclarationByName
-import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
 import java.io.File
 
+@Suppress("unused")
 @Provide
 internal object MyProcessor : KSProcessor{
-    enum class Status{
-        UNSTARTED, BUILT, COPIED
+    private object Status{
+        const val UNSTARTED = 0
+        const val BUILT = 1
+        const val COPIED = 2
     }
+
     private var status = Status.UNSTARTED
 
     private val allPaths = resolver
@@ -23,29 +26,58 @@ internal object MyProcessor : KSProcessor{
             .getAnnotatedSymbols<Phone, KSClassDeclaration>()
             .partition { it.accept(KSDefaultValidator(), Unit) }
 
-        // check
-        valid.forEach { apiKSClass ->
-            val functions = apiKSClass.getDeclaredFunctions()
+        if (valid.none() && invalid.none())
+            return emptyList()
 
-            functions.forEach {
-                // TODO("check")
+        // check each Phone class
+        valid.forEach { ksclass ->
+            Log.require(ksclass.classKind == ClassKind.INTERFACE, ksclass){
+                "The annotation Phone could be annotated only on interfaces."
             }
-
-            check(apiKSClass.packageName().any()) {
-                TODO()
+            Log.require(ksclass.typeParameters.none(), ksclass){
+                "Interfaces annotated with Phone can't have any type parameter."
+            }
+            Log.require(ksclass.parentDeclaration == null, ksclass){
+                "Each interfaces annotated with Phone can't be a nest class. " +
+                "Or the simple generated declaration names may repeat."
+            }
+            Log.require(ksclass.packageName().any(), ksclass){
+                "Class without package name is commonly used in test cases. " +
+                "However, I don't want to spend time adapting `Phone` with it."
             }
         }
+
+        // check all functions in Phone classes
+        valid.flatMap { it.getAllFunctions() }
+            .filterNot {
+                val name = it.simpleName()
+                name == "toString"
+                || name == "equals"
+                || name == "hashCode"
+            }
+            .forEach {
+                Log.require(
+                    condition =
+                        it.isAbstract
+                        && Modifier.SUSPEND in it.modifiers
+                        && it.typeParameters.none(),
+                    symbol = it,
+                ){
+                    "In each class annotated with Phone, " +
+                    "all functions must be abstract, suspend and without type parameters, except 'toString', 'equals', and 'hashCode' ."
+                }
+            }
 
         // also output to dest paths from ksp args
         when(status){
             Status.UNSTARTED ->
                 if (invalid.none()) {
-                    status = if (valid.any()) Status.BUILT else Status.COPIED
+                    status++
 
-                    var serializers = resolver
+                    val serializers = resolver
                         .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
-                        .associateBy { kclassDecl ->
-                            kclassDecl.superTypes
+                        .associateBy { ksclass ->
+                            ksclass.superTypes
                                 .map{ it.resolve() }
                                 .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer"  }
                                 .arguments
@@ -57,8 +89,8 @@ internal object MyProcessor : KSProcessor{
                                     }
                                 }
                         }
+                        .toMutableMap()
 
-                    @Suppress("SuspiciousCollectionReassignment")
                     serializers += serializers.mapKeys { (ksType, _) ->
                         if (ksType.isMarkedNullable) ksType.makeNotNullable()
                         else ksType.makeNullable()
@@ -70,7 +102,7 @@ internal object MyProcessor : KSProcessor{
                 }
 
             Status.BUILT -> {
-                status = Status.COPIED
+                status++
 
                 allDo(
                     listOf(Args.ServerPackagePath, Args.ServerPackageName, "Phone"),

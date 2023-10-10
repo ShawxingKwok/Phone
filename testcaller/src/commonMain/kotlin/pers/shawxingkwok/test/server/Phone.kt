@@ -65,7 +65,6 @@ object Phone{
                 val _verificationCode: String? = params["verificationCode"]
 
                 val ret = getAccountApi(call).login(_email, _password, _verificationCode)
-
                 val text = encode(ret, null)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
@@ -123,7 +122,6 @@ object Phone{
         routing.route("ChatApi"){
             get("/getChats"){
                 val ret = getChatApi(call).getChats()
-
                 val text = encode(ret, null)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
@@ -132,7 +130,6 @@ object Phone{
         routing.route("TimeApi"){
             get("/getTime"){
                 val ret = getTimeApi(call).getTime()
-
                 val text = encode(ret, TimeSerializer)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
@@ -171,7 +168,6 @@ object Phone{
                     )
 
                 val ret = getTimeApi(call).sumTime(_a, _b)
-
                 val text = encode(ret, TimeSerializer)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
