@@ -47,8 +47,3 @@ object TimeSerializer : KSerializer<Time> {
         }
     }
 }
-
-fun main() {
-    val encoded = Json.encodeToString(TimeSerializer, Time(0, 1, 2))
-    Json.decodeFromString(TimeSerializer, encoded).hour.let(::println)
-}
