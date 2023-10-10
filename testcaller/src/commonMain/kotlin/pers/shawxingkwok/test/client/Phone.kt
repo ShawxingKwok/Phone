@@ -124,5 +124,17 @@ class Phone(private val client: HttpClient) {
             val text = response.bodyAsText()
             return decode(text, TimeSerializer)
         }
+
+        override suspend fun sumTime(a: Time, b: Time): Time {
+            val response = client.get("$mBasicUrl/sumTime") {
+                jsonParameter("a", a, TimeSerializer)
+                jsonParameter("b", b, TimeSerializer)
+            }
+            check(response.status != HttpStatusCode.BadRequest){
+                response.bodyAsText()
+            }
+            val text = response.bodyAsText()
+            return decode(text, TimeSerializer)
+        }
     }
 }

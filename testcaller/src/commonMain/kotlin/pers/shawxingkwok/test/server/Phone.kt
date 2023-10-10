@@ -14,6 +14,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlin.String
 import kotlin.Long
 import pers.shawxingkwok.test.model.TimeSerializer
+import pers.shawxingkwok.test.model.Time
 
 object Phone{
     abstract class AccountApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
@@ -129,6 +130,44 @@ object Phone{
         routing.route("TimeApi"){
             get("/getTime"){
                 val ret = getTimeApi(call).getTime()
+                val text = encode(ret, TimeSerializer)
+                call.respondText(text, status = HttpStatusCode.OK)
+            }
+
+            get("/sumTime"){
+                val params = call.request.queryParameters
+
+                val _a: Time = params["a"]
+                    ?.let{
+                        try {
+                            decode(it, TimeSerializer)
+                        }catch (_: Throwable){
+                            val text = "The a is incorrectly serialized."
+                            call.respondText(text, status = HttpStatusCode.BadRequest)
+                            return@get
+                        }
+                    }
+                    ?: return@get call.respondText(
+                        text = "Not found a in parameters.",
+                        status = HttpStatusCode.BadRequest,
+                    )
+                    
+                val _b: Time = params["b"]
+                    ?.let{
+                        try {
+                            decode(it, TimeSerializer)
+                        }catch (_: Throwable){
+                            val text = "The b is incorrectly serialized."
+                            call.respondText(text, status = HttpStatusCode.BadRequest)
+                            return@get
+                        }
+                    }
+                    ?: return@get call.respondText(
+                        text = "Not found b in parameters.",
+                        status = HttpStatusCode.BadRequest,
+                    )
+                    
+                val ret = getTimeApi(call).sumTime(_a, _b)
                 val text = encode(ret, TimeSerializer)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
