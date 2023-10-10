@@ -4,6 +4,7 @@ import com.google.devtools.ksp.isOpen
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Variance
+import pers.shawxingkwok.ksputil.Log
 import pers.shawxingkwok.ksputil.resolver
 
 internal fun KSValueParameter.getSerializer(): KSClassDeclaration? {

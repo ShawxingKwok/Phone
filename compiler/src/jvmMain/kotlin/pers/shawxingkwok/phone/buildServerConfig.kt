@@ -27,7 +27,9 @@ internal fun buildServerConfig(phones: List<KSClassDeclaration>) {
     ){
         """
         object Phone{
-            ${phones.joinToString("\n"){ "abstract class ${it.simpleName()}(protected val call: ApplicationCall) : ${it.qualifiedName()}" }}
+            ${phones.joinToString("\n"){ 
+                "abstract class ${it.simpleName()}(protected val call: ApplicationCall) : ${it.qualifiedName()}" 
+            }}
             
             ${getCoderFunctions()}
 

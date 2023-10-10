@@ -12,6 +12,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.DeserializationStrategy
 import pers.shawxingkwok.test.model.TimeSerializer
+import pers.shawxingkwok.test.model.TimeArraySerializer
 
 object Phone{
     abstract class AccountApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
@@ -131,30 +132,17 @@ object Phone{
                 val params = call.request.queryParameters
 
                 val ret = getTimeApi(call).sumTime(
-                    a = params["a"]?.let{
+                    times = params["times"]?.let{
                             try {
-                                decode(it, TimeSerializer)
+                                decode(it, TimeArraySerializer)
                             }catch (_: Throwable){
-                                val text = "The parameter a is incorrectly serialized."
+                                val text = "The parameter times is incorrectly serialized."
                                 call.respondText(text, status = HttpStatusCode.BadRequest)
                                 return@get
                             }
                         }
                         ?: return@get call.respondText(
-                            text = "Not found `a` in parameters.",
-                            status = HttpStatusCode.BadRequest,
-                        ),
-                    b = params["b"]?.let{
-                            try {
-                                decode(it, TimeSerializer)
-                            }catch (_: Throwable){
-                                val text = "The parameter b is incorrectly serialized."
-                                call.respondText(text, status = HttpStatusCode.BadRequest)
-                                return@get
-                            }
-                        }
-                        ?: return@get call.respondText(
-                            text = "Not found `b` in parameters.",
+                            text = "Not found `times` in parameters.",
                             status = HttpStatusCode.BadRequest,
                         ),
                 )
