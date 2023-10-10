@@ -30,7 +30,7 @@ internal fun buildServerConfig(
     ){
         """
         object Phone{
-            ${phones.joinToString("\n"){ "abstract class ${it.simpleName()}(val call: ApplicationCall) : ${it.qualifiedName()}" }}
+            ${phones.joinToString("\n"){ "abstract class ${it.simpleName()}(protected val call: ApplicationCall) : ${it.qualifiedName()}" }}
             
             ${getCoderFunctions()}
 

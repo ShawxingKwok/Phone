@@ -17,7 +17,7 @@ import pers.shawxingkwok.test.model.TimeSerializer
 import pers.shawxingkwok.test.model.Time
 
 object Phone{
-    abstract class AccountApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
+    abstract class AccountApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
     abstract class ChatApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.ChatApi
     abstract class TimeApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.TimeApi
 
