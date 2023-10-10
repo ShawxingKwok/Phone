@@ -34,7 +34,6 @@ class TimeApiImpl(call: ApplicationCall) : Phone.TimeApi(call){
     override suspend fun sumTime(a: Time, b: Time): Time {
         TODO("Not yet implemented")
     }
-
 }
 
 fun Application.main() {

@@ -1,6 +1,7 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.isOpen
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
@@ -13,9 +14,9 @@ internal object MyProcessor : KSProcessor{
         const val UNSTARTED = 0
         const val BUILT = 1
         const val COPIED = 2
-    }
 
-    private var status = Status.UNSTARTED
+        var value = UNSTARTED
+    }
 
     private val allPaths = resolver
         .getAnnotatedSymbols<Phone, KSClassDeclaration>()
@@ -32,14 +33,14 @@ internal object MyProcessor : KSProcessor{
         // check each Phone class
         valid.forEach { ksclass ->
             Log.require(ksclass.classKind == ClassKind.INTERFACE, ksclass){
-                "The annotation Phone could be annotated only on interfaces."
+                "The annotation `Phone` could be annotated only on interfaces."
             }
             Log.require(ksclass.typeParameters.none(), ksclass){
-                "Interfaces annotated with Phone can't have any type parameter."
+                "Interfaces annotated with `Phone` can't have any type parameter."
             }
             Log.require(ksclass.parentDeclaration == null, ksclass){
-                "Each interfaces annotated with Phone can't be a nest class. " +
-                "Or the simple generated declaration names may repeat."
+                "Each interface annotated with `Phone` can't be a nest class. " +
+                "Or the simple generated declaration names and routes may repeat."
             }
             Log.require(ksclass.packageName().any(), ksclass){
                 "Class without package name is commonly used in test cases. " +
@@ -58,35 +59,47 @@ internal object MyProcessor : KSProcessor{
             .forEach {
                 Log.require(
                     condition =
-                        it.isAbstract
-                        && Modifier.SUSPEND in it.modifiers
-                        && it.typeParameters.none(),
+                        !it.isAbstract
+                        || Modifier.SUSPEND in it.modifiers && it.typeParameters.none(),
                     symbol = it,
                 ){
-                    "In each class annotated with Phone, " +
-                    "all functions must be abstract, suspend and without type parameters, except 'toString', 'equals', and 'hashCode' ."
+                    "In each class annotated with `Phone`, " +
+                    "all abstract functions must be suspend and without type parameters, except 'toString', 'equals', and 'hashCode'."
                 }
             }
 
         // also output to dest paths from ksp args
-        when(status){
+        when(Status.value){
             Status.UNSTARTED ->
                 if (invalid.none()) {
-                    status++
+                    Status.value++
 
                     val serializers = resolver
                         .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
                         .associateBy { ksclass ->
+                            Log.require(ksclass.classKind == ClassKind.OBJECT, ksclass){
+                                "Each class annotated with `Phone.Serializer` must be object."
+                            }
+
                             ksclass.superTypes
                                 .map{ it.resolve() }
-                                .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer"  }
+                                .firstOrNull { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer"  }
+                                .let {
+                                    Log.require(
+                                        condition = it != null,
+                                        symbol = ksclass,
+                                    ){
+                                        "Each class annotated with `Phone.Serializer` must implement `KSerializer`."
+                                    }
+                                    it
+                                }
                                 .arguments
                                 .first()
                                 .type!!
-                                .resolve().also {
-                                    check(!it.isMarkedNullable){
-                                        TODO()
-                                    }
+                                .resolve()
+                                .also {
+                                    if (it.isMarkedNullable)
+                                        Log.w("The nullable symbol is needless in the inner type `$it` embraced by `KSerializer`.", ksclass)
                                 }
                         }
                         .toMutableMap()
@@ -102,7 +115,7 @@ internal object MyProcessor : KSProcessor{
                 }
 
             Status.BUILT -> {
-                status++
+                Status.value++
 
                 allDo(
                     listOf(Args.ServerPackagePath, Args.ServerPackageName, "Phone"),
