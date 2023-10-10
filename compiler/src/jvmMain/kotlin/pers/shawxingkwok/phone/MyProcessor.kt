@@ -2,9 +2,7 @@ package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.getDeclaredFunctions
-import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
 import java.io.File
@@ -15,10 +13,6 @@ internal object MyProcessor : KSProcessor{
         UNSTARTED, BUILT, COPIED
     }
     private var status = Status.UNSTARTED
-
-    val allSerializersProp = resolver
-        .getAnnotatedSymbols<Phone.KSerializers, KSPropertyDeclaration>()
-        .firstOrNull()
 
     private val allPaths = resolver
         .getAnnotatedSymbols<Phone, KSClassDeclaration>()
@@ -47,9 +41,32 @@ internal object MyProcessor : KSProcessor{
             Status.UNSTARTED ->
                 if (invalid.none()) {
                     status = if (valid.any()) Status.BUILT else Status.COPIED
-                    val all = allPaths.map { resolver.getClassDeclarationByName(it)!! }
-                    buildClientConfig(all)
-                    buildServerConfig(all)
+
+                    var serializers = resolver
+                        .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
+                        .associateBy { kclassDecl ->
+                            kclassDecl.superTypes
+                                .map{ it.resolve() }
+                                .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer"  }
+                                .arguments
+                                .first()
+                                .type!!
+                                .resolve().also {
+                                    check(!it.isMarkedNullable){
+                                        TODO()
+                                    }
+                                }
+                        }
+
+                    @Suppress("SuspiciousCollectionReassignment")
+                    serializers += serializers.mapKeys { (ksType, _) ->
+                        if (ksType.isMarkedNullable) ksType.makeNotNullable()
+                        else ksType.makeNullable()
+                    }
+
+                    val phones = allPaths.map { resolver.getClassDeclarationByName(it)!! }
+                    buildClientConfig(phones, serializers)
+                    buildServerConfig(phones, serializers)
                 }
 
             Status.BUILT -> {

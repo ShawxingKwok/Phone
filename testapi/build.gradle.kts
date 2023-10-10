@@ -29,8 +29,10 @@ dependencies {
 
 ksp{
     arg("ksp-util.debug", "")
-    arg("phone.server-package-path", "/Users/william/IdeaProjects/library/Phone/testcaller/src/commonMain/kotlin")
-    arg("phone.client-package-path", "/Users/william/IdeaProjects/library/Phone/testcaller/src/commonMain/kotlin")
+    // set your own path
+    // arg("phone.server-package-path", "/Users/william/IdeaProjects/library/Phone/testcaller/src/commonMain/kotlin")
+    // arg("phone.client-package-path", "/Users/william/IdeaProjects/library/Phone/testcaller/src/commonMain/kotlin")
+
     arg("phone.server-package-name", "pers.shawxingkwok.test.server")
     arg("phone.client-package-name", "pers.shawxingkwok.test.client")
 }

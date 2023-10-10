@@ -3,13 +3,17 @@ package pers.shawxingkwok.phone
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildServerConfig(all: List<KSClassDeclaration>){
+internal fun buildServerConfig(
+    phones: List<KSClassDeclaration>,
+    serializers: Map<KSType, KSClassDeclaration>,
+) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ServerPackageName,
         fileName = "Phone",
-        dependencies = Dependencies(true, *all.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
         header = Suppressing,
         extensionName = "",
         additionalImports = listOf(
@@ -19,35 +23,36 @@ internal fun buildServerConfig(all: List<KSClassDeclaration>){
             "io.ktor.server.routing.*",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
+            "kotlinx.serialization.KSerializer",
         ),
     ){
         """
         object Phone{
-            ${all.joinToString("\n"){ "abstract class ${it.simpleName()}(val call: ApplicationCall) : ${it.qualifiedName()}" }}
+            ${phones.joinToString("\n"){ "abstract class ${it.simpleName()}(val call: ApplicationCall) : ${it.qualifiedName()}" }}
             
-            ${coder()}
-            
+            ${getCoderFunctions()}
+
             fun configure(
                 routing: Routing,
-                ${all.joinToString("\n"){
+                ${phones.joinToString("\n"){
                     "get${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
                 }}    
             ){
-                ${all.joinToString("\n\n"){ ksclassDecl ->
+                ${phones.joinToString("\n\n"){ ksclassDecl ->
                     """
                     routing.route("${ksclassDecl.simpleName()}"){
-                        ${ksclassDecl.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
+                        ${ksclassDecl.getNeededFunctions().joinToString("\n\n"){ it.getText(serializers) }}
                     }
                     """.trim()
                 }}
-            }            
+            }
         }
         """.trim().indentAsKtCode()
     }
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getText() = buildString{
+private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclaration>) = buildString{
     append("get(\"/${simpleName()}\"){\n")
 
     if (parameters.any())
@@ -67,7 +72,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
             append("""
                 ?.let{
                     try {
-                        decode(it)
+                        decode(it, ${serializers[type]?.text})
                     }catch (_: Throwable){
                         val text = "The $paramName is incorrectly serialized."
                         call.respondText(text, status = HttpStatusCode.BadRequest)
@@ -96,28 +101,30 @@ private fun KSFunctionDeclaration.getText() = buildString{
 
     val commandText = "get${parentDeclaration!!.simpleName()}(call).${simpleName()}(${parameters.joinToString(", "){ "_" + it.name!!.asString() }})"
 
-    when{
-        returnType!!.resolve() == resolver.builtIns.unitType ->
-            """
-            $commandText
-            call.response.status(HttpStatusCode.OK)                
-            """
+    val returnType = returnType!!.resolve()
 
-        returnType!!.resolve().isMarkedNullable ->
-            """
-            when(val ret = $commandText){
-                null -> call.response.status(HttpStatusCode.NotFound)
-                else -> call.respondText(encode(ret), status = HttpStatusCode.OK)
-            }
-            """
-
-        else -> """
-            val ret = $commandText
-            call.respondText(encode(ret), status = HttpStatusCode.OK)
+    if (returnType == resolver.builtIns.unitType)
         """
-    }
-    .trim()
-    .let(::append)
+        $commandText
+        call.response.status(HttpStatusCode.OK)                
+        """
+        .trim().let(::append)
+    else {
+        append("val ret = $commandText\n")
 
-    append("\n}")
+        if (returnType.isMarkedNullable)
+            append("""
+                if(ret == null)
+                    ~call.response.status(HttpStatusCode.NotFound)!~
+                else{
+            """.trim() + "\n")
+
+        append("val text = encode(ret, ${serializers[returnType]?.text})\n")
+        append("call.respondText(text, status = HttpStatusCode.OK)\n")
+
+        if (returnType.isMarkedNullable)
+            append("}\n")
+    }
+
+    append("}")
 }

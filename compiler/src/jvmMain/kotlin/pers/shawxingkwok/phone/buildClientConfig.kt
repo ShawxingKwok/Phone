@@ -3,14 +3,19 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildClientConfig(all: List<KSClassDeclaration>) {
+internal fun buildClientConfig(
+    phones: List<KSClassDeclaration>,
+    serializers: Map<KSType, KSClassDeclaration>,
+) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ClientPackageName,
-        dependencies = Dependencies(true, *all.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
         fileName = "Phone",
         header = Suppressing,
         extensionName = "",
@@ -22,6 +27,7 @@ internal fun buildClientConfig(all: List<KSClassDeclaration>) {
                 "io.ktor.client.statement.*",
                 "kotlinx.serialization.encodeToString",
                 "kotlinx.serialization.json.Json",
+                "kotlinx.serialization.KSerializer",
             )
     ) {
         """
@@ -30,19 +36,26 @@ internal fun buildClientConfig(all: List<KSClassDeclaration>) {
                 const val BASIC_URL = "${Args.BasicUrl}"
             }            
             
-            private fun HttpRequestBuilder.jsonParameter(key: String, value: Any?){
-                val newV = encode(value ?: return)
+            @Suppress("UNCHECKED_CAST")
+            private fun HttpRequestBuilder.jsonParameter(
+                key: String,
+                value: Any?,
+                serializer: KSerializer<out Any>?
+            ){
+                serializer as KSerializer<Any>?
+                if (value == null) return
+                val newV = encode(value, serializer)
                 parameter(key, newV)
             }
+        
+            ${getCoderFunctions()}
             
-            ${coder()}
-                                
-            ${all.joinToString("\n\n") { apiKSClass ->
+            ${phones.joinToString("\n\n") { apiKSClass ->
                 """
-                val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object: ${apiKSClass.asStarProjectedType().text} {                    
+                val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
                     private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 
                 
-                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
+                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getText(serializers) }}
                 }
                 """.trim()
             }}    
@@ -52,51 +65,63 @@ internal fun buildClientConfig(all: List<KSClassDeclaration>) {
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getText() = buildString{
-    append("override suspend fun ${this@getText}(")
+private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclaration>)
+=
+    buildString {
+        append("override suspend fun ${this@getText}(")
 
-    if (parameters.size <= 2)
-        parameters.joinToString(postfix = ")", separator = ", ") {
-            "${it.name!!.asString()}: ${it.type.text}"
+        if (parameters.size <= 2)
+            parameters.joinToString(postfix = ")", separator = ", ") {
+                "${it.name!!.asString()}: ${it.type.text}"
+            }
+            .let(::append)
+        else
+            parameters.joinToString(prefix = "\n", postfix = ")", separator = "") {
+                "${it.name!!.asString()}: ${it.type.text},\n"
+            }
+            .let(::append)
+
+        val hasReturn = returnType!!.resolve() != resolver.builtIns.unitType
+        if (hasReturn)
+            append(": ${returnType!!.text} {\n")
+        else
+            append(" {\n")
+
+        append("val response = client.get(\"$${"mBasicUrl"}/${simpleName()}\")")
+
+        if (parameters.any()) {
+            append(" {\n")
+            parameters.forEach {
+                val serializer = serializers[it.type.resolve()]
+                append("jsonParameter(\"${it.name!!.asString()}\", ${it.name!!.asString()}, ${serializer?.text})\n")
+            }
+            append("}")
         }
-        .let(::append)
-    else
-        parameters.joinToString(prefix = "\n", postfix = ")", separator = "") {
-            "${it.name!!.asString()}: ${it.type.text},\n"
+        append("\n")
+
+        append("""
+            check(response.status != HttpStatusCode.BadRequest){
+                response.bodyAsText()
+            }
+        """.trim())
+
+        append("\n")
+
+        if (hasReturn) {
+            val returnType = returnType!!.resolve()
+
+            if (returnType.isMarkedNullable) {
+                append("if(response.status != HttpStatusCode.NotFound)\n")
+                append("~return null!~\n")
+            }
+
+            append("val text = response.bodyAsText()\n")
+
+            when(val serializer = serializers[returnType]){
+                null -> append("return decode(text, null)\n")
+                else -> append("return decode(text, ${serializer.text})\n")
+            }
         }
-        .let(::append)
 
-    val hasReturn = returnType!!.resolve() != resolver.builtIns.unitType
-    if (hasReturn)
-        append(": ${returnType!!.text} {\n")
-    else
-        append(" {\n")
-
-    append("val response = client.get(\"$${"mBasicUrl"}/${simpleName()}\")")
-
-    if (parameters.any()) {
-        append(" {\n")
-        parameters.forEach {
-            append("jsonParameter(\"${it.name!!.asString()}\", ${it.name!!.asString()})\n")
-        }
         append("}")
     }
-    append("\n")
-
-    append("""
-        check(response.status != HttpStatusCode.BadRequest){
-            response.bodyAsText()
-        }
-    """.trim())
-    append("\n")
-
-    if (hasReturn){
-        if (returnType!!.resolve().isMarkedNullable) {
-            append("if(response.status != HttpStatusCode.NotFound)\n")
-            append("~return null!~\n")
-        }
-        append("return response.bodyAsText().let(::decode)\n")
-    }
-
-    append("}")
-}

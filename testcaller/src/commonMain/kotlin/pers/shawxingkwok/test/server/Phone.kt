@@ -8,25 +8,46 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.KSerializer
 import kotlin.String
 import kotlin.Long
+import pers.shawxingkwok.test.model.TimeSerializer
 
 object Phone{
     abstract class AccountApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
     abstract class ChatApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.ChatApi
+    abstract class TimeApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.TimeApi
 
-    private fun encode(value: Any): String =
-        if (value is String) value
-        else Json.encodeToString(value)
+    @Suppress("UNCHECKED_CAST")
+    private fun encode(value: Any, serializer: KSerializer<out Any>?): String{
+        serializer as KSerializer<Any>?
 
-    private inline fun <reified T> decode(text: String): T =
-        if(T::class == String::class) text as T
-        else Json.decodeFromString(text)
+        return when{
+            value is String -> value
+            serializer == null -> Json.encodeToString(value)
+            else -> Json.encodeToString(serializer, value)
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private inline fun <reified T> decode(
+        text: String,
+        serializer: KSerializer<out Any>?
+    ): T {
+        serializer as KSerializer<Any>?
+
+        return when{
+            T::class == String::class -> text
+            serializer == null -> Json.decodeFromString(text)
+            else -> Json.decodeFromString(serializer, text)
+        } as T
+    }
 
     fun configure(
         routing: Routing,
         getAccountApi: (ApplicationCall) -> AccountApi,
         getChatApi: (ApplicationCall) -> ChatApi,
+        getTimeApi: (ApplicationCall) -> TimeApi,
     ){
         routing.route("AccountApi"){
             get("/login"){
@@ -47,7 +68,8 @@ object Phone{
                 val _verificationCode: String? = params["verificationCode"]
                     
                 val ret = getAccountApi(call).login(_email, _password, _verificationCode)
-                call.respondText(encode(ret), status = HttpStatusCode.OK)
+                val text = encode(ret, null)
+                call.respondText(text, status = HttpStatusCode.OK)
             }
 
             get("/delete"){
@@ -56,7 +78,7 @@ object Phone{
                 val _id: Long = params["id"]
                     ?.let{
                         try {
-                            decode(it)
+                            decode(it, null)
                         }catch (_: Throwable){
                             val text = "The id is incorrectly serialized."
                             call.respondText(text, status = HttpStatusCode.BadRequest)
@@ -69,39 +91,50 @@ object Phone{
                     )
                     
                 getAccountApi(call).delete(_id)
-                call.response.status(HttpStatusCode.OK)
+                call.response.status(HttpStatusCode.OK)}
+
+                get("/search"){
+                    val params = call.request.queryParameters
+
+                    val _id: Long = params["id"]
+                        ?.let{
+                            try {
+                                decode(it, null)
+                            }catch (_: Throwable){
+                                val text = "The id is incorrectly serialized."
+                                call.respondText(text, status = HttpStatusCode.BadRequest)
+                                return@get
+                            }
+                        }
+                        ?: return@get call.respondText(
+                            text = "Not found id in parameters.",
+                            status = HttpStatusCode.BadRequest,
+                        )
+                        
+                    val ret = getAccountApi(call).search(_id)
+                    if(ret == null)
+                        call.response.status(HttpStatusCode.NotFound)
+                    else{
+                        val text = encode(ret, null)
+                        call.respondText(text, status = HttpStatusCode.OK)
+                    }
+                }
             }
 
-            get("/search"){
-                val params = call.request.queryParameters
+            routing.route("ChatApi"){
+                get("/getChats"){
+                    val ret = getChatApi(call).getChats()
+                    val text = encode(ret, null)
+                    call.respondText(text, status = HttpStatusCode.OK)
+                }
+            }
 
-                val _id: Long = params["id"]
-                    ?.let{
-                        try {
-                            decode(it)
-                        }catch (_: Throwable){
-                            val text = "The id is incorrectly serialized."
-                            call.respondText(text, status = HttpStatusCode.BadRequest)
-                            return@get
-                        }
-                    }
-                    ?: return@get call.respondText(
-                        text = "Not found id in parameters.",
-                        status = HttpStatusCode.BadRequest,
-                    )
-                    
-                when(val ret = getAccountApi(call).search(_id)){
-                    null -> call.response.status(HttpStatusCode.NotFound)
-                    else -> call.respondText(encode(ret), status = HttpStatusCode.OK)
+            routing.route("TimeApi"){
+                get("/getTime"){
+                    val ret = getTimeApi(call).getTime()
+                    val text = encode(ret, TimeSerializer)
+                    call.respondText(text, status = HttpStatusCode.OK)
                 }
             }
         }
-
-        routing.route("ChatApi"){
-            get("/getChats"){
-                val ret = getChatApi(call).getChats()
-                call.respondText(encode(ret), status = HttpStatusCode.OK)
-            }
-        }
     }
-}

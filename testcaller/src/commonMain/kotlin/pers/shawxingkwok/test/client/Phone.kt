@@ -8,6 +8,7 @@ import io.ktor.http.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.KSerializer
 import pers.shawxingkwok.test.api.AccountApi
 import kotlin.String
 import pers.shawxingkwok.test.model.LoginResult
@@ -15,26 +16,53 @@ import kotlin.Long
 import pers.shawxingkwok.test.model.User
 import pers.shawxingkwok.test.api.ChatApi
 import kotlin.collections.List
+import pers.shawxingkwok.test.api.TimeApi
+import pers.shawxingkwok.test.model.Time
+import pers.shawxingkwok.test.model.TimeSerializer
 
 class Phone(private val client: HttpClient) {
     private companion object {
         const val BASIC_URL = "http://127.0.0.1:8080"
     }
 
-    private fun HttpRequestBuilder.jsonParameter(key: String, value: Any?){
-        val newV = encode(value ?: return)
+    @Suppress("UNCHECKED_CAST")
+    private fun HttpRequestBuilder.jsonParameter(
+        key: String,
+        value: Any?,
+        serializer: KSerializer<out Any>?
+    ){
+        serializer as KSerializer<Any>?
+        if (value == null) return
+        val newV = encode(value, serializer)
         parameter(key, newV)
     }
 
-    private fun encode(value: Any): String =
-        if (value is String) value
-        else Json.encodeToString(value)
+    @Suppress("UNCHECKED_CAST")
+    private fun encode(value: Any, serializer: KSerializer<out Any>?): String{
+        serializer as KSerializer<Any>?
 
-    private inline fun <reified T> decode(text: String): T =
-        if(T::class == String::class) text as T
-        else Json.decodeFromString(text)
+        return when{
+            value is String -> value
+            serializer == null -> Json.encodeToString(value)
+            else -> Json.encodeToString(serializer, value)
+        }
+    }
 
-    val accountApi = object: AccountApi {
+    @Suppress("UNCHECKED_CAST")
+    private inline fun <reified T> decode(
+        text: String,
+        serializer: KSerializer<out Any>?
+    ): T {
+        serializer as KSerializer<Any>?
+
+        return when{
+            T::class == String::class -> text
+            serializer == null -> Json.decodeFromString(text)
+            else -> Json.decodeFromString(serializer, text)
+        } as T
+    }
+
+    val accountApi = object : AccountApi {
         private val mBasicUrl = "${BASIC_URL}/AccountApi"
 
         override suspend fun login(
@@ -43,19 +71,20 @@ class Phone(private val client: HttpClient) {
             verificationCode: String?,
         ): LoginResult {
             val response = client.get("$mBasicUrl/login") {
-                jsonParameter("email", email)
-                jsonParameter("password", password)
-                jsonParameter("verificationCode", verificationCode)
+                jsonParameter("email", email, null)
+                jsonParameter("password", password, null)
+                jsonParameter("verificationCode", verificationCode, null)
             }
             check(response.status != HttpStatusCode.BadRequest){
                 response.bodyAsText()
             }
-            return response.bodyAsText().let(::decode)
+            val text = response.bodyAsText()
+            return decode(text, null)
         }
 
         override suspend fun delete(id: Long) {
             val response = client.get("$mBasicUrl/delete") {
-                jsonParameter("id", id)
+                jsonParameter("id", id, null)
             }
             check(response.status != HttpStatusCode.BadRequest){
                 response.bodyAsText()
@@ -64,18 +93,19 @@ class Phone(private val client: HttpClient) {
 
         override suspend fun search(id: Long): User? {
             val response = client.get("$mBasicUrl/search") {
-                jsonParameter("id", id)
+                jsonParameter("id", id, null)
             }
             check(response.status != HttpStatusCode.BadRequest){
                 response.bodyAsText()
             }
             if(response.status != HttpStatusCode.NotFound)
                 return null
-            return response.bodyAsText().let(::decode)
+            val text = response.bodyAsText()
+            return decode(text, null)
         }
     }
 
-    val chatApi = object: ChatApi {
+    val chatApi = object : ChatApi {
         private val mBasicUrl = "${BASIC_URL}/ChatApi"
 
         override suspend fun getChats(): List<String> {
@@ -83,7 +113,21 @@ class Phone(private val client: HttpClient) {
             check(response.status != HttpStatusCode.BadRequest){
                 response.bodyAsText()
             }
-            return response.bodyAsText().let(::decode)
+            val text = response.bodyAsText()
+            return decode(text, null)
+        }
+    }
+
+    val timeApi = object : TimeApi {
+        private val mBasicUrl = "${BASIC_URL}/TimeApi"
+
+        override suspend fun getTime(): Time {
+            val response = client.get("$mBasicUrl/getTime")
+            check(response.status != HttpStatusCode.BadRequest){
+                response.bodyAsText()
+            }
+            val text = response.bodyAsText()
+            return decode(text, TimeSerializer)
         }
     }
 }

@@ -3,6 +3,7 @@ package pers.shawxingkwok.test.api
 import pers.shawxingkwok.phone.Phone
 import pers.shawxingkwok.test.model.LoginResult
 import pers.shawxingkwok.test.model.User
+import java.math.BigDecimal
 
 @Phone
 interface AccountApi {
