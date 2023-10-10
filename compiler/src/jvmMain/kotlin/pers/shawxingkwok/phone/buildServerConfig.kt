@@ -6,10 +6,7 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildServerConfig(
-    phones: List<KSClassDeclaration>,
-    serializers: Map<KSType, KSClassDeclaration>,
-) {
+internal fun buildServerConfig(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ServerPackageName,
         fileName = "Phone",
@@ -43,7 +40,7 @@ internal fun buildServerConfig(
                 ${phones.joinToString("\n\n"){ ksclass ->
                     """
                     routing.route("${ksclass.simpleName()}"){
-                        ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getText(serializers) }}
+                        ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
                     }
                     """.trim()
                 }}
@@ -54,60 +51,58 @@ internal fun buildServerConfig(
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclaration>) = buildString{
+private fun KSFunctionDeclaration.getText() = buildString{
     append("get(\"/${simpleName()}\"){\n")
 
     if (parameters.any())
         append("val params = call.request.queryParameters\n\n")
 
+    if (returnType!!.resolve() != resolver.builtIns.unitType)
+        append("val ret = ")
+
+    append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
+
     parameters.forEach { param ->
         val paramName = param.name!!.asString()
         val type = param.type.resolve()
 
-        append("val _$paramName: ${type.text} = params[\"$paramName\"]\n")
-
-        val isString = type.declaration.qualifiedName() == "kotlin.String"
-
-        if (!isString)
+        append("$paramName = params[\"$paramName\"]")
+        if (type.declaration.qualifiedName() != "kotlin.String")
             append(
-                """
-                ~?.let{
-                    try {
-                        decode(it, ${serializers[type]?.text})
+                """?.let{
+                    ~try {
+                        decode(it, ${param.getSerializer()?.text})
                     }catch (_: Throwable){
-                        val text = "The $paramName is incorrectly serialized."
+                        val text = "The parameter $paramName is incorrectly serialized."
                         call.respondText(text, status = HttpStatusCode.BadRequest)
                         return@get
                     }
                 }!~
-                """.trimStart()
+                """.trim()
             )
 
         if (!type.isMarkedNullable)
             append(
                 """
                 ~?: return@get call.respondText(
-                    text = "Not found $paramName in parameters.",
+                    text = "Not found `$paramName` in parameters.",
                     status = HttpStatusCode.BadRequest,
-                )!~
-               """.trimStart()
+                ),!~
+               """
             )
-
-        append("\n")
+        else
+            append(",\n")
     }
 
-    val commandText = "get${parentDeclaration!!.simpleName()}(call).${simpleName()}(${parameters.joinToString(", "){ "_" + it.name!!.asString() }})"
+    if (parameters.none())
+        insert(length - 1, ")")
+    else
+        append(")\n")
 
     when (val returnType = returnType!!.resolve()) {
         resolver.builtIns.unitType ->
-            """
-            $commandText
-            call.response.status(HttpStatusCode.OK)                
-            """
-            .trimStart()
+            append("call.response.status(HttpStatusCode.OK)\n")
         else -> {
-            append("val ret = $commandText\n")
-
             mayEmbrace(
                 condition = returnType.isMarkedNullable,
                 start = """
@@ -118,13 +113,13 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
                 end =  "}\n",
             ){
                 """
-                val text = encode(ret, ${serializers[returnType]?.text})
+                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text})
                 call.respondText(text, status = HttpStatusCode.OK)
                 """.trimStart()
             }
+            .let(::append)
         }
     }
-    .let(::append)
 
     append("}")
 }

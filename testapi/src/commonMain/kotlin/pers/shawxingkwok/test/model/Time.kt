@@ -14,11 +14,12 @@ class Time(val hour: Int, val min: Int, val sec: Int)
 
 @Phone.Serializer
 object TimeSerializer : KSerializer<Time> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Time") {
-        element<Int>("hour")
-        element<Int>("min")
-        element<Int>("sec")
-    }
+    override val descriptor: SerialDescriptor get() =
+        buildClassSerialDescriptor("Time") {
+            element<Int>("hour")
+            element<Int>("min")
+            element<Int>("sec")
+        }
 
     override fun deserialize(decoder: Decoder): Time =
         decoder.decodeStructure(descriptor) {
@@ -45,5 +46,18 @@ object TimeSerializer : KSerializer<Time> {
             encodeIntElement(descriptor, 1, value.min)
             encodeIntElement(descriptor, 2, value.sec)
         }
+    }
+}
+
+@Phone.Serializer
+object TimeArraySerializer : KSerializer<Array<Time>> {
+    override val descriptor: SerialDescriptor get() = TODO()
+
+    override fun deserialize(decoder: Decoder): Array<Time> {
+        TODO()
+    }
+
+    override fun serialize(encoder: Encoder, value: Array<Time>) {
+        TODO()
     }
 }

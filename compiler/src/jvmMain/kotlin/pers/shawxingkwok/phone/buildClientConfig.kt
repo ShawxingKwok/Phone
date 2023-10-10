@@ -2,17 +2,17 @@
 
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.outerType
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeArgument
 import pers.shawxingkwok.ksputil.*
+import pers.shawxingkwok.phone.MyProcessor
 
-internal fun buildClientConfig(
-    phones: List<KSClassDeclaration>,
-    serializers: Map<KSType, KSClassDeclaration>,
-) {
+internal fun buildClientConfig(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ClientPackageName,
         dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
@@ -56,7 +56,7 @@ internal fun buildClientConfig(
                 val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
                     private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 
                 
-                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getText(serializers) }}
+                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
                 }
                 """.trim()
             }}    
@@ -66,19 +66,18 @@ internal fun buildClientConfig(
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclaration>)
-=
+private fun KSFunctionDeclaration.getText() =
     buildString {
         append("override suspend fun ${this@getText}(")
 
         if (parameters.size <= 2)
             parameters.joinToString(postfix = ")", separator = ", ") {
-                "${it.name!!.asString()}: ${it.type.text}"
+                "${insertIf(it.isVararg){ "vararg " }}${it.name!!.asString()}: ${it.type.text}"
             }
             .let(::append)
         else
-            parameters.joinToString(prefix = "\n", postfix = ")", separator = "") {
-                "${it.name!!.asString()}: ${it.type.text},\n"
+            parameters.joinToString(prefix = "\n", postfix = ",\n)", separator = ",\n") {
+                "${insertIf(it.isVararg){ "vararg " }}${it.name!!.asString()}: ${it.type.text}"
             }
             .let(::append)
 
@@ -92,10 +91,10 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
 
         if (parameters.any()) {
             append(" {\n")
-            parameters.forEach {
-                val type = it.type.resolve()
-                val serializer = serializers[type]
-                append("jsonParameter(\"${it.name!!.asString()}\", ${it.name!!.asString()}, ${serializer?.text})\n")
+            parameters.forEach { ksParam ->
+                append("jsonParameter(\"${ksParam.name!!.asString()}\", ")
+                append("${ksParam.name!!.asString()}, ")
+                append("${ksParam.getSerializer()?.text})\n")
             }
             append("}")
         }
@@ -119,7 +118,7 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
 
             append("val text = response.bodyAsText()\n")
 
-            when(val serializer = serializers[returnType]){
+            when(val serializer = MyProcessor.serializers[returnType]){
                 null -> append("return decode(text, null)\n")
                 else -> append("return decode(text, ${serializer.text})\n")
             }

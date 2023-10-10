@@ -1,7 +1,6 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getClassDeclarationByName
-import com.google.devtools.ksp.isOpen
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
@@ -18,12 +17,15 @@ internal object MyProcessor : KSProcessor{
         var value = UNSTARTED
     }
 
-    private val allPaths = resolver
+    private val phonePaths = resolver
         .getAnnotatedSymbols<Phone, KSClassDeclaration>()
         .map { it.qualifiedName()!! }
 
+    lateinit var serializers: Map<KSType, KSClassDeclaration>
+        private set
+
     override fun process(round: Int): List<KSAnnotated> {
-        if (allPaths.none())
+        if (phonePaths.none())
             return emptyList()
 
         val (valid, invalid) = resolver
@@ -70,49 +72,52 @@ internal object MyProcessor : KSProcessor{
 
         // also output to dest paths from ksp args
         when(Status.value){
-            Status.UNSTARTED ->
-                if (invalid.none()) {
-                    Status.value++
+            Status.UNSTARTED -> {
+                if (invalid.any()) return invalid
 
-                    val serializers = resolver
-                        .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
-                        .associateBy { ksclass ->
-                            Log.require(ksclass.classKind == ClassKind.OBJECT, ksclass){
-                                "Each class annotated with `Phone.Serializer` must be object."
-                            }
+                Status.value++
 
-                            ksclass.superTypes
-                                .map{ it.resolve() }
-                                .firstOrNull { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer"  }
-                                .let {
-                                    Log.require(
-                                        condition = it != null,
-                                        symbol = ksclass,
-                                    ){
-                                        "Each class annotated with `Phone.Serializer` must implement `KSerializer`."
-                                    }
-                                    it
-                                }
-                                .arguments
-                                .first()
-                                .type!!
-                                .resolve()
-                                .also {
-                                    if (it.isMarkedNullable)
-                                        Log.w("The nullable symbol is needless in the inner type `$it` embraced by `KSerializer`.", ksclass)
-                                }
+                serializers = resolver
+                    .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
+                    .associateBy { ksclass ->
+                        Log.require(ksclass.classKind == ClassKind.OBJECT, ksclass) {
+                            "Each class annotated with `Phone.Serializer` must be object."
                         }
-                        .toMutableMap()
 
-                    serializers += serializers.mapKeys { (ksType, _) ->
-                        if (ksType.isMarkedNullable) ksType.makeNotNullable()
-                        else ksType.makeNullable()
+                        ksclass.superTypes
+                            .map { it.resolve() }
+                            .firstOrNull { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
+                            .let {
+                                Log.require(
+                                    condition = it != null,
+                                    symbol = ksclass,
+                                ) {
+                                    "Each class annotated with `Phone.Serializer` must implement `KSerializer`."
+                                }
+                                it
+                            }
+                            .arguments
+                            .first()
+                            .type!!
+                            .resolve()
+                            .also {
+                                if (it.isMarkedNullable)
+                                    Log.w(
+                                        "The nullable symbol is needless in the inner type `$it` embraced by `KSerializer`.",
+                                        ksclass
+                                    )
+                            }
                     }
 
-                    val phones = allPaths.map { resolver.getClassDeclarationByName(it)!! }
-                    buildClientConfig(phones, serializers)
-                    buildServerConfig(phones, serializers)
+                serializers += serializers.mapKeys { (ksType, _) ->
+                    if (ksType.isMarkedNullable) ksType.makeNotNullable()
+                    else ksType.makeNullable()
                 }
+
+                val phones = phonePaths.map { resolver.getClassDeclarationByName(it)!! }
+                buildClientConfig(phones)
+                buildServerConfig(phones)
+            }
 
             Status.BUILT -> {
                 Status.value++
