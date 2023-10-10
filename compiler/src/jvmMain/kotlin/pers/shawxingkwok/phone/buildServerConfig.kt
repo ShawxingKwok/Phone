@@ -67,12 +67,11 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
         append("val _$paramName: ${type.text} = params[\"$paramName\"]\n")
 
         val isString = type.declaration.qualifiedName() == "kotlin.String"
-        if (isString || !type.isMarkedNullable)
-            append("~")
 
-        if (!isString) {
-            append("""
-                ?.let{
+        if (!isString)
+            append(
+                """
+                ~?.let{
                     try {
                         decode(it, ${serializers[type]?.text})
                     }catch (_: Throwable){
@@ -80,23 +79,19 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
                         call.respondText(text, status = HttpStatusCode.BadRequest)
                         return@get
                     }
-                }
-            """.trim())
-            append("\n")
-        }
+                }!~
+                """.trimStart()
+            )
 
-        if (!type.isMarkedNullable) {
-            append("""
-                ?: return@get call.respondText(
+        if (!type.isMarkedNullable)
+            append(
+                """
+                ~?: return@get call.respondText(
                     text = "Not found $paramName in parameters.",
                     status = HttpStatusCode.BadRequest,
-                )
-            """.trim())
-            append("\n")
-        }
-
-        if (isString || !type.isMarkedNullable)
-            insert(length, "!~")
+                )!~
+               """.trimStart()
+            )
 
         append("\n")
     }
@@ -110,22 +105,26 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
         $commandText
         call.response.status(HttpStatusCode.OK)                
         """
-        .trim().plus("\n").let(::append)
+        .trimStart()
+        .let(::append)
     else {
         append("val ret = $commandText\n")
 
-        if (returnType.isMarkedNullable)
-            append("""
-                if(ret == null)
-                    ~call.response.status(HttpStatusCode.NotFound)!~
-                else{
-            """.trim() + "\n")
-
-        append("val text = encode(ret, ${serializers[returnType]?.text})\n")
-        append("call.respondText(text, status = HttpStatusCode.OK)\n")
-
-        if (returnType.isMarkedNullable)
-            append("}\n")
+        mayEmbrace(
+            condition = returnType.isMarkedNullable,
+            start = """
+                    if(ret == null)
+                        ~call.response.status(HttpStatusCode.NotFound)!~
+                    else{
+                    """.trim(),
+            end =  "}\n",
+        ){
+            """
+            val text = encode(ret, ${serializers[returnType]?.text})
+            call.respondText(text, status = HttpStatusCode.OK)
+            """
+        }
+        .let(::append)
     }
 
     append("}")

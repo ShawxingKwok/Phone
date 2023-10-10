@@ -18,8 +18,8 @@ import pers.shawxingkwok.test.model.Time
 
 object Phone{
     abstract class AccountApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
-    abstract class ChatApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.ChatApi
-    abstract class TimeApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.TimeApi
+    abstract class ChatApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.ChatApi
+    abstract class TimeApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.TimeApi
 
     @Suppress("UNCHECKED_CAST")
     private fun encode(value: Any, serializer: KSerializer<out Any>?): String =
@@ -55,16 +55,17 @@ object Phone{
                         text = "Not found email in parameters.",
                         status = HttpStatusCode.BadRequest,
                     )
-                    
+
                 val _password: String = params["password"]
                     ?: return@get call.respondText(
                         text = "Not found password in parameters.",
                         status = HttpStatusCode.BadRequest,
                     )
-                    
+
                 val _verificationCode: String? = params["verificationCode"]
-                    
+
                 val ret = getAccountApi(call).login(_email, _password, _verificationCode)
+
                 val text = encode(ret, null)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
@@ -86,7 +87,7 @@ object Phone{
                         text = "Not found id in parameters.",
                         status = HttpStatusCode.BadRequest,
                     )
-                    
+
                 getAccountApi(call).delete(_id)
                 call.response.status(HttpStatusCode.OK)
             }
@@ -108,7 +109,7 @@ object Phone{
                         text = "Not found id in parameters.",
                         status = HttpStatusCode.BadRequest,
                     )
-                    
+
                 val ret = getAccountApi(call).search(_id)
                 if(ret == null)
                     call.response.status(HttpStatusCode.NotFound)
@@ -122,6 +123,7 @@ object Phone{
         routing.route("ChatApi"){
             get("/getChats"){
                 val ret = getChatApi(call).getChats()
+
                 val text = encode(ret, null)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
@@ -130,6 +132,7 @@ object Phone{
         routing.route("TimeApi"){
             get("/getTime"){
                 val ret = getTimeApi(call).getTime()
+
                 val text = encode(ret, TimeSerializer)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
@@ -151,7 +154,7 @@ object Phone{
                         text = "Not found a in parameters.",
                         status = HttpStatusCode.BadRequest,
                     )
-                    
+
                 val _b: Time = params["b"]
                     ?.let{
                         try {
@@ -166,8 +169,9 @@ object Phone{
                         text = "Not found b in parameters.",
                         status = HttpStatusCode.BadRequest,
                     )
-                    
+
                 val ret = getTimeApi(call).sumTime(_a, _b)
+
                 val text = encode(ret, TimeSerializer)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
