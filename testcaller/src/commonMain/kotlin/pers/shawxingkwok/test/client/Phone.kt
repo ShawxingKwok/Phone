@@ -8,11 +8,6 @@ import io.ktor.http.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import pers.shawxingkwok.test.model.AllSerializers
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.DeserializationStrategy
-import kotlin.reflect.KClass
-import kotlinx.serialization.KSerializer
 import pers.shawxingkwok.test.api.AccountApi
 import kotlin.String
 import pers.shawxingkwok.test.model.LoginResult
@@ -31,28 +26,13 @@ class Phone(private val client: HttpClient) {
         parameter(key, newV)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun encode(value: Any): String {
-        if (value is String) return value
+    private fun encode(value: Any): String =
+        if (value is String) value
+        else Json.encodeToString(value)
 
-        return when(val customSerializer = AllSerializers[value::class] as SerializationStrategy<Any>?){
-            null -> Json.encodeToString(value)
-            else -> Json.encodeToString(customSerializer, value)
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private inline fun <reified T> decode(text: String): T {
-        if (T::class == String::class)
-            return text as T
-
-        AllSerializers as Map<KClass<out Any>, KSerializer<Any>>
-
-        return when(val customSerializer = AllSerializers[T::class] as DeserializationStrategy<T>?){
-            null -> Json.decodeFromString(text)
-            else -> Json.decodeFromString(customSerializer, text)
-        }
-    }
+    private inline fun <reified T> decode(text: String): T =
+        if(T::class == String::class) text as T
+        else Json.decodeFromString(text)
 
     val accountApi = object: AccountApi {
         private val mBasicUrl = "${BASIC_URL}/AccountApi"

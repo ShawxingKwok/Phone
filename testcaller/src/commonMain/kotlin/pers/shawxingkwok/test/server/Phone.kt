@@ -8,11 +8,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
-import pers.shawxingkwok.test.model.AllSerializers
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.DeserializationStrategy
-import kotlin.reflect.KClass
-import kotlinx.serialization.KSerializer
 import kotlin.String
 import kotlin.Long
 
@@ -20,28 +15,13 @@ object Phone{
     abstract class AccountApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
     abstract class ChatApi(val call: ApplicationCall) : pers.shawxingkwok.test.api.ChatApi
 
-    @Suppress("UNCHECKED_CAST")
-    private fun encode(value: Any): String {
-        if (value is String) return value
+    private fun encode(value: Any): String =
+        if (value is String) value
+        else Json.encodeToString(value)
 
-        return when(val customSerializer = AllSerializers[value::class] as SerializationStrategy<Any>?){
-            null -> Json.encodeToString(value)
-            else -> Json.encodeToString(customSerializer, value)
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private inline fun <reified T> decode(text: String): T {
-        if (T::class == String::class)
-            return text as T
-
-        AllSerializers as Map<KClass<out Any>, KSerializer<Any>>
-
-        return when(val customSerializer = AllSerializers[T::class] as DeserializationStrategy<T>?){
-            null -> Json.decodeFromString(text)
-            else -> Json.decodeFromString(customSerializer, text)
-        }
-    }
+    private inline fun <reified T> decode(text: String): T =
+        if(T::class == String::class) text as T
+        else Json.decodeFromString(text)
 
     fun configure(
         routing: Routing,
