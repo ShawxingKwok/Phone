@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName", "DuplicatedCode")
+@file:Suppress("LocalVariableName", "DuplicatedCode", "SameParameterValue")
 
 package pers.shawxingkwok.test.server
 
@@ -13,7 +13,6 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.DeserializationStrategy
 import kotlin.String
 import kotlin.Long
-import pers.shawxingkwok.test.model.TimeSerializer
 import pers.shawxingkwok.test.model.Time
 import kotlin.Int
 
@@ -133,7 +132,7 @@ object Phone{
         routing.route("TimeApi"){
             get("/getTime"){
                 val ret = getTimeApi(call).getTime()
-                val text = encode(ret, TimeSerializer)
+                val text = encode(ret, null)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
 
@@ -143,7 +142,7 @@ object Phone{
                 val _a: Time = params["a"]
                     ?.let{
                         try {
-                            decode(it, TimeSerializer)
+                            decode(it, null)
                         }catch (_: Throwable){
                             val text = "The a is incorrectly serialized."
                             call.respondText(text, status = HttpStatusCode.BadRequest)
@@ -158,7 +157,7 @@ object Phone{
                 val _b: Time = params["b"]
                     ?.let{
                         try {
-                            decode(it, TimeSerializer)
+                            decode(it, null)
                         }catch (_: Throwable){
                             val text = "The b is incorrectly serialized."
                             call.respondText(text, status = HttpStatusCode.BadRequest)
@@ -171,7 +170,7 @@ object Phone{
                     )
 
                 val ret = getTimeApi(call).sumTime(_a, _b)
-                val text = encode(ret, TimeSerializer)
+                val text = encode(ret, null)
                 call.respondText(text, status = HttpStatusCode.OK)
             }
         }
@@ -209,6 +208,28 @@ object Phone{
                     )
 
                 getVarargApi(call).bar(_str)
+                call.response.status(HttpStatusCode.OK)
+            }
+
+            get("/baz"){
+                val params = call.request.queryParameters
+
+                val _times: Time = params["times"]
+                    ?.let{
+                        try {
+                            decode(it, null)
+                        }catch (_: Throwable){
+                            val text = "The times is incorrectly serialized."
+                            call.respondText(text, status = HttpStatusCode.BadRequest)
+                            return@get
+                        }
+                    }
+                    ?: return@get call.respondText(
+                        text = "Not found times in parameters.",
+                        status = HttpStatusCode.BadRequest,
+                    )
+
+                getVarargApi(call).baz(_times)
                 call.response.status(HttpStatusCode.OK)
             }
         }
