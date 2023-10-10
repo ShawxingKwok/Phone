@@ -110,7 +110,7 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
         $commandText
         call.response.status(HttpStatusCode.OK)                
         """
-        .trim().let(::append)
+        .trim().plus("\n").let(::append)
     else {
         append("val ret = $commandText\n")
 
