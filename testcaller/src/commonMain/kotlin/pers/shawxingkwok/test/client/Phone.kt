@@ -9,6 +9,8 @@ import io.ktor.client.statement.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.DeserializationStrategy
 import pers.shawxingkwok.test.api.AccountApi
 import kotlin.String
 import pers.shawxingkwok.test.model.LoginResult
@@ -31,36 +33,29 @@ class Phone(private val client: HttpClient) {
         value: Any?,
         serializer: KSerializer<out Any>?
     ){
-        serializer as KSerializer<Any>?
         if (value == null) return
-        val newV = encode(value, serializer)
+        val newV = encode(value, serializer as KSerializer<Any>?)
         parameter(key, newV)
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun encode(value: Any, serializer: KSerializer<out Any>?): String{
-        serializer as KSerializer<Any>?
-
-        return when{
+    private fun encode(value: Any, serializer: KSerializer<out Any>?): String =
+        when{
             value is String -> value
             serializer == null -> Json.encodeToString(value)
-            else -> Json.encodeToString(serializer, value)
+            else -> Json.encodeToString(serializer as SerializationStrategy<Any>, value)
         }
-    }
 
     @Suppress("UNCHECKED_CAST")
     private inline fun <reified T> decode(
         text: String,
         serializer: KSerializer<out Any>?
-    ): T {
-        serializer as KSerializer<Any>?
-
-        return when{
-            T::class == String::class -> text
+    ): T =
+        when{
+            T::class == String::class -> text as T
             serializer == null -> Json.decodeFromString(text)
-            else -> Json.decodeFromString(serializer, text)
-        } as T
-    }
+            else -> Json.decodeFromString(serializer as DeserializationStrategy<T>, text)
+        }
 
     val accountApi = object : AccountApi {
         private val mBasicUrl = "${BASIC_URL}/AccountApi"

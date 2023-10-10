@@ -24,6 +24,8 @@ internal fun buildServerConfig(
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
+            "kotlinx.serialization.SerializationStrategy",
+            "kotlinx.serialization.DeserializationStrategy",
         ),
     ){
         """

@@ -28,6 +28,8 @@ internal fun buildClientConfig(
                 "kotlinx.serialization.encodeToString",
                 "kotlinx.serialization.json.Json",
                 "kotlinx.serialization.KSerializer",
+                "kotlinx.serialization.SerializationStrategy",
+                "kotlinx.serialization.DeserializationStrategy",
             )
     ) {
         """
@@ -42,9 +44,8 @@ internal fun buildClientConfig(
                 value: Any?,
                 serializer: KSerializer<out Any>?
             ){
-                serializer as KSerializer<Any>?
                 if (value == null) return
-                val newV = encode(value, serializer)
+                val newV = encode(value, serializer as KSerializer<Any>?)
                 parameter(key, newV)
             }
         
