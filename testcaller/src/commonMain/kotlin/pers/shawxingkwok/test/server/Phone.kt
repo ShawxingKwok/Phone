@@ -15,11 +15,13 @@ import kotlin.String
 import kotlin.Long
 import pers.shawxingkwok.test.model.TimeSerializer
 import pers.shawxingkwok.test.model.Time
+import kotlin.Int
 
 object Phone{
     abstract class AccountApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.AccountApi
     abstract class ChatApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.ChatApi
     abstract class TimeApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.TimeApi
+    abstract class VarargApi(protected val call: ApplicationCall) : pers.shawxingkwok.test.api.VarargApi
 
     @Suppress("UNCHECKED_CAST")
     private fun encode(value: Any, serializer: KSerializer<out Any>?): String =
@@ -45,6 +47,7 @@ object Phone{
         getAccountApi: (ApplicationCall) -> AccountApi,
         getChatApi: (ApplicationCall) -> ChatApi,
         getTimeApi: (ApplicationCall) -> TimeApi,
+        getVarargApi: (ApplicationCall) -> VarargApi,
     ){
         routing.route("AccountApi"){
             get("/login"){
@@ -170,6 +173,43 @@ object Phone{
                 val ret = getTimeApi(call).sumTime(_a, _b)
                 val text = encode(ret, TimeSerializer)
                 call.respondText(text, status = HttpStatusCode.OK)
+            }
+        }
+
+        routing.route("VarargApi"){
+            get("/foo"){
+                val params = call.request.queryParameters
+
+                val _ints: Int = params["ints"]
+                    ?.let{
+                        try {
+                            decode(it, null)
+                        }catch (_: Throwable){
+                            val text = "The ints is incorrectly serialized."
+                            call.respondText(text, status = HttpStatusCode.BadRequest)
+                            return@get
+                        }
+                    }
+                    ?: return@get call.respondText(
+                        text = "Not found ints in parameters.",
+                        status = HttpStatusCode.BadRequest,
+                    )
+
+                getVarargApi(call).foo(_ints)
+                call.response.status(HttpStatusCode.OK)
+            }
+
+            get("/bar"){
+                val params = call.request.queryParameters
+
+                val _str: String = params["str"]
+                    ?: return@get call.respondText(
+                        text = "Not found str in parameters.",
+                        status = HttpStatusCode.BadRequest,
+                    )
+
+                getVarargApi(call).bar(_str)
+                call.response.status(HttpStatusCode.OK)
             }
         }
     }

@@ -93,7 +93,8 @@ private fun KSFunctionDeclaration.getText(serializers: Map<KSType, KSClassDeclar
         if (parameters.any()) {
             append(" {\n")
             parameters.forEach {
-                val serializer = serializers[it.type.resolve()]
+                val type = it.type.resolve()
+                val serializer = serializers[type]
                 append("jsonParameter(\"${it.name!!.asString()}\", ${it.name!!.asString()}, ${serializer?.text})\n")
             }
             append("}")

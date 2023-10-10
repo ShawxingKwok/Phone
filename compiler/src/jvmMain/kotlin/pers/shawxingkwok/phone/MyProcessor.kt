@@ -23,12 +23,12 @@ internal object MyProcessor : KSProcessor{
         .map { it.qualifiedName()!! }
 
     override fun process(round: Int): List<KSAnnotated> {
+        if (allPaths.none())
+            return emptyList()
+
         val (valid, invalid) = resolver
             .getAnnotatedSymbols<Phone, KSClassDeclaration>()
             .partition { it.accept(KSDefaultValidator(), Unit) }
-
-        if (valid.none() && invalid.none())
-            return emptyList()
 
         // check each Phone class
         valid.forEach { ksclass ->
