@@ -5,7 +5,7 @@ import pers.shawxingkwok.test.model.LoginResult
 import pers.shawxingkwok.test.model.User
 import java.math.BigDecimal
 
-@Phone
+@Phone.Api
 interface AccountApi {
     suspend fun login(
         email: String,

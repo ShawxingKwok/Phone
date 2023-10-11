@@ -37,13 +37,13 @@ tasks.withType<KotlinCompile>().configureEach{
 }
 
 mavenPublishing {
-    val isSnapshot = false
+    val isSnapshot = true
     val version = "1.0.0"
     coordinates("io.github.shawxingkwok", "phone-compiler", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {
         val repo = "Phone"
         name.set(repo)
-        description.set("Phone sublibrary compiler")
+        description.set("Phone compiler")
         inceptionYear.set("2023")
 
         url.set("https://github.com/ShawxingKwok/$repo/")

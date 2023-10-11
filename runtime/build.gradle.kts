@@ -50,13 +50,13 @@ kotlin {
 }
 
 mavenPublishing {
-    val isSnapshot = false
-    val version = "1.0.0"
+    val isSnapshot = true
+    val version = "1.0.1"
     coordinates("io.github.shawxingkwok", "phone-runtime", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {
         val repo = "Phone"
         name.set(repo)
-        description.set("Phone sublibrary runtime")
+        description.set("Phone runtime library")
         inceptionYear.set("2023")
 
         url.set("https://github.com/ShawxingKwok/$repo/")

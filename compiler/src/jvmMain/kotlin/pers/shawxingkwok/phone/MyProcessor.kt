@@ -17,35 +17,36 @@ internal object MyProcessor : KSProcessor{
         var value = UNSTARTED
     }
 
-    private val phonePaths = resolver
-        .getAnnotatedSymbols<Phone, KSClassDeclaration>()
+    private val phoneApiPaths = resolver
+        .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
         .map { it.qualifiedName()!! }
 
+    // both nullable and non-nullable are mapped
     lateinit var serializers: Map<KSType, KSClassDeclaration>
         private set
 
     override fun process(round: Int): List<KSAnnotated> {
-        if (phonePaths.none())
+        if (phoneApiPaths.none())
             return emptyList()
 
         val (valid, invalid) = resolver
-            .getAnnotatedSymbols<Phone, KSClassDeclaration>()
+            .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
             .partition { it.accept(KSDefaultValidator(), Unit) }
 
-        // check each Phone class
+        // check each class with Phone.Api
         valid.forEach { ksclass ->
             Log.require(ksclass.classKind == ClassKind.INTERFACE, ksclass){
-                "The annotation `Phone` could be annotated only on interfaces."
+                "The annotation `Phone.Api` could be annotated only on interfaces."
             }
             Log.require(ksclass.typeParameters.none(), ksclass){
-                "Interfaces annotated with `Phone` can't have any type parameter."
+                "Interfaces annotated with `Phone.Api` can't have any type parameter."
             }
             Log.require(ksclass.parentDeclaration == null, ksclass){
-                "Each interface annotated with `Phone` can't be a nest class. " +
+                "Each interface annotated with `Phone.Api` can't be a nest class. " +
                 "Or the simple generated declaration names and routes may repeat."
             }
             Log.require(ksclass.packageName().any(), ksclass){
-                "Class without package name is commonly used in test cases. " +
+                "Non-local class without package name is commonly used in test cases. " +
                 "However, I don't want to spend time adapting `Phone` with it."
             }
         }
@@ -65,7 +66,7 @@ internal object MyProcessor : KSProcessor{
                         || Modifier.SUSPEND in it.modifiers && it.typeParameters.none(),
                     symbol = it,
                 ){
-                    "In each class annotated with `Phone`, " +
+                    "In each class annotated with `Phone.Api`, " +
                     "all abstract functions must be suspend and without type parameters, except 'toString', 'equals', and 'hashCode'."
                 }
             }
@@ -100,13 +101,6 @@ internal object MyProcessor : KSProcessor{
                             .first()
                             .type!!
                             .resolve()
-                            .also {
-                                if (it.isMarkedNullable)
-                                    Log.w(
-                                        "The nullable symbol is needless in the inner type `$it` embraced by `KSerializer`.",
-                                        ksclass
-                                    )
-                            }
                     }
 
                 serializers += serializers.mapKeys { (ksType, _) ->
@@ -114,7 +108,7 @@ internal object MyProcessor : KSProcessor{
                     else ksType.makeNullable()
                 }
 
-                val phones = phonePaths.map { resolver.getClassDeclarationByName(it)!! }
+                val phones = phoneApiPaths.map { resolver.getClassDeclarationByName(it)!! }
                 buildClientPhone(phones)
                 buildServerPhone(phones)
             }

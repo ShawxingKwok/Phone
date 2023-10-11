@@ -12,6 +12,18 @@ internal inline fun mayEmbrace(
         if (condition) append(end)
     }
 
+internal fun mayEmbrace(
+    condition: Boolean,
+    start: String,
+    body: String,
+    end: String,
+) =
+    buildString {
+        if (condition) append(start)
+        append(body)
+        if (condition) append(end)
+    }
+
 internal inline fun mayEmbrace(
     condition: Boolean,
     getStart: () -> Unit,

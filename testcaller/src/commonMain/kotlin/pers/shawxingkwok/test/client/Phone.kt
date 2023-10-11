@@ -1,4 +1,4 @@
-@file:Suppress("LocalVariableName", "DuplicatedCode", "SameParameterValue")
+@file:Suppress("DuplicatedCode")
 
 package pers.shawxingkwok.test.client
 
@@ -9,8 +9,6 @@ import io.ktor.client.statement.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.DeserializationStrategy
 import pers.shawxingkwok.test.api.AccountApi
 import pers.shawxingkwok.test.model.LoginResult
 import pers.shawxingkwok.test.model.User

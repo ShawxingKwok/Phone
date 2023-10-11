@@ -7,10 +7,10 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
+internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ClientPackageName,
-        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = Dependencies(true, *phoneApis.map{ it.containingFile!! }.toTypedArray()),
         fileName = "Phone",
         header = Suppressing,
         extensionName = "",
@@ -23,8 +23,6 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 "kotlinx.serialization.encodeToString",
                 "kotlinx.serialization.json.Json",
                 "kotlinx.serialization.KSerializer",
-                "kotlinx.serialization.SerializationStrategy",
-                "kotlinx.serialization.DeserializationStrategy",
             )
     ) {
         """
@@ -45,7 +43,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
         
             ${getCoderFunctions()}
             
-            ${phones.joinToString("\n\n") { apiKSClass ->
+            ${phoneApis.joinToString("\n\n") { apiKSClass ->
                 """
                 val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
                     private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 

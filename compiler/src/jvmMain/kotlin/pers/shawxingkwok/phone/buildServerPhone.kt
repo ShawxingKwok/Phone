@@ -5,11 +5,11 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
+internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ServerPackageName,
         fileName = "Phone",
-        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = Dependencies(true, *phoneApis.map{ it.containingFile!! }.toTypedArray()),
         header = Suppressing,
         extensionName = "",
         initialImports = listOf(
@@ -20,13 +20,11 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
-            "kotlinx.serialization.SerializationStrategy",
-            "kotlinx.serialization.DeserializationStrategy",
         ),
     ){
         """
         object Phone{
-            ${phones.joinToString("\n"){ 
+            ${phoneApis.joinToString("\n"){ 
                 "abstract class ${it.simpleName()}(protected val call: ApplicationCall) : ${it.qualifiedName()}" 
             }}
             
@@ -34,11 +32,11 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
 
             fun configure(
                 routing: Routing,
-                ${phones.joinToString("\n"){
+                ${phoneApis.joinToString("\n"){
                     "get${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
                 }}    
             ){
-                ${phones.joinToString("\n\n"){ ksclass ->
+                ${phoneApis.joinToString("\n\n"){ ksclass ->
                     """
                     routing.route("${ksclass.simpleName()}"){
                         ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
@@ -58,7 +56,8 @@ private fun KSFunctionDeclaration.getText() = buildString{
     if (parameters.any())
         append("val params = call.request.queryParameters\n\n")
 
-    if (returnType!!.resolve() != resolver.builtIns.unitType)
+    val returnType = returnType!!.resolve()
+    if (returnType != resolver.builtIns.unitType)
         append("val ret = ")
 
     append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
@@ -100,27 +99,23 @@ private fun KSFunctionDeclaration.getText() = buildString{
     else
         append(")\n")
 
-    when (val returnType = returnType!!.resolve()) {
-        resolver.builtIns.unitType ->
-            append("call.response.status(HttpStatusCode.OK)\n")
-        else -> {
-            mayEmbrace(
-                condition = returnType.isMarkedNullable,
-                start = """
-                    if(ret == null)
-                        ~call.response.status(HttpStatusCode.NotFound)!~
-                    else{
-                    """.trimStart(),
-                end =  "}\n",
-            ){
-                """
+    if (returnType == resolver.builtIns.unitType)
+        append("call.response.status(HttpStatusCode.OK)\n")
+    else
+        mayEmbrace(
+            condition = returnType.isMarkedNullable,
+            start = """
+                if(ret == null)
+                    ~call.response.status(HttpStatusCode.NotFound)!~
+                else{
+                """.trimStart(),
+            body = """
                 val text = encode(ret, ${MyProcessor.serializers[returnType]?.text})
                 call.respondText(text, status = HttpStatusCode.OK)
-                """.trimStart()
-            }
-            .let(::append)
-        }
-    }
+                """.trimStart(),
+            end =  "}\n",
+        )
+        .let(::append)
 
     append("}")
 }
