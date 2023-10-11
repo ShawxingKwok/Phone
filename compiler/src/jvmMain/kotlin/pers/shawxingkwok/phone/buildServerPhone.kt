@@ -33,7 +33,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
             fun configure(
                 routing: Routing,
                 ${phoneApis.joinToString("\n"){
-                    "post${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
+                    "get${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
                 }}    
             ){
                 ${phoneApis.joinToString("\n\n"){ ksclass ->
@@ -60,7 +60,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
     if (returnType != resolver.builtIns.unitType)
         append("val ret = ")
 
-    append("post${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
+    append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
 
     parameters.forEach { param ->
         val paramName = param.name!!.asString()
