@@ -90,7 +90,7 @@ private fun KSFunctionDeclaration.getText() =
             },
         ) {
             append(" {\n")
-            append("val response = client.get(\"$${"mBasicUrl"}/${simpleName()}\")")
+            append("val response = client.post(\"$${"mBasicUrl"}/${simpleName()}\")")
 
             if (parameters.any()) {
                 append(" {\n")

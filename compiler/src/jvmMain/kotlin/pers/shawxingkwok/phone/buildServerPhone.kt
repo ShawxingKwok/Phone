@@ -33,7 +33,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
             fun configure(
                 routing: Routing,
                 ${phoneApis.joinToString("\n"){
-                    "get${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
+                    "post${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
                 }}    
             ){
                 ${phoneApis.joinToString("\n\n"){ ksclass ->
@@ -51,7 +51,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
 
 context (KtGen)
 private fun KSFunctionDeclaration.getText() = buildString{
-    append("get(\"/${simpleName()}\"){\n")
+    append("post(\"/${simpleName()}\"){\n")
 
     if (parameters.any())
         append("val params = call.request.queryParameters\n\n")
@@ -60,7 +60,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
     if (returnType != resolver.builtIns.unitType)
         append("val ret = ")
 
-    append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
+    append("post${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
 
     parameters.forEach { param ->
         val paramName = param.name!!.asString()
@@ -75,7 +75,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
                     }catch (_: Throwable){
                         val text = "The parameter $paramName is incorrectly serialized."
                         call.respondText(text, status = HttpStatusCode.BadRequest)
-                        return@get
+                        return@post
                     }
                 }!~
                 """.trim()
@@ -84,7 +84,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
         if (!type.isMarkedNullable)
             append(
                 """
-                ~?: return@get call.respondText(
+                ~?: return@post call.respondText(
                     text = "Not found `$paramName` in parameters.",
                     status = HttpStatusCode.BadRequest,
                 ),!~

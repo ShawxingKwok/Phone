@@ -61,7 +61,7 @@ class Phone(private val client: HttpClient) {
             password: String,
             verificationCode: String?,
         ): LoginResult {
-            val response = client.get("$mBasicUrl/login") {
+            val response = client.post("$mBasicUrl/login") {
                 jsonParameter("email", email, null)
                 jsonParameter("password", password, null)
                 jsonParameter("verificationCode", verificationCode, null)
@@ -74,7 +74,7 @@ class Phone(private val client: HttpClient) {
         }
 
         override suspend fun delete(id: Long) {
-            val response = client.get("$mBasicUrl/delete") {
+            val response = client.post("$mBasicUrl/delete") {
                 jsonParameter("id", id, null)
             }
             check(response.status != HttpStatusCode.BadRequest){
@@ -83,7 +83,7 @@ class Phone(private val client: HttpClient) {
         }
 
         override suspend fun search(id: Long): User? {
-            val response = client.get("$mBasicUrl/search") {
+            val response = client.post("$mBasicUrl/search") {
                 jsonParameter("id", id, null)
             }
             check(response.status != HttpStatusCode.BadRequest){
@@ -100,7 +100,7 @@ class Phone(private val client: HttpClient) {
         private val mBasicUrl = "${BASIC_URL}/ChatApi"
 
         override suspend fun getChats(): List<String> {
-            val response = client.get("$mBasicUrl/getChats")
+            val response = client.post("$mBasicUrl/getChats")
             check(response.status != HttpStatusCode.BadRequest){
                 response.bodyAsText()
             }
@@ -113,7 +113,7 @@ class Phone(private val client: HttpClient) {
         private val mBasicUrl = "${BASIC_URL}/TimeApi"
 
         override suspend fun getTime(): Time {
-            val response = client.get("$mBasicUrl/getTime")
+            val response = client.post("$mBasicUrl/getTime")
             check(response.status != HttpStatusCode.BadRequest){
                 response.bodyAsText()
             }
@@ -122,7 +122,7 @@ class Phone(private val client: HttpClient) {
         }
 
         override suspend fun sumTime(vararg times: Time): Time {
-            val response = client.get("$mBasicUrl/sumTime") {
+            val response = client.post("$mBasicUrl/sumTime") {
                 jsonParameter("times", times, TimeArraySerializer)
             }
             check(response.status != HttpStatusCode.BadRequest){
