@@ -115,8 +115,8 @@ internal object MyProcessor : KSProcessor{
                 }
 
                 val phones = phonePaths.map { resolver.getClassDeclarationByName(it)!! }
-                buildClientConfig(phones)
-                buildServerConfig(phones)
+                buildClientPhone(phones)
+                buildServerPhone(phones)
             }
 
             Status.BUILT -> {

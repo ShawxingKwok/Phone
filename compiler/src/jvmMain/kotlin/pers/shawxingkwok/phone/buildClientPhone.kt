@@ -2,25 +2,19 @@
 
 package pers.shawxingkwok.phone
 
-import com.google.devtools.ksp.outerType
 import com.google.devtools.ksp.processing.Dependencies
-import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSTypeArgument
 import pers.shawxingkwok.ksputil.*
-import pers.shawxingkwok.phone.MyProcessor
-import sun.awt.image.BufferedImageDevice
 
-internal fun buildClientConfig(phones: List<KSClassDeclaration>) {
+internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ClientPackageName,
         dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
         fileName = "Phone",
         header = Suppressing,
         extensionName = "",
-        additionalImports =
+        initialImports =
             listOf(
                 "io.ktor.client.*",
                 "io.ktor.client.request.*",
