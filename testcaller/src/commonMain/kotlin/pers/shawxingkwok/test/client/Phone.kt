@@ -25,34 +25,34 @@ class Phone(private val client: HttpClient) {
         const val BASIC_URL = "http://127.0.0.1:8080"
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun HttpRequestBuilder.jsonParameter(
+    private inline fun <reified T> HttpRequestBuilder.jsonParameter(
         key: String,
-        value: Any?,
-        serializer: KSerializer<out Any>?
+        value: T,
+        serializer: KSerializer<T & Any>?
     ){
         if (value == null) return
-        val newV = encode(value, serializer as KSerializer<Any>?)
+        val newV = encode(value, serializer)
         parameter(key, newV)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun encode(value: Any, serializer: KSerializer<out Any>?): String =
+    private inline fun <reified T: Any> encode(
+        value: T,
+        serializer: KSerializer<T>?,
+    ): String =
         when{
             value is String -> value
             serializer == null -> Json.encodeToString(value)
-            else -> Json.encodeToString(serializer as SerializationStrategy<Any>, value)
+            else -> Json.encodeToString(serializer, value)
         }
 
-    @Suppress("UNCHECKED_CAST")
-    private inline fun <reified T> decode(
+    private inline fun <reified T: Any> decode(
         text: String,
-        serializer: KSerializer<out Any>?
+        serializer: KSerializer<T>?
     ): T =
         when{
             T::class == String::class -> text as T
             serializer == null -> Json.decodeFromString(text)
-            else -> Json.decodeFromString(serializer as DeserializationStrategy<T>, text)
+            else -> Json.decodeFromString(serializer, text)
         }
 
     val accountApi = object : AccountApi {

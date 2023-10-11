@@ -33,14 +33,13 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 const val BASIC_URL = "${Args.BasicUrl}"
             }            
             
-            @Suppress("UNCHECKED_CAST")
-            private fun HttpRequestBuilder.jsonParameter(
+            private inline fun <reified T> HttpRequestBuilder.jsonParameter(
                 key: String,
-                value: Any?,
-                serializer: KSerializer<out Any>?
+                value: T,
+                serializer: KSerializer<T & Any>?
             ){
                 if (value == null) return
-                val newV = encode(value, serializer as KSerializer<Any>?)
+                val newV = encode(value, serializer)
                 parameter(key, newV)
             }
         

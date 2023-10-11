@@ -15,7 +15,7 @@ internal fun KSValueParameter.getSerializer(): KSClassDeclaration? {
         .firstOrNull { (key, _) ->
             key.declaration == resolver.builtIns.arrayType.declaration
             && key.arguments.first().type!!.resolve() == type
-            && (!type.declaration.isOpen() || key.arguments.first().variance == Variance.COVARIANT)
+            && key.arguments.first().variance == Variance.COVARIANT
         }
         ?.value
     else
