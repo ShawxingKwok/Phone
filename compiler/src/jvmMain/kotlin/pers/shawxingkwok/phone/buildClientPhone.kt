@@ -23,6 +23,8 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
                 "kotlinx.serialization.encodeToString",
                 "kotlinx.serialization.json.Json",
                 "kotlinx.serialization.KSerializer",
+                "kotlinx.serialization.builtins.ByteArraySerializer",
+                "pers.shawxingkwok.phone.Phone",
             )
     ) {
         """
@@ -34,10 +36,11 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
             private inline fun <reified T> HttpRequestBuilder.jsonParameter(
                 key: String,
                 value: T,
-                serializer: KSerializer<T & Any>?
+                serializer: KSerializer<T & Any>?,
+                cipher: Phone.Cipher?,
             ){
                 if (value == null) return
-                val newV = encode(value, serializer)
+                val newV = encode(value, serializer, cipher)
                 parameter(key, newV)
             }
         
@@ -86,7 +89,7 @@ private fun KSFunctionDeclaration.getText() =
                     append("~return null!~\n")
                 }
                 append("val text = response.bodyAsText()\n")
-                append("return decode(text, ${MyProcessor.serializers[returnType]?.text})\n")
+                append("return decode(text, ${MyProcessor.serializers[returnType]?.text}, ${this@getText.getCipherTextForReturn()})\n")
             },
         ) {
             append(" {\n")
@@ -97,7 +100,8 @@ private fun KSFunctionDeclaration.getText() =
                 parameters.forEach { ksParam ->
                     append("jsonParameter(\"${ksParam.name!!.asString()}\", ")
                     append("${ksParam.name!!.asString()}, ")
-                    append("${ksParam.getSerializer()?.text})\n")
+                    append("${ksParam.getSerializer()?.text}, ")
+                    append("${ksParam.getCipherText()})\n")
                 }
                 append("}")
             }

@@ -15,6 +15,7 @@ kotlin {
                 implementation(libs.ktor.server.core)
                 implementation(libs.serialization)
                 implementation(project(":testapi"))
+                implementation(project(":runtime"))
             }
         }
     }

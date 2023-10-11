@@ -1,5 +1,7 @@
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -17,9 +19,12 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
             "io.ktor.server.application.*",
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
+            "io.ktor.util.pipeline.*",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
+            "kotlinx.serialization.builtins.ByteArraySerializer",
+            "pers.shawxingkwok.phone.Phone",
         ),
     ){
         """
@@ -30,6 +35,27 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
             
             ${getCoderFunctions()}
 
+            private suspend inline fun <reified T: Any> PipelineContext<Unit, ApplicationCall>.tryDecode(
+                text: String,
+                paramName: String,
+                serializer: KSerializer<T>?,
+                cipher: Phone.Cipher?,
+            ): T? =
+                ~try {
+                    decode(text, serializer, cipher)
+                }catch (_: Throwable){
+                    val msg = "The parameter `${"$"}paramName` is incorrectly serialized."
+                    call.respondText(msg, status = HttpStatusCode.BadRequest)
+                    null
+                }!~
+            
+            private suspend fun PipelineContext<Unit, ApplicationCall>.notFoundParam(paramName: String){
+                call.respondText(
+                    text = "Not found `${"$"}paramName` in parameters.",
+                    status = HttpStatusCode.BadRequest,
+                )
+            }
+    
             fun configure(
                 routing: Routing,
                 ${phoneApis.joinToString("\n"){
@@ -66,32 +92,26 @@ private fun KSFunctionDeclaration.getText() = buildString{
         val paramName = param.name!!.asString()
         val type = param.type.resolve()
 
-        append("$paramName = params[\"$paramName\"]")
-        if (type.declaration.qualifiedName() != "kotlin.String")
-            append(
-                """?.let{
-                    ~try {
-                        decode(it, ${param.getSerializer()?.text})
-                    }catch (_: Throwable){
-                        val text = "The parameter $paramName is incorrectly serialized."
-                        call.respondText(text, status = HttpStatusCode.BadRequest)
-                        return@post
-                    }
-                }!~
-                """.trim()
-            )
+        append("$paramName = params[\"$paramName\"]\n")
+
+        append("""
+            ~?.let{ 
+                tryDecode(it, "$paramName", ${param.getSerializer()?.text}, ${param.getCipherText()}) 
+                ?: return@post 
+            }!~
+            """.trim() + "\n"
+        )
 
         if (!type.isMarkedNullable)
-            append(
-                """
-                ~?: return@post call.respondText(
-                    text = "Not found `$paramName` in parameters.",
-                    status = HttpStatusCode.BadRequest,
-                ),!~
-               """
-            )
+            append("~?: return@post notFoundParam(\"$paramName\")!~\n")
+
+        if (get(lastIndex - 1) == '~')
+            insert(length - 3, ",")
         else
-            append(",\n")
+            insert(length - 1, ",")
+
+        if (param != parameters.last())
+            append("\n")
     }
 
     if (parameters.none())
@@ -110,7 +130,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
                 else{
                 """.trimStart(),
             body = """
-                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text})
+                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${this@getText.getCipherTextForReturn()})
                 call.respondText(text, status = HttpStatusCode.OK)
                 """.trimStart(),
             end =  "}\n",

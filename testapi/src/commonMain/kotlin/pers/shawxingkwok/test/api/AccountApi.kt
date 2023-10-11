@@ -9,12 +9,12 @@ import java.math.BigDecimal
 interface AccountApi {
     suspend fun login(
         email: String,
-        password: String,
-        verificationCode: String? = null,
+        @Phone.Crypto password: String,
     )
     : LoginResult
 
     suspend fun delete(id: Long)
 
+    @Phone.Crypto
     suspend fun search(id: Long): User?
 }

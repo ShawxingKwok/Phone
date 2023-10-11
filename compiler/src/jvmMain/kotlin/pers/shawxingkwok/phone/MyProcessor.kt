@@ -1,5 +1,6 @@
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
@@ -25,11 +26,14 @@ internal object MyProcessor : KSProcessor{
     lateinit var serializers: Map<KSType, KSClassDeclaration>
         private set
 
+    var cipherKSObj: KSClassDeclaration? = null
+        private set
+
     override fun process(round: Int): List<KSAnnotated> {
         if (phoneApiPaths.none())
             return emptyList()
 
-        val (valid, invalid) = resolver
+        var (valid, invalid) = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
             .partition { it.accept(KSDefaultValidator(), Unit) }
 
@@ -71,12 +75,40 @@ internal object MyProcessor : KSProcessor{
                 }
             }
 
+        val cipherKSObj = resolver
+            .getAnnotatedSymbols<Phone.Crypto, KSClassDeclaration>()
+            .filter { it.classKind == ClassKind.OBJECT }
+            .also {
+                if (round > 0) return@also
+
+                Log.require(it.size <= 1, it){
+                    "Multiple crypto objects are forbidden."
+                }
+            }
+            .firstOrNull()
+
+        if (cipherKSObj?.accept(KSDefaultValidator(), Unit) == false)
+            invalid += cipherKSObj
+
         // also output to dest paths from ksp args
         when(Status.value){
             Status.UNSTARTED -> {
-                if (invalid.any()) return invalid
+                if (invalid.any())
+                    return invalid
 
                 Status.value++
+
+                this.cipherKSObj = cipherKSObj
+
+                if (cipherKSObj != null)
+                    Log.require(
+                        cipherKSObj.getAllSuperTypes().any {
+                            it.declaration.qualifiedName() == Phone.Cipher::class.qualifiedName
+                        },
+                        cipherKSObj
+                    ){
+                        "The object annotated with `@Phone.Crypto` should implement `Phone.Cipher`."
+                    }
 
                 serializers = resolver
                     .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
@@ -93,7 +125,7 @@ internal object MyProcessor : KSProcessor{
                                     condition = it != null,
                                     symbol = ksclass,
                                 ) {
-                                    "Each class annotated with `Phone.Serializer` must implement `KSerializer`."
+                                    "Each class annotated with `Phone.Serializer` must declare `KSerializer` in its implementations."
                                 }
                                 it
                             }

@@ -17,7 +17,7 @@ public annotation class Phone{
     public annotation class Crypto
 
     public interface Cipher {
-        public fun encode(bytes: ByteArray): ByteArray
-        public fun decode(bytes: ByteArray): ByteArray
+        public fun encrypt(bytes: ByteArray): ByteArray
+        public fun decrypt(bytes: ByteArray): ByteArray
     }
 }

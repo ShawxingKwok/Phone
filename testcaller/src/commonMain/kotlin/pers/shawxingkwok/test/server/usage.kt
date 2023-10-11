@@ -1,13 +1,14 @@
 package pers.shawxingkwok.test.server
 
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import pers.shawxingkwok.test.model.LoginResult
 import pers.shawxingkwok.test.model.Time
 import pers.shawxingkwok.test.model.User
 
 class AccountApiImpl(call: ApplicationCall) : Phone.AccountApi(call){
-    override suspend fun login(email: String, password: String, verificationCode: String?): LoginResult {
+    override suspend fun login(email: String, password: String): LoginResult {
         TODO("Not yet implemented")
     }
 
@@ -38,6 +39,11 @@ class TimeApiImpl(call: ApplicationCall) : Phone.TimeApi(call){
 
 fun Application.main() {
     routing {
+        get {
+            call.request.contentType()
+
+        }
+
         Phone.configure(this, ::AccountApiImpl, ::ChatApiImpl, :: TimeApiImpl)
     }
 }
