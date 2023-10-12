@@ -23,7 +23,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "Phone"
 
-include(":runtime")
-include(":compiler")
+include("runtime")
+include("compiler")
 include("testapi")
 include("testcaller")
+include("example:api:center")
+include("example:api:clientside")
+include("example:api:serverside")
+include("example:applications:android")
+include("example:applications:ktorserver")

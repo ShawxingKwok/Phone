@@ -1,35 +1,25 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    alias(libs.plugins.ktMultiplatform)
+    alias(libs.plugins.kt.jvm)
     alias(libs.plugins.publish)
     alias(libs.plugins.ksp)
 }
 
 kotlin {
-    jvm {
-        jvmToolchain(8)
-        withJava()
-        testRuns.named("test") {
-            executionTask.configure {
-                useJUnitPlatform()
-            }
-        }
-    }
-    sourceSets {
-        val jvmMain by getting{
-            dependencies {
-                implementation(project(":runtime"))
-                implementation(libs.ksp)
-                implementation(libs.shawxing.kspUtil)
-                implementation(libs.shawxing.ktUtil)
-            }
-        }
-    }
+    jvmToolchain(8)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 dependencies {
-    add("kspJvm", libs.shawxing.kspUtil)
+    implementation(libs.shawxing.kspUtil)
+    ksp(libs.shawxing.kspUtil)
+    implementation(project(":runtime"))
+    implementation(libs.ksp)
+    implementation(libs.shawxing.ktUtil)
 }
 
 tasks.withType<KotlinCompile>().configureEach{
@@ -38,7 +28,7 @@ tasks.withType<KotlinCompile>().configureEach{
 
 mavenPublishing {
     val isSnapshot = true
-    val version = "1.0.0"
+    val version = "1.0.1"
     coordinates("io.github.shawxingkwok", "phone-compiler", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {
         val repo = "Phone"

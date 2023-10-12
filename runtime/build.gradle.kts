@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
-    alias(libs.plugins.ktMultiplatform)
+    alias(libs.plugins.kt.multiplatform)
     alias(libs.plugins.publish)
 }
 
@@ -51,7 +51,7 @@ kotlin {
 
 mavenPublishing {
     val isSnapshot = true
-    val version = "1.0.1"
+    val version = "1.0.0"
     coordinates("io.github.shawxingkwok", "phone-runtime", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {
         val repo = "Phone"
@@ -68,9 +68,9 @@ mavenPublishing {
     }
 }
 
-rootProject.plugins.withType(YarnPlugin::class.java) {
-    rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
-        YarnLockMismatchReport.WARNING // NONE | FAIL
-    rootProject.the<YarnRootExtension>().reportNewYarnLock = false // true
-    rootProject.the<YarnRootExtension>().yarnLockAutoReplace = false // true
-}
+// rootProject.plugins.withType(YarnPlugin::class.java) {
+//     rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
+//         YarnLockMismatchReport.WARNING // NONE | FAIL
+//     rootProject.the<YarnRootExtension>().reportNewYarnLock = false // true
+//     rootProject.the<YarnRootExtension>().yarnLockAutoReplace = false // true
+// }
