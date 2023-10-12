@@ -55,7 +55,7 @@ class Phone(private val client: HttpClient) {
             else {
                 val utfBytes = text.encodeToByteArray()
                 val base64Bytes = cipher.encrypt(utfBytes)
-                return Json.encodeToString(ByteArraySerializer(), base64Bytes)
+                Json.encodeToString(ByteArraySerializer(), base64Bytes)
             }
         }
 
