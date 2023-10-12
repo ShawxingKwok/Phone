@@ -98,7 +98,6 @@ class Phone(private val client: HttpClient) {
             }
 
             checkNoBadRequest(response)
-
         }
 
         override suspend fun search(id: Long): User? {

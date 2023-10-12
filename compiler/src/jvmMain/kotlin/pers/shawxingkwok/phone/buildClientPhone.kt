@@ -87,8 +87,8 @@ private fun KSFunctionDeclaration.getText() =
                 append(": ${returnType!!.text}")
             },
             getEnd = {
+                append("\n")
                 val returnType = returnType!!.resolve()
-
                 if (returnType.isMarkedNullable) {
                     append("if(response.status != HttpStatusCode.NotFound)\n")
                     append("~return null!~\n\n")
@@ -110,7 +110,7 @@ private fun KSFunctionDeclaration.getText() =
                 append("}")
             }
 
-            append("\n\ncheckNoBadRequest(response)\n\n")
+            append("\n\ncheckNoBadRequest(response)\n")
         }
 
         append("}")
