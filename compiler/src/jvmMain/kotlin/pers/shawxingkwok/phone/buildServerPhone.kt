@@ -1,7 +1,5 @@
 package pers.shawxingkwok.phone
 
-import com.google.devtools.ksp.KspExperimental
-import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -64,7 +62,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
                 ${phoneApis.joinToString("\n\n"){ ksclass ->
                     """
                     routing.route("${ksclass.simpleName()}"){
-                        ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
+                        ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getBody() }}
                     }
                     """.trim()
                 }}
@@ -75,8 +73,8 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getText() = buildString{
-    append("post(\"/${simpleName()}\"){\n")
+private fun KSFunctionDeclaration.getBody() = buildString{
+    append("post(\"/${getMayPolymorphicText()}\"){\n")
 
     if (parameters.any())
         append("val params = call.request.queryParameters\n\n")
@@ -93,9 +91,28 @@ private fun KSFunctionDeclaration.getText() = buildString{
 
         append("$paramName = params[\"$paramName\"]\n")
 
+        val typeText =
+            if (param.isVararg){
+                when(type){
+                    resolver.builtIns.booleanType -> BooleanArray::class.text
+                    resolver.builtIns.charType -> CharArray::class.text
+
+                    resolver.builtIns.byteType -> ByteArray::class.text
+                    resolver.builtIns.shortType -> ShortArray::class.text
+                    resolver.builtIns.intType -> IntArray::class.text
+                    resolver.builtIns.longType -> LongArray::class.text
+
+                    resolver.builtIns.floatType -> FloatArray::class.text
+                    resolver.builtIns.doubleType -> DoubleArray::class.text
+
+                    else -> Array::class.text + "<out ${type.text}>"
+                }
+            }else
+                type.text
+
         append("""
             ~?.let{ 
-                tryDecode(it, "$paramName", ${param.getSerializer()?.text}, ${param.getCipherText()}) 
+                tryDecode${ "<${typeText}>" }(it, "$paramName", ${param.getSerializer()?.text}, ${param.getCipherText()}) 
                 ?: return@post 
             }!~
             """.trim() + "\n"
@@ -129,7 +146,7 @@ private fun KSFunctionDeclaration.getText() = buildString{
                 else{
                 """.trimStart(),
             body = """
-                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${this@getText.getCipherTextForReturn()})
+                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn()})
                 call.respondText(text, status = HttpStatusCode.OK)
                 """.trimStart(),
             end =  "}\n",

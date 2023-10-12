@@ -55,8 +55,7 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
                 """
                 val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
                     private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 
-                
-                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getText() }}
+                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ ksfun -> ksfun.getBody() }}
                 }
                 """.trim()
             }}    
@@ -66,9 +65,9 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getText() =
+private fun KSFunctionDeclaration.getBody() =
     buildString {
-        append("override suspend fun ${this@getText}(")
+        append("override suspend fun ${simpleName()}(")
 
         if (parameters.size <= 2)
             parameters.joinToString(postfix = ")", separator = ", ") {
@@ -93,11 +92,11 @@ private fun KSFunctionDeclaration.getText() =
                     append("if(response.status != HttpStatusCode.NotFound)\n")
                     append("~return null!~\n\n")
                 }
-                append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getText.getCipherTextForReturn()})\n")
+                append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn()})\n")
             },
         ) {
             append(" {\n")
-            append("val response = client.post(\"$${"mBasicUrl"}/${simpleName()}\")")
+            append("val response = client.post(\"$${"mBasicUrl"}/${getMayPolymorphicText()}\")")
 
             if (parameters.any()) {
                 append(" {\n")

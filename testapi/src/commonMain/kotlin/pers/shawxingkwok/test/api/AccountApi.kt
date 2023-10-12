@@ -7,14 +7,16 @@ import java.math.BigDecimal
 
 @Phone.Api
 interface AccountApi {
+    @Phone.Crypto
     suspend fun login(
         email: String,
-        @Phone.Crypto password: String,
+        password: String,
     )
     : LoginResult
 
     suspend fun delete(id: Long)
 
-    @Phone.Crypto
-    suspend fun search(id: Long): User?
+    suspend fun delete(id: String)
+
+    suspend fun search(id: Long): @Phone.Crypto User?
 }

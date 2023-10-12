@@ -67,11 +67,13 @@ internal object MyProcessor : KSProcessor{
                 Log.require(
                     condition =
                         !it.isAbstract
-                        || Modifier.SUSPEND in it.modifiers && it.typeParameters.none(),
+                        || Modifier.SUSPEND in it.modifiers && it.typeParameters.none()
+                        && it.extensionReceiver == null,
                     symbol = it,
                 ){
                     "In each class annotated with `Phone.Api`, " +
-                    "all abstract functions must be suspend and without type parameters, except 'toString', 'equals', and 'hashCode'."
+                    "all abstract functions must be suspend without extensional receivers and " +
+                    "type parameters, except 'toString', 'equals', and 'hashCode'."
                 }
             }
 
