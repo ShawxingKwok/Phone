@@ -1,5 +1,3 @@
-@file:Suppress("DuplicatedCode")
-
 package pers.shawxingkwok.test.client
 
 import io.ktor.client.*
@@ -34,6 +32,12 @@ class Phone(private val client: HttpClient) {
         if (value == null) return
         val newV = encode(value, serializer, cipher)
         parameter(key, newV)
+    }
+
+    private suspend fun checkNoBadRequest(response: HttpResponse){
+        check(response.status != HttpStatusCode.BadRequest){
+            response.bodyAsText()
+        }
     }
 
     private inline fun <reified T: Any> encode(
@@ -82,33 +86,32 @@ class Phone(private val client: HttpClient) {
                 jsonParameter("email", email, null, null)
                 jsonParameter("password", password, null, null)
             }
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
-            val text = response.bodyAsText()
-            return decode(text, null, null)
+
+            checkNoBadRequest(response)
+
+            return decode(response.bodyAsText(), null, null)
         }
 
         override suspend fun delete(id: Long) {
             val response = client.post("$mBasicUrl/delete") {
                 jsonParameter("id", id, null, null)
             }
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
+
+            checkNoBadRequest(response)
+
         }
 
         override suspend fun search(id: Long): User? {
             val response = client.post("$mBasicUrl/search") {
                 jsonParameter("id", id, null, null)
             }
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
+
+            checkNoBadRequest(response)
+
             if(response.status != HttpStatusCode.NotFound)
                 return null
-            val text = response.bodyAsText()
-            return decode(text, null, null)
+
+            return decode(response.bodyAsText(), null, null)
         }
     }
 
@@ -117,11 +120,10 @@ class Phone(private val client: HttpClient) {
 
         override suspend fun getChats(): List<String> {
             val response = client.post("$mBasicUrl/getChats")
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
-            val text = response.bodyAsText()
-            return decode(text, null, null)
+
+            checkNoBadRequest(response)
+
+            return decode(response.bodyAsText(), null, null)
         }
     }
 
@@ -130,22 +132,20 @@ class Phone(private val client: HttpClient) {
 
         override suspend fun getTime(): Time {
             val response = client.post("$mBasicUrl/getTime")
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
-            val text = response.bodyAsText()
-            return decode(text, TimeSerializer, null)
+
+            checkNoBadRequest(response)
+
+            return decode(response.bodyAsText(), TimeSerializer, null)
         }
 
         override suspend fun sumTime(vararg times: Time): Time {
             val response = client.post("$mBasicUrl/sumTime") {
                 jsonParameter("times", times, TimeArraySerializer, null)
             }
-            check(response.status != HttpStatusCode.BadRequest){
-                response.bodyAsText()
-            }
-            val text = response.bodyAsText()
-            return decode(text, TimeSerializer, null)
+
+            checkNoBadRequest(response)
+
+            return decode(response.bodyAsText(), TimeSerializer, null)
         }
     }
 }

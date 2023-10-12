@@ -12,7 +12,6 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
         packageName = Args.ServerPackageName,
         fileName = "Phone",
         dependencies = Dependencies(true, *phoneApis.map{ it.containingFile!! }.toTypedArray()),
-        header = Suppressing,
         extensionName = "",
         initialImports = listOf(
             "io.ktor.http.*",

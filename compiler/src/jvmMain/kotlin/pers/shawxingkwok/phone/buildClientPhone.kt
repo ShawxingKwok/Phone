@@ -12,7 +12,6 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
         packageName = Args.ClientPackageName,
         dependencies = Dependencies(true, *phoneApis.map{ it.containingFile!! }.toTypedArray()),
         fileName = "Phone",
-        header = Suppressing,
         extensionName = "",
         initialImports =
             listOf(
@@ -43,7 +42,13 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
                 val newV = encode(value, serializer, cipher)
                 parameter(key, newV)
             }
-        
+            
+            private suspend fun checkNoBadRequest(response: HttpResponse){
+                check(response.status != HttpStatusCode.BadRequest){
+                    response.bodyAsText()
+                }
+            }
+            
             ${getCoderFunctions()}
             
             ${phoneApis.joinToString("\n\n") { apiKSClass ->
@@ -86,10 +91,9 @@ private fun KSFunctionDeclaration.getText() =
 
                 if (returnType.isMarkedNullable) {
                     append("if(response.status != HttpStatusCode.NotFound)\n")
-                    append("~return null!~\n")
+                    append("~return null!~\n\n")
                 }
-                append("val text = response.bodyAsText()\n")
-                append("return decode(text, ${MyProcessor.serializers[returnType]?.text}, ${this@getText.getCipherTextForReturn()})\n")
+                append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getText.getCipherTextForReturn()})\n")
             },
         ) {
             append(" {\n")
@@ -106,13 +110,7 @@ private fun KSFunctionDeclaration.getText() =
                 append("}")
             }
 
-            append(
-                """
-                check(response.status != HttpStatusCode.BadRequest){
-                    response.bodyAsText()
-                }
-                """
-            )
+            append("\n\ncheckNoBadRequest(response)\n\n")
         }
 
         append("}")
