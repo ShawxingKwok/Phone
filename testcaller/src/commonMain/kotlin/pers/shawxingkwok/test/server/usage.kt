@@ -16,6 +16,10 @@ class AccountApiImpl(call: ApplicationCall) : Phone.AccountApi(call){
         TODO("Not yet implemented")
     }
 
+    override suspend fun delete(id: String) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun search(id: Long): User? {
         TODO("Not yet implemented")
     }

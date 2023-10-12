@@ -80,6 +80,7 @@ class Phone(private val client: HttpClient) {
 
     val accountApi = object : AccountApi {
         private val mBasicUrl = "${BASIC_URL}/AccountApi"
+
         override suspend fun login(email: String, password: String): LoginResult {
             val response = client.post("$mBasicUrl/login") {
                 jsonParameter("email", email, null, null)
@@ -92,7 +93,7 @@ class Phone(private val client: HttpClient) {
         }
 
         override suspend fun delete(id: Long) {
-            val response = client.post("$mBasicUrl/delete0") {
+            val response = client.post("$mBasicUrl/delete") {
                 jsonParameter("id", id, null, null)
             }
 
@@ -123,6 +124,7 @@ class Phone(private val client: HttpClient) {
 
     val chatApi = object : ChatApi {
         private val mBasicUrl = "${BASIC_URL}/ChatApi"
+
         override suspend fun getChats(): List<String> {
             val response = client.post("$mBasicUrl/getChats")
 
@@ -134,6 +136,7 @@ class Phone(private val client: HttpClient) {
 
     val timeApi = object : TimeApi {
         private val mBasicUrl = "${BASIC_URL}/TimeApi"
+
         override suspend fun getTime(): Time {
             val response = client.post("$mBasicUrl/getTime")
 

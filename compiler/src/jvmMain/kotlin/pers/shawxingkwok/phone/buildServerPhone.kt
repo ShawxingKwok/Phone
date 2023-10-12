@@ -133,7 +133,7 @@ private fun KSFunctionDeclaration.getBody() = buildString{
     if (parameters.none())
         insert(length - 1, ")")
     else
-        append(")\n")
+        append(")\n\n")
 
     if (returnType == resolver.builtIns.unitType)
         append("call.response.status(HttpStatusCode.OK)\n")

@@ -10,6 +10,7 @@ internal fun KSFunctionDeclaration.getMayPolymorphicText(): String{
         .filter { it.simpleName() == this.simpleName() }
         .takeIf { it.size > 1 }
         ?.indexOf(this)
+        ?.takeUnless { it == 0 }
 
     return buildString {
         append(simpleName())

@@ -55,7 +55,8 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
                 """
                 val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
                     private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 
-                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ ksfun -> ksfun.getBody() }}
+                
+                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getBody() }}
                 }
                 """.trim()
             }}    
