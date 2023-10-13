@@ -4,12 +4,13 @@ plugins {
 
 kotlin {
     jvm()
-    // other needed native platforms could also be added
+    // other needed native platforms
+
     sourceSets {
         val commonMain by getting{
             dependencies{
                 api(project(":example:api:center"))
-                implementation(libs.ktor.server.core)
+                api(libs.ktor.server.core)
             }
         }
     }

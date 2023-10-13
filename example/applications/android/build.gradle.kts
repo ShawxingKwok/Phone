@@ -45,6 +45,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     implementation(project(":example:api:clientside"))
-    implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.android)
 }
