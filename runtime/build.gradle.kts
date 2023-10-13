@@ -1,7 +1,3 @@
-import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
-import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
-import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
-
 plugins {
     alias(libs.plugins.kt.multiplatform)
     alias(libs.plugins.publish)
@@ -10,19 +6,10 @@ plugins {
 kotlin {
     explicitApi()
 
-    jvm {
-        jvmToolchain(8)
-        withJava()
-    }
-    js {
-        browser {
-            commonWebpackConfig {
-                cssSupport {
-                    enabled.set(true)
-                }
-            }
-        }
-    }
+    jvm()
+
+    js()
+
     macosX64()
     macosArm64()
 
@@ -67,10 +54,3 @@ mavenPublishing {
         }
     }
 }
-
-// rootProject.plugins.withType(YarnPlugin::class.java) {
-//     rootProject.the<YarnRootExtension>().yarnLockMismatchReport =
-//         YarnLockMismatchReport.WARNING // NONE | FAIL
-//     rootProject.the<YarnRootExtension>().reportNewYarnLock = false // true
-//     rootProject.the<YarnRootExtension>().yarnLockAutoReplace = false // true
-// }

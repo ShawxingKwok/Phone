@@ -1,4 +1,4 @@
-package pers.shawxingkwok.center.client
+package pers.shawxingkwok.test.client
 
 import io.ktor.client.*
 

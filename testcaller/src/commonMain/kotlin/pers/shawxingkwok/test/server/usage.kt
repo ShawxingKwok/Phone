@@ -1,4 +1,4 @@
-package pers.shawxingkwok.center.server
+package pers.shawxingkwok.test.server
 
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -48,6 +48,6 @@ fun Application.main() {
 
         }
 
-        Phone.configure(this, ::AccountApiImpl, ::ChatApiImpl, :: TimeApiImpl)
+        Phone.configure(this, ::AccountApiImpl, ::ChatApiImpl, ::TimeApiImpl)
     }
 }

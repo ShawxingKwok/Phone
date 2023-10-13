@@ -10,11 +10,8 @@ kotlin {
     jvmToolchain(8)
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 dependencies {
+    // implementation(libs.shawxing.kspUtil)
     implementation(libs.shawxing.kspUtil)
     ksp(libs.shawxing.kspUtil)
     implementation(project(":runtime"))
@@ -28,7 +25,7 @@ tasks.withType<KotlinCompile>().configureEach{
 
 mavenPublishing {
     val isSnapshot = true
-    val version = "1.0.1"
+    val version = "1.0.0-1.0.0"
     coordinates("io.github.shawxingkwok", "phone-compiler", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {
         val repo = "Phone"

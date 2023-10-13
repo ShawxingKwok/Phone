@@ -5,18 +5,15 @@ plugins {
 }
 
 kotlin {
-    jvm {
-        jvmToolchain(8)
-        withJava()
-    }
+    jvm()
 
     sourceSets {
         val commonMain by getting{
             dependencies{
-                implementation(project(":runtime"))
-                implementation(libs.serialization)
-                implementation(libs.ktor.client.core)
-                implementation(libs.ktor.server.core)
+                api(project(":runtime"))
+                api(libs.serialization.json)
+                // help custom serializers
+                implementation(libs.serialization.core)
             }
         }
     }

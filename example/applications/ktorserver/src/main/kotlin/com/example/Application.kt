@@ -10,27 +10,27 @@ import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.server.phone.Phone
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+    embeddedServer(
+        factory = Netty,
+        port = 8080,
+        host = "0.0.0.0",
+        module = Application::module
+    )
+    .start(wait = true)
 }
 
 fun Application.module() {
-    routing {
-        Phone.configure(this, ::AccountApiImpl, ::ChatApiImpl)
-
-        get("/") {
-            call.respondText("Hello World!")
-        }
-    }
+    Phone.configure(routing{ }, ::AccountApiImpl, ::ChatApiImpl)
 }
 
 class AccountApiImpl(call: ApplicationCall) : Phone.AccountApi(call){
     private var fakeUser: User? = User(123456, "Shawxing", 25)
 
     override suspend fun login(email: String, password: String): LoginResult =
-        when(val user = fakeUser){
-            null -> LoginResult.NotSigned
-            else -> LoginResult.Success(user)
+        when{
+            password != "123456" -> LoginResult.PasswordWrong
+            fakeUser == null -> LoginResult.NotSigned
+            else -> LoginResult.Success(fakeUser!!)
         }
 
     override suspend fun delete(id: Long) {

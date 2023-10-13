@@ -7,13 +7,14 @@ plugins {
 kotlin {
     jvm()
     js()
-    // other needed native platforms could also be added
+    // other needed native platforms
     sourceSets {
         val commonMain by getting{
             dependencies{
-                implementation(project(":runtime"))
-                implementation(libs.serialization)
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
+                api(project(":runtime"))
+                api(libs.serialization.json)
+                // help custom serializers
+                implementation(libs.serialization.core)
             }
         }
     }

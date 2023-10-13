@@ -17,6 +17,5 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     // testImplementation("org.jetbrains.kotlin:kotlin-test-junit:${libs.versions.kt}")
 
-    implementation(project(":example:api:center"))
     implementation(project(":example:api:serverside"))
 }

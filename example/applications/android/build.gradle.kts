@@ -44,11 +44,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    implementation(project(":example:api:center"))
     implementation(project(":example:api:clientside"))
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.jsonJvm)
-    implementation(libs.serialization)
-    implementation(libs.shawxing.ktUtil)
 }

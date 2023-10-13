@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface LoginResult {
-    // value class could boost some performances
     @Serializable
     data class Success(val user: User) : LoginResult
 

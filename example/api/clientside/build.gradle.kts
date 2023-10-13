@@ -9,10 +9,8 @@ kotlin {
     sourceSets {
         val commonMain by getting{
             dependencies{
-                implementation(project(":runtime"))
-                implementation(project(":example:api:center"))
+                api(project(":example:api:center"))
                 implementation(libs.ktor.client.core)
-                implementation(libs.serialization)
             }
         }
     }
