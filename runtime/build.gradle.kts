@@ -8,7 +8,10 @@ kotlin {
 
     jvm()
 
-    js()
+    js{
+        binaries.executable()
+        browser()
+    }
 
     macosX64()
     macosArm64()

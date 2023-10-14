@@ -26,8 +26,12 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
     ){
         """
         object Phone{
-            ${phoneApis.joinToString("\n"){ 
-                "abstract class ${it.simpleName()}(protected val call: ApplicationCall) : ${it.qualifiedName()}" 
+            ${phoneApis.joinToString("\n"){
+                """
+                interface ${it.simpleName()} : ${it.qualifiedName()} {
+                    val call: ApplicationCall
+                }
+                """.trim()
             }}
             
             ${getCoderFunctions()}
@@ -74,7 +78,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
 
 context (KtGen)
 private fun KSFunctionDeclaration.getBody() = buildString{
-    append("post(\"/${getMayPolymorphicText()}\"){\n")
+    append("post(\"/${simpleName()}\"){\n")
 
     if (parameters.any())
         append("val params = call.request.queryParameters\n\n")

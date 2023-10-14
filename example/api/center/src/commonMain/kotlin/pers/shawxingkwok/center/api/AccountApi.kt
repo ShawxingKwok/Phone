@@ -6,11 +6,8 @@ import pers.shawxingkwok.center.model.User
 
 @Phone.Api
 interface AccountApi {
-    suspend fun login(
-        email: String,
-        password: String,
-    )
-    : LoginResult
+    @Phone.Crypto
+    suspend fun login(email: String, password: String): LoginResult
 
     suspend fun delete(id: Long)
 

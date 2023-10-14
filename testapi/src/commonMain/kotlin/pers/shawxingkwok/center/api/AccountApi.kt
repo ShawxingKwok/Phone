@@ -15,7 +15,5 @@ interface AccountApi {
 
     suspend fun delete(id: Long)
 
-    suspend fun delete(id: String)
-
     suspend fun search(id: Long): @Phone.Crypto User?
 }

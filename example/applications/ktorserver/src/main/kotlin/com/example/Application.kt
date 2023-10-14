@@ -23,7 +23,7 @@ fun Application.module() {
     Phone.configure(routing{ }, ::AccountApiImpl, ::ChatApiImpl)
 }
 
-class AccountApiImpl(call: ApplicationCall) : Phone.AccountApi(call){
+class AccountApiImpl(override val call: ApplicationCall) : Phone.AccountApi{
     private var fakeUser: User? = User(123456, "Shawxing", 25)
 
     override suspend fun login(email: String, password: String): LoginResult =
@@ -40,7 +40,7 @@ class AccountApiImpl(call: ApplicationCall) : Phone.AccountApi(call){
     override suspend fun search(id: Long): User? = fakeUser
 }
 
-class ChatApiImpl(call: ApplicationCall) : Phone.ChatApi(call) {
+class ChatApiImpl(override val call: ApplicationCall) : Phone.ChatApi {
     override suspend fun getChats(): List<String> {
         return listOf("hello, world!")
     }

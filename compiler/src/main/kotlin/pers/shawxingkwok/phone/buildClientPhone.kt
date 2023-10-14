@@ -97,7 +97,7 @@ private fun KSFunctionDeclaration.getBody() =
             },
         ) {
             append(" {\n")
-            append("val response = client.post(\"$${"mBasicUrl"}/${getMayPolymorphicText()}\")")
+            append("val response = client.post(\"$${"mBasicUrl"}/${simpleName()}\")")
 
             if (parameters.any()) {
                 append(" {\n")

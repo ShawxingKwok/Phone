@@ -7,13 +7,15 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         jcenter()
         mavenCentral()
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven("https://www.jitpack.io")
+        maven("https://nodejs.org/dist")
     }
 }
 
@@ -32,3 +34,4 @@ include("example:api:clientside")
 include("example:api:serverside")
 include("example:applications:android")
 include("example:applications:ktorserver")
+include("example:applications:web")

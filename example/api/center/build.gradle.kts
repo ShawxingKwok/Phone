@@ -6,12 +6,15 @@ plugins {
 
 kotlin {
     jvm()
-    js()
+    js{
+        binaries.executable()
+        browser()
+    }
     // other needed native platforms
     sourceSets {
         val commonMain by getting{
             dependencies{
-                api(project(":runtime"))
+                implementation(project(":runtime"))
                 api(libs.serialization.json)
                 // help custom serializers
                 implementation(libs.serialization.core)

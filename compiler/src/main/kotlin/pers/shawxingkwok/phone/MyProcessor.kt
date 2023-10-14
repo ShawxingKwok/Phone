@@ -53,6 +53,17 @@ internal object MyProcessor : KSProcessor{
                 "Non-local class without package name is commonly used in test cases. " +
                 "However, I don't want to spend time adapting `Phone` with it."
             }
+
+            val polymorphic = ksclass.getAllFunctions()
+                .groupBy { it.simpleName() }
+                .values
+                .filter { it.size >= 2 }
+                .flatten()
+
+            Log.require(polymorphic.none(), polymorphic){
+                "Polymorphic functions are forbidden because it's error-prone " +
+                "when ensuring backward compatibility."
+            }
         }
 
         // check all functions in Phone classes
