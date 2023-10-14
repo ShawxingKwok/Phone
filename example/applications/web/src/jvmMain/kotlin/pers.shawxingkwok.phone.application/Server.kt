@@ -12,7 +12,6 @@ fun main() {
     embeddedServer(
         factory = Netty,
         port = 8080,
-        host = "192.168.0.105",
     ){
         Phone.configure(routing { }, ::AccountApiImpl, ::ChatApiImpl)
     }

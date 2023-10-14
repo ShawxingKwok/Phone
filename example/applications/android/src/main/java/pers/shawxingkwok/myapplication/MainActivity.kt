@@ -9,10 +9,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
+import io.ktor.client.engine.android.*
 import kotlinx.coroutines.launch
 import pers.shawxingkwok.client.phone.Phone
+import java.net.InetSocketAddress
+import java.net.Proxy
 
-val client = HttpClient(Android)
+val client = HttpClient(Android) {
+    engine {
+        connectTimeout = 100_000
+        socketTimeout = 100_000
+        // hostname is different in each network.
+        proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress("192.168.0.105", 8080))
+    }
+}
 val phone = Phone(client)
 
 class MainActivity : AppCompatActivity() {
@@ -26,11 +36,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val tv = requireViewById<TextView>(R.id.tv)
 
-            runCatching{
+            runCatching {
                 phone.chatApi.getChats()
             }
-            .onFailure { tv.text = "failed getting chats" }
-            .onSuccess { tv.text = it.joinToString("\n") }
+                .onFailure { tv.text = "failed getting chats" }
+                .onSuccess { tv.text = it.joinToString("\n") }
         }
     }
 }
