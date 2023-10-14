@@ -16,6 +16,7 @@ dependencyResolutionManagement {
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven("https://www.jitpack.io")
         maven("https://nodejs.org/dist")
+        maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
     }
 }
 
@@ -33,6 +34,4 @@ include("example:api:shared")
 include("example:api:clientside")
 include("example:api:serverside")
 include("example:applications:android")
-include("example:applications:ktorserver")
 include("example:applications:web")
-include("example:applications:web_")

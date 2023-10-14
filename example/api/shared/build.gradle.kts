@@ -9,7 +9,6 @@ kotlin {
         jvmToolchain(8)
     }
     js{
-        binaries.executable()
         browser()
     }
     // other needed native platforms

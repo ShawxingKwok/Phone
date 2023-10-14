@@ -2,7 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.8">
-      <module name="Phone.example.applications.web" target="17" />
+      <module name="Phone.example.applications.ktorserver.main" target="17" />
+      <module name="Phone.example.applications.ktorserver.test" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

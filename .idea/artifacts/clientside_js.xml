@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="clientside-js">
+    <output-path>$PROJECT_DIR$/example/api/clientside/build/libs</output-path>
+    <root id="archive" name="clientside-js.jar">
+      <element id="module-output" name="Phone.example.api.clientside.jsMain" />
+    </root>
+  </artifact>
+</component>

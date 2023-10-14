@@ -90,7 +90,7 @@ private fun KSFunctionDeclaration.getBody() =
                 append("\n")
                 val returnType = returnType!!.resolve()
                 if (returnType.isMarkedNullable) {
-                    append("if(response.status != HttpStatusCode.NotFound)\n")
+                    append("if(response.status == HttpStatusCode.NotFound)\n")
                     append("~return null!~\n\n")
                 }
                 append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn()})\n")

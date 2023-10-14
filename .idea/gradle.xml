@@ -11,14 +11,12 @@
             <option value="$PROJECT_DIR$/compiler" />
             <option value="$PROJECT_DIR$/example" />
             <option value="$PROJECT_DIR$/example/api" />
-            <option value="$PROJECT_DIR$/example/api/center" />
             <option value="$PROJECT_DIR$/example/api/clientside" />
             <option value="$PROJECT_DIR$/example/api/serverside" />
+            <option value="$PROJECT_DIR$/example/api/shared" />
             <option value="$PROJECT_DIR$/example/applications" />
             <option value="$PROJECT_DIR$/example/applications/android" />
-            <option value="$PROJECT_DIR$/example/applications/ktorserver" />
             <option value="$PROJECT_DIR$/example/applications/web" />
-            <option value="$PROJECT_DIR$/example/applications/web_" />
             <option value="$PROJECT_DIR$/runtime" />
             <option value="$PROJECT_DIR$/testapi" />
             <option value="$PROJECT_DIR$/testcaller" />

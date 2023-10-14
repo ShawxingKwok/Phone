@@ -1,28 +1,48 @@
+import csstype.HtmlAttributes
 import io.ktor.client.*
 import io.ktor.client.engine.js.*
+import io.ktor.util.logging.*
 import kotlinx.browser.document
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.w3c.dom.HTMLDivElement
+import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.client.phone.Phone
-import react.create
-import react.dom.client.createRoot
 
+val scope = MainScope()
 val client = HttpClient(Js)
 val phone = Phone(client)
-val scope = MainScope()
 
 fun main() {
-    val container = document.createElement("div")
+    val container = document.createElement("div") as HTMLDivElement
     document.body!!.appendChild(container)
+    container.style.fontSize = "100px"
 
     scope.launch {
-        runCatching {
-            phone.chatApi.getChats()
-        }
-        .onFailure { console.log("line 18 failed") }
+        runCatching { phone.accountApi.login(100, "F") }
+        .onFailure { container.textContent = "failed connection" }
         .onSuccess {
-            console.log(it)
-            container.textContent = it.joinToString("\n")
+            container.textContent =
+                when(it){
+                    LoginResult.NotSigned -> "not signed"
+                    LoginResult.PasswordWrong -> "wrong password"
+                    is LoginResult.Success -> "hello, ${it.user.name}"
+                }
+        }
+
+        delay(1000)
+
+        runCatching {
+            phone.accountApi.search(101)
+        }
+        .onFailure { container.textContent = "failed connection" }
+        .onSuccess {
+            container.textContent =
+                when(it){
+                    null -> "not found the user"
+                    else -> "found ${it.name} in search"
+                }
         }
     }
 }
