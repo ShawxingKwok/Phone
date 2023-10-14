@@ -6,7 +6,9 @@ plugins {
 kotlin {
     explicitApi()
 
-    jvm()
+    jvm{
+        jvmToolchain(8)
+    }
 
     js{
         binaries.executable()

@@ -3,7 +3,9 @@ plugins {
 }
 
 kotlin {
-    jvm()
+    jvm{
+        jvmToolchain(8)
+    }
     js{
         binaries.executable()
         browser()
@@ -14,7 +16,7 @@ kotlin {
         val commonMain by getting{
             dependencies{
                 implementation(project(":runtime"))
-                api(project(":example:api:center"))
+                api(project(":example:api:shared"))
                 api(libs.ktor.client.core)
             }
         }
