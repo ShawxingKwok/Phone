@@ -6,6 +6,9 @@ public annotation class Phone{
     public annotation class Api
 
     @Target(AnnotationTarget.CLASS)
+    public annotation class WebSockets
+
+    @Target(AnnotationTarget.CLASS)
     public annotation class Serializer
 
     @Target(
@@ -15,6 +18,16 @@ public annotation class Phone{
         AnnotationTarget.CLASS
     )
     public annotation class Crypto
+
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+    public annotation class Auth(
+        val configurations: Array<String> = [""],
+        val strategy: AuthenticationStrategy = AuthenticationStrategy.FirstSuccessful,
+    ){
+        public enum class AuthenticationStrategy{
+            Optional, FirstSuccessful, Required
+        }
+    }
 
     public interface Cipher {
         public fun encrypt(bytes: ByteArray): ByteArray

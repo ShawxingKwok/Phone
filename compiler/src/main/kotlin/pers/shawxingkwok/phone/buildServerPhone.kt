@@ -1,5 +1,6 @@
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -11,7 +12,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
         fileName = "Phone",
         dependencies = Dependencies(true, *phoneApis.map{ it.containingFile!! }.toTypedArray()),
         extensionName = "",
-        initialImports = listOf(
+        initialImports = setOf(
             "io.ktor.http.*",
             "io.ktor.server.application.*",
             "io.ktor.server.response.*",
@@ -66,96 +67,109 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
                 ${phoneApis.joinToString("\n\n"){ ksclass ->
                     """
                     routing.route("${ksclass.simpleName()}"){
-                        ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getBody() }}
+                        ${mayEmbraceWithAuth(ksclass, null) {
+                            ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
+                        }}
                     }
                     """.trim()
                 }}
             }
         }
-        """.trim().indentAsKtCode()
+        """
     }
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getBody() = buildString{
-    append("post(\"/${simpleName()}\"){\n")
+private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(ksclass, this@getBody) {
+    buildString {
+        append("post(\"/${simpleName()}\"){\n")
 
-    if (parameters.any())
-        append("val params = call.request.queryParameters\n\n")
+        if (parameters.any())
+            append("val params = call.request.queryParameters\n\n")
 
-    val returnType = returnType!!.resolve()
-    if (returnType != resolver.builtIns.unitType)
-        append("val ret = ")
+        val returnType = returnType!!.resolve()
+        if (returnType != resolver.builtIns.unitType)
+            append("val ret = ")
 
-    append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
+        append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
 
-    parameters.forEach { param ->
-        val paramName = param.name!!.asString()
-        val type = param.type.resolve()
+        parameters.forEach { param ->
+            val paramName = param.name!!.asString()
+            val type = param.type.resolve()
 
-        append("$paramName = params[\"$paramName\"]\n")
+            append("$paramName = params[\"$paramName\"]\n")
 
-        val typeText =
-            if (param.isVararg){
-                when(type){
-                    resolver.builtIns.booleanType -> BooleanArray::class.text
-                    resolver.builtIns.charType -> CharArray::class.text
+            val typeText =
+                if (param.isVararg) {
+                    when (type) {
+                        resolver.builtIns.booleanType -> BooleanArray::class.text
+                        resolver.builtIns.charType -> CharArray::class.text
 
-                    resolver.builtIns.byteType -> ByteArray::class.text
-                    resolver.builtIns.shortType -> ShortArray::class.text
-                    resolver.builtIns.intType -> IntArray::class.text
-                    resolver.builtIns.longType -> LongArray::class.text
+                        resolver.builtIns.byteType -> ByteArray::class.text
+                        resolver.builtIns.shortType -> ShortArray::class.text
+                        resolver.builtIns.intType -> IntArray::class.text
+                        resolver.builtIns.longType -> LongArray::class.text
 
-                    resolver.builtIns.floatType -> FloatArray::class.text
-                    resolver.builtIns.doubleType -> DoubleArray::class.text
+                        resolver.builtIns.floatType -> FloatArray::class.text
+                        resolver.builtIns.doubleType -> DoubleArray::class.text
 
-                    else -> Array::class.text + "<out ${type.text}>"
-                }
-            }else
-                type.text
+                        else -> Array::class.text + "<out ${type.text}>"
+                    }
+                } else
+                    type.text
 
-        append("""
+            append(
+                """
             ~?.let{ 
-                tryDecode${ "<${typeText}>" }(it, "$paramName", ${param.getSerializer()?.text}, ${param.getCipherText()}) 
+                tryDecode${"<${typeText}>"}(it, "$paramName", ${param.getSerializer()?.text}, ${
+                    param.getCipherText(
+                        ksclass
+                    )
+                }) 
                 ?: return@post 
             }!~
             """.trim() + "\n"
-        )
+            )
 
-        if (!type.isMarkedNullable)
-            append("~?: return@post notFoundParam(\"$paramName\")!~\n")
+            if (!type.isMarkedNullable)
+                append("~?: return@post notFoundParam(\"$paramName\")!~\n")
 
-        if (get(lastIndex - 1) == '~')
-            insert(length - 3, ",")
+            if (get(lastIndex - 1) == '~')
+                insert(length - 3, ",")
+            else
+                insert(length - 1, ",")
+
+            if (param != parameters.last())
+                append("\n")
+        }
+
+        if (parameters.none())
+            insert(length - 1, ")")
         else
-            insert(length - 1, ",")
+            append(")\n\n")
 
-        if (param != parameters.last())
-            append("\n")
-    }
-
-    if (parameters.none())
-        insert(length - 1, ")")
-    else
-        append(")\n\n")
-
-    if (returnType == resolver.builtIns.unitType)
-        append("call.response.status(HttpStatusCode.OK)\n")
-    else
-        mayEmbrace(
-            condition = returnType.isMarkedNullable,
-            start = """
+        if (returnType == resolver.builtIns.unitType)
+            append("call.response.status(HttpStatusCode.OK)\n")
+        else
+            mayEmbrace(
+                condition = returnType.isMarkedNullable,
+                start = """
                 if(ret == null)
                     ~call.response.status(HttpStatusCode.NotFound)!~
                 else{
                 """.trimStart(),
-            body = """
-                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn()})
+                body = """
+                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${
+                    this@getBody.getCipherTextForReturn(
+                        ksclass
+                    )
+                })
                 call.respondText(text, status = HttpStatusCode.OK)
                 """.trimStart(),
-            end =  "}\n",
-        )
-        .let(::append)
+                end = "}\n",
+            )
+                .let(::append)
 
-    append("}")
+        append("}")
+    }
 }

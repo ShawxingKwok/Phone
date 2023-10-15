@@ -20,29 +20,13 @@ fun main() {
     container.style.fontSize = "100px"
 
     scope.launch {
-        runCatching { phone.accountApi.login(100, "F") }
+        runCatching { phone.accountApi.search(101) }
         .onFailure { container.textContent = "failed connection" }
         .onSuccess {
-            container.textContent =
-                when(it){
-                    LoginResult.NotSigned -> "not signed"
-                    LoginResult.PasswordWrong -> "wrong password"
-                    is LoginResult.Success -> "hello, ${it.user.name}"
-                }
-        }
-
-        delay(1000)
-
-        runCatching {
-            phone.accountApi.search(101)
-        }
-        .onFailure { container.textContent = "failed connection" }
-        .onSuccess {
-            container.textContent =
-                when(it){
-                    null -> "not found the user"
-                    else -> "found ${it.name} in search"
-                }
+            container.textContent = when(it){
+                null -> "not found the user"
+                else -> "found ${it.name} in search"
+            }
         }
     }
 }

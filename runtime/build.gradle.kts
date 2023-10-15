@@ -4,7 +4,7 @@ plugins {
 }
 
 kotlin {
-    explicitApi()
+    explicitApiWarning()
 
     jvm{
         jvmToolchain(8)

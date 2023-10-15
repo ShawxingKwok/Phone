@@ -15,9 +15,9 @@ internal fun getCoderFunctions(): String =
 
             else -> {
                 if (serializer == null)
-                    Json.encodeToString(value)
+                    ~Json.encodeToString(value)!~
                 else
-                    Json.encodeToString(serializer, value)
+                    ~Json.encodeToString(serializer, value)!~
             }
         }
         .let { text ->

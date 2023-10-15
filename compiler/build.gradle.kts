@@ -20,7 +20,10 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile>().configureEach{
-    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
+    kotlinOptions.freeCompilerArgs += listOf(
+        "-Xcontext-receivers",
+        "-opt-in=com.google.devtools.ksp.KspExperimental",
+    )
 }
 
 mavenPublishing {

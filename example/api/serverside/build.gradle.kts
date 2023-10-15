@@ -14,6 +14,10 @@ kotlin {
                 implementation(project(":runtime"))
                 api(project(":example:api:shared"))
                 api(libs.ktor.server.core)
+
+                // optional
+                implementation("io.ktor:ktor-server-auth:${libs.versions.ktor.get()}")
+                implementation("io.ktor:ktor-server-websockets:${libs.versions.ktor.get()}")
             }
         }
     }

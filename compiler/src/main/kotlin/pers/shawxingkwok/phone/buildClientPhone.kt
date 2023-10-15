@@ -14,7 +14,7 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
         fileName = "Phone",
         extensionName = "",
         initialImports =
-            listOf(
+            setOf(
                 "io.ktor.client.*",
                 "io.ktor.client.request.*",
                 "io.ktor.http.*",
@@ -56,17 +56,17 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
                 val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
                     private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 
                 
-                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getBody() }}
+                    ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getBody(apiKSClass) }}
                 }
                 """.trim()
             }}    
         }
-        """.trim().indentAsKtCode()
+        """
     }
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getBody() =
+private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) =
     buildString {
         append("override suspend fun ${simpleName()}(")
 
@@ -93,7 +93,7 @@ private fun KSFunctionDeclaration.getBody() =
                     append("if(response.status == HttpStatusCode.NotFound)\n")
                     append("~return null!~\n\n")
                 }
-                append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn()})\n")
+                append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn(ksclass)})\n")
             },
         ) {
             append(" {\n")
@@ -105,7 +105,7 @@ private fun KSFunctionDeclaration.getBody() =
                     append("jsonParameter(\"${ksParam.name!!.asString()}\", ")
                     append("${ksParam.name!!.asString()}, ")
                     append("${ksParam.getSerializer()?.text}, ")
-                    append("${ksParam.getCipherText()})\n")
+                    append("${ksParam.getCipherText(ksclass)})\n")
                 }
                 append("}")
             }
