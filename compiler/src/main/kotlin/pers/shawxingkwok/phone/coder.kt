@@ -7,10 +7,18 @@ internal fun getCoderFunctions(): String =
         serializer: KSerializer<T>?,
         cipher: Phone.Cipher?,
     ): String =
-        ~when{
-            value is String -> value
-            serializer == null -> Json.encodeToString(value)
-            else -> Json.encodeToString(serializer, value)
+        ~when(value){
+            is String -> value
+            is Boolean, is Int, is Long,
+            is Float, is Double 
+                ~-> value.toString()!~
+
+            else -> {
+                if (serializer == null)
+                    Json.encodeToString(value)
+                else
+                    Json.encodeToString(serializer, value)
+            }
         }
         .let { text ->
             if (cipher == null) text
@@ -20,7 +28,7 @@ internal fun getCoderFunctions(): String =
                 Json.encodeToString(ByteArraySerializer(), base64Bytes)
             }
         }!~
-    
+
     private inline fun <reified T: Any> decode(
         text: String,
         serializer: KSerializer<T>?,
@@ -34,9 +42,14 @@ internal fun getCoderFunctions(): String =
         }
 
         return when{
-            T::class == String::class -> newText as T
+            T::class == String::class -> newText 
+            T::class == Boolean::class -> newText.toBoolean() 
+            T::class == Int::class -> newText.toInt() 
+            T::class == Long::class -> newText.toLong() 
+            T::class == Float::class -> newText.toFloat() 
+            T::class == Double::class -> newText.toDouble() 
             serializer == null -> Json.decodeFromString(newText)
             else -> Json.decodeFromString(serializer, newText)
-        }
+        } as T
     }
     """.trim()
