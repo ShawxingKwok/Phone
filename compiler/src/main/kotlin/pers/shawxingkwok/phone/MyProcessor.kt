@@ -42,16 +42,12 @@ internal object MyProcessor : KSProcessor{
             Log.require(ksclass.classKind == ClassKind.INTERFACE, ksclass){
                 "The annotation `Phone.Api` could be annotated only on interfaces."
             }
-            Log.require(ksclass.typeParameters.none(), ksclass){
-                "Interfaces annotated with `Phone.Api` can't have any type parameter."
-            }
             Log.require(ksclass.parentDeclaration == null, ksclass){
                 "Each interface annotated with `Phone.Api` can't be a nest class. " +
                 "Or the simple generated declaration names and routes may repeat."
             }
             Log.require(ksclass.packageName().any(), ksclass){
-                "Non-local class without package name is commonly used in test cases. " +
-                "However, I don't want to spend time adapting `Phone` with it."
+                "Each interface annotated with `Phone.Api` should have a package name."
             }
 
             val polymorphic = ksclass.getAllFunctions()
