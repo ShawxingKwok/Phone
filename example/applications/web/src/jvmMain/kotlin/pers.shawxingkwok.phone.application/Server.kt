@@ -10,6 +10,7 @@ import io.ktor.server.routing.*
 import kotlinx.html.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
+import pers.shawxingkwok.server.phone.Phone
 
 fun main() {
     embeddedServer(Netty, port = 8080) {
