@@ -19,8 +19,20 @@ internal object MyProcessor : KSProcessor{
         var value = UNSTARTED
     }
 
-    private val phoneApiPaths = resolver
+    private val phoneInterfacePaths = resolver
         .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
+        .plus(resolver.getAnnotatedSymbols<Phone.WebSockets, KSClassDeclaration>())
+        .also { ksclasses ->
+            val cognominal= ksclasses
+                .groupBy { it.simpleName() }
+                .values
+                .filter { it.size >= 2 }
+                .flatten()
+
+            Log.require(cognominal, cognominal.none()){
+                "`Phone` interfaces can't share names."
+            }
+        }
         .map { it.qualifiedName()!! }
 
     // both nullable and non-nullable are mapped
@@ -31,7 +43,7 @@ internal object MyProcessor : KSProcessor{
         private set
 
     override fun process(round: Int): List<KSAnnotated> {
-        if (phoneApiPaths.none())
+        if (phoneInterfacePaths.none())
             return emptyList()
 
         var (valid, invalid) = resolver
@@ -66,9 +78,13 @@ internal object MyProcessor : KSProcessor{
                 .filter { it.size >= 2 }
                 .flatten()
 
-            Log.require(polymorphic, polymorphic.none()){
-                "Polymorphic functions are forbidden in interfaces with `Phone`, " +
-                "because it's error-prone when ensuring backward compatibility."
+            Log.require(
+                symbols = polymorphic,
+                condition = polymorphic.filterNot { it.isAnnotationPresent(Phone.Polymorphic::class) }.size <= 1
+            ){
+                "Polymorphic functions in interfaces with `Phone` should be annotated with `Phone.Polymorphic`. " +
+                "Note that if you make a common function polymorphic in later versions, the first common function " +
+                "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
             }
         }
 
@@ -159,7 +175,7 @@ internal object MyProcessor : KSProcessor{
                     else ksType.makeNullable()
                 }
 
-                val phones = phoneApiPaths.map { resolver.getClassDeclarationByName(it)!! }
+                val phones = phoneInterfacePaths.map { resolver.getClassDeclarationByName(it)!! }
                 buildClientPhone(phones)
                 buildServerPhone(phones)
             }

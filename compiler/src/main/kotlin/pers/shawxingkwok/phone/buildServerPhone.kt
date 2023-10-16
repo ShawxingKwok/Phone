@@ -1,5 +1,6 @@
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -81,7 +82,8 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
 context (KtGen)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
-        append("post(\"/${simpleName()}\"){\n")
+        append("""post("/$mayPolymorphicPath"){""")
+        append("\n")
 
         if (parameters.any())
             append("val params = call.request.queryParameters\n\n")

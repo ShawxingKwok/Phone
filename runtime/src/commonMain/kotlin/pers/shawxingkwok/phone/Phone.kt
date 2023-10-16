@@ -5,6 +5,9 @@ public annotation class Phone{
     @Target(AnnotationTarget.CLASS)
     public annotation class Api
 
+    @Target(AnnotationTarget.FUNCTION)
+    public annotation class Polymorphic(val id: String)
+
     @Target(AnnotationTarget.CLASS)
     public annotation class WebSockets(
         val protocol: String = "",
