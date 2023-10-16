@@ -2,7 +2,7 @@ package pers.shawxingkwok.center.api
 
 import pers.shawxingkwok.phone.Phone
 
-@Phone.WebSockets("A")
+@Phone.WebSocket("A")
 interface MyWebSocket {
     suspend fun getChats()
 

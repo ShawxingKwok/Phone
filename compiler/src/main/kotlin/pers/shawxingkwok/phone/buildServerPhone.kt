@@ -6,11 +6,11 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
+internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ServerPackageName,
         fileName = "Phone",
-        dependencies = Dependencies(true, *phoneApis.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
         extensionName = "",
         initialImports = setOf(
             "io.ktor.http.*",
@@ -27,17 +27,18 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
     ){
         """
         object Phone{
-            ${phoneApis.joinToString("\n"){
-                """
-                interface ${it.simpleName()} : ${it.qualifiedName()} {
-                    val call: ApplicationCall
-                }
-                """.trim()
+            ${phones.joinToString("\n"){ ksclass ->
+            """
+            interface ${ksclass.simpleName()} : ${ksclass.qualifiedName()} {
+                ${ksclass.getPropStatement(true)}
+            }
+            """.trim()
             }}
             
             ${getCoderFunctions()}
 
-            private suspend inline fun <reified T: Any> PipelineContext<Unit, ApplicationCall>.tryDecode(
+            private suspend inline fun <reified T: Any> tryDecode(
+                call: ApplicationCall,
                 text: String,
                 paramName: String,
                 serializer: KSerializer<T>?,
@@ -51,7 +52,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
                     null
                 }!~
             
-            private suspend fun PipelineContext<Unit, ApplicationCall>.notFoundParam(paramName: String){
+            private suspend fun notFoundParam(call: ApplicationCall, paramName: String){
                 call.respondText(
                     text = "Not found `${"$"}paramName` in parameters.",
                     status = HttpStatusCode.BadRequest,
@@ -60,11 +61,11 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
     
             fun configure(
                 routing: Routing,
-                ${phoneApis.joinToString("\n"){
-                    "get${it.simpleName()}: (ApplicationCall) -> ${it.simpleName()},"   
+                ${phones.joinToString("\n"){
+                    "get${it.simpleName()}: (${it.getPropTypeText(true)}) -> ${it.simpleName()},"   
                 }}    
             ){
-                ${phoneApis.joinToString("\n\n"){ ksclass ->
+                ${phones.joinToString("\n\n"){ ksclass ->
                     """
                     routing.route("/${ksclass.simpleName()}"){
                         ${mayEmbraceWithAuth(ksclass) {
@@ -82,8 +83,23 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
 context (KtGen)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
-        append("""post("/$mayPolymorphicPath"){""")
-        append("\n")
+        val websocketsAnnot = ksclass.getAnnotationByType(Phone.WebSocket::class)
+
+        val postOrWebSocket = when{
+            websocketsAnnot == null -> "post"
+            else -> getDeclText(
+                import = "io.ktor.server.websocket.webSocket${insertIf(websocketsAnnot.isRaw) { "Raw" }}",
+                innerName = null,
+                isTopLevelAndExtensional = true
+            )
+        }
+
+        append("""$postOrWebSocket("/$mayPolymorphicPath"""")
+
+        if (websocketsAnnot?.protocol != null)
+            append(""", "${websocketsAnnot.protocol}"""")
+
+        append("){\n")
 
         if (parameters.any())
             append("val params = call.request.queryParameters\n\n")
@@ -92,7 +108,14 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         if (returnType != resolver.builtIns.unitType)
             append("val ret = ")
 
-        append("get${parentDeclaration!!.simpleName()}(call).${simpleName()}(\n")
+        append("get${parentDeclaration!!.simpleName()}(")
+
+        if (websocketsAnnot == null)
+            append("call")
+        else
+            append("this")
+
+        append(").${simpleName()}(\n")
 
         parameters.forEach { param ->
             val paramName = param.name!!.asString()
@@ -122,16 +145,16 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             append(
                 """
                 ~?.let{ 
-                    tryDecode${"<${typeText}>"}(it, "$paramName", ${param.getSerializer()?.text}, ${
+                    tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializer()?.text}, ${
                         param.getCipherText(ksclass)
                     }) 
-                    ?: return@post 
+                    ?: return@$postOrWebSocket 
                 }!~
                 """.trim() + "\n"
             )
 
             if (!type.isMarkedNullable)
-                append("~?: return@post notFoundParam(\"$paramName\")!~\n")
+                append("~?: return@$postOrWebSocket notFoundParam(call, \"$paramName\")!~\n")
 
             if (get(lastIndex - 1) == '~')
                 insert(length - 3, ",")
@@ -145,30 +168,35 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         if (parameters.none())
             insert(length - 1, ")")
         else
-            append(")\n\n")
+            append(")\n")
 
-        if (returnType == resolver.builtIns.unitType)
-            append("call.response.status(HttpStatusCode.OK)\n")
-        else
-            mayEmbrace(
-                condition = returnType.isMarkedNullable,
-                start = """
-                    if(ret == null)
-                        ~call.response.status(HttpStatusCode.NotFound)!~
-                    else{
-                    """.trimStart(),
-                body = """
-                    val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${
-                        this@getBody.getCipherTextForReturn(
-                            ksclass
-                        )
-                    })
-                    call.respondText(text, status = HttpStatusCode.OK)
-                    """.trimStart(),
-                end = "}\n",
-            )
-            .let(::append)
+        when {
+            ksclass.isAnnotationPresent(Phone.WebSocket::class) -> {}
 
+            returnType == resolver.builtIns.unitType ->
+                append("\ncall.response.status(HttpStatusCode.OK)\n")
+
+            else -> {
+                append("\n")
+
+                mayEmbrace(
+                    condition = returnType.isMarkedNullable,
+                    start = """
+                        if(ret == null)
+                            ~call.response.status(HttpStatusCode.NotFound)!~
+                        else{
+                        """.trimStart(),
+                    body = """
+                        val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${
+                            this@getBody.getCipherTextForReturn(ksclass)
+                        })
+                        call.respondText(text, status = HttpStatusCode.OK)
+                    """.trimStart(),
+                    end = "}\n",
+                )
+                .let(::append)
+            }
+        }
         append("}")
     }
 }

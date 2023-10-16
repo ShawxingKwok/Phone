@@ -21,7 +21,7 @@ internal object MyProcessor : KSProcessor{
 
     private val phoneInterfacePaths = resolver
         .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-        .plus(resolver.getAnnotatedSymbols<Phone.WebSockets, KSClassDeclaration>())
+        .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
         .also { ksclasses ->
             val cognominal= ksclasses
                 .groupBy { it.simpleName() }
@@ -48,7 +48,7 @@ internal object MyProcessor : KSProcessor{
 
         var (valid, invalid) = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-            .plus(resolver.getAnnotatedSymbols<Phone.WebSockets, KSClassDeclaration>())
+            .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
             .partition { it.accept(KSDefaultValidator(), Unit) }
 
         // check each class with Phone.Api
@@ -56,7 +56,7 @@ internal object MyProcessor : KSProcessor{
             Log.require(
                 symbol = ksclass,
                 condition = !ksclass.isAnnotationPresent(Phone.Api::class)
-                    || !ksclass.isAnnotationPresent(Phone.WebSockets::class)
+                    || !ksclass.isAnnotationPresent(Phone.WebSocket::class)
             ){
                 "`Phone.Api` is needless when you set web sockets."
             }
