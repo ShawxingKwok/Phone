@@ -6,11 +6,16 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.Netty
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
 import kotlinx.html.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.server.phone.Phone
+import java.time.Duration
 
 fun main() {
     embeddedServer(Netty, port = 8080) {
@@ -20,7 +25,7 @@ fun main() {
             // I prefer putting it in resources.
             // However, it is different in a submodule.
             get("/") {
-                call.respondHtml(HttpStatusCode.OK){
+                call.respondHtml(HttpStatusCode.OK) {
                     body {
                         script(src = "/static/web.js") {}
                     }
@@ -31,7 +36,7 @@ fun main() {
     }.start(wait = true)
 }
 
-class ChatApiImpl(override val call: ApplicationCall) : Phone.ChatApi{
+class ChatApiImpl(override val call: ApplicationCall) : Phone.ChatApi {
     override suspend fun getChats(): List<String> {
         return listOf("Hello, world!")
     }

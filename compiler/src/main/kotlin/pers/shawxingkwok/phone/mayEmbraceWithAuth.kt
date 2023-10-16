@@ -8,22 +8,12 @@ import pers.shawxingkwok.ksputil.KtGen
 import pers.shawxingkwok.ksputil.Log
 import pers.shawxingkwok.ksputil.getAnnotationByType
 
-internal fun KtGen.mayEmbraceWithAuth(
-    ksclass: KSClassDeclaration,
-    ksfun: KSFunctionDeclaration?,
+internal inline fun KtGen.mayEmbraceWithAuth(
+    decl: KSDeclaration,
     getBody: () -> String,
 ): String =
     buildString {
-        Log.require(
-            condition = !ksclass.isAnnotationPresent(Phone.Auth::class)
-                || ksfun == null
-                || !ksfun.isAnnotationPresent(Phone.Auth::class),
-            symbols = listOfNotNull(ksclass, ksfun)
-        ){
-            "You can't annotate with `Phone.Auth` on both interface and functions."
-        }
-
-        val auth = ksclass.getAnnotationByType<Phone.Auth>() ?: ksfun?.getAnnotationByType<Phone.Auth>()
+        val auth = decl.getAnnotationByType<Phone.Auth>()
 
         val authenticate = getDeclText("io.ktor.server.auth.authenticate", null, true)
         val strategy = getDeclText("io.ktor.server.auth.AuthenticationStrategy", null, false)

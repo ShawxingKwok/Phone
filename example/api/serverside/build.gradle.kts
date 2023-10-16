@@ -18,6 +18,8 @@ kotlin {
                 // optional
                 implementation("io.ktor:ktor-server-auth:${libs.versions.ktor.get()}")
                 implementation("io.ktor:ktor-server-websockets:${libs.versions.ktor.get()}")
+                implementation("io.ktor:ktor-server-core-jvm:${libs.versions.ktor.get()}")
+                implementation("io.ktor:ktor-server-websockets-jvm:${libs.versions.ktor.get()}")
             }
         }
     }

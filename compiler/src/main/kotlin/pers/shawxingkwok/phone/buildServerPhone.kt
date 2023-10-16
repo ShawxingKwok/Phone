@@ -1,6 +1,5 @@
 package pers.shawxingkwok.phone
 
-import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -67,7 +66,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
                 ${phoneApis.joinToString("\n\n"){ ksclass ->
                     """
                     routing.route("${ksclass.simpleName()}"){
-                        ${mayEmbraceWithAuth(ksclass, null) {
+                        ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
                         }}
                     }
@@ -80,7 +79,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
 }
 
 context (KtGen)
-private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(ksclass, this@getBody) {
+private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
         append("post(\"/${simpleName()}\"){\n")
 
@@ -120,15 +119,13 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
             append(
                 """
-            ~?.let{ 
-                tryDecode${"<${typeText}>"}(it, "$paramName", ${param.getSerializer()?.text}, ${
-                    param.getCipherText(
-                        ksclass
-                    )
-                }) 
-                ?: return@post 
-            }!~
-            """.trim() + "\n"
+                ~?.let{ 
+                    tryDecode${"<${typeText}>"}(it, "$paramName", ${param.getSerializer()?.text}, ${
+                        param.getCipherText(ksclass)
+                    }) 
+                    ?: return@post 
+                }!~
+                """.trim() + "\n"
             )
 
             if (!type.isMarkedNullable)
@@ -154,18 +151,18 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             mayEmbrace(
                 condition = returnType.isMarkedNullable,
                 start = """
-                if(ret == null)
-                    ~call.response.status(HttpStatusCode.NotFound)!~
-                else{
-                """.trimStart(),
+                    if(ret == null)
+                        ~call.response.status(HttpStatusCode.NotFound)!~
+                    else{
+                    """.trimStart(),
                 body = """
-                val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${
-                    this@getBody.getCipherTextForReturn(
-                        ksclass
-                    )
-                })
-                call.respondText(text, status = HttpStatusCode.OK)
-                """.trimStart(),
+                    val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${
+                        this@getBody.getCipherTextForReturn(
+                            ksclass
+                        )
+                    })
+                    call.respondText(text, status = HttpStatusCode.OK)
+                    """.trimStart(),
                 end = "}\n",
             )
                 .let(::append)

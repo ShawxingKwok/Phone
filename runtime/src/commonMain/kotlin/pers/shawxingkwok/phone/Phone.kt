@@ -6,7 +6,10 @@ public annotation class Phone{
     public annotation class Api
 
     @Target(AnnotationTarget.CLASS)
-    public annotation class WebSockets
+    public annotation class WebSockets{
+        @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+        public annotation class Protocol(val protocol: String)
+    }
 
     @Target(AnnotationTarget.CLASS)
     public annotation class Serializer

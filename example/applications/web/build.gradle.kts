@@ -64,6 +64,10 @@ tasks.named<JavaExec>("run") {
     dependsOn(tasks.named<Jar>("jvmJar"))
     classpath(tasks.named<Jar>("jvmJar"))
 }
+dependencies {
+    implementation("io.ktor:ktor-server-core-jvm:2.3.5")
+    implementation("io.ktor:ktor-server-websockets-jvm:2.3.5")
+}
 
 // tasks.register<Copy>("moveJsLibs") {
 //     val rootPath = projectDir.path.substringBeforeLast("/example/applications/web")
