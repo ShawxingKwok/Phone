@@ -13,7 +13,7 @@ internal inline fun KtGen.mayEmbraceWithAuth(
     getBody: () -> String,
 ): String =
     buildString {
-        val auth = decl.getAnnotationByType<Phone.Auth>()
+        val auth = decl.getAnnotationByType(Phone.Auth::class)
 
         val authenticate = getDeclText("io.ktor.server.auth.authenticate", null, true)
         val strategy = getDeclText("io.ktor.server.auth.AuthenticationStrategy", null, false)

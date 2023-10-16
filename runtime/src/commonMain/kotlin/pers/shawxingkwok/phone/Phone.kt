@@ -6,10 +6,10 @@ public annotation class Phone{
     public annotation class Api
 
     @Target(AnnotationTarget.CLASS)
-    public annotation class WebSockets{
-        @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Protocol(val protocol: String)
-    }
+    public annotation class WebSockets(
+        val protocol: String = "",
+        val isRaw: Boolean = false,
+    )
 
     @Target(AnnotationTarget.CLASS)
     public annotation class Serializer

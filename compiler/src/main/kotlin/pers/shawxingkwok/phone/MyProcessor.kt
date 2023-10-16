@@ -2,6 +2,7 @@ package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
@@ -35,19 +36,28 @@ internal object MyProcessor : KSProcessor{
 
         var (valid, invalid) = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
+            .plus(resolver.getAnnotatedSymbols<Phone.WebSockets, KSClassDeclaration>())
             .partition { it.accept(KSDefaultValidator(), Unit) }
 
         // check each class with Phone.Api
         valid.forEach { ksclass ->
-            Log.require(ksclass.classKind == ClassKind.INTERFACE, ksclass){
-                "The annotation `Phone.Api` could be annotated only on interfaces."
+            Log.require(
+                symbol = ksclass,
+                condition = !ksclass.isAnnotationPresent(Phone.Api::class)
+                    || !ksclass.isAnnotationPresent(Phone.WebSockets::class)
+            ){
+                "`Phone.Api` is needless when you set web sockets."
             }
-            Log.require(ksclass.parentDeclaration == null, ksclass){
-                "Each interface annotated with `Phone.Api` can't be a nest class. " +
-                "Or the simple generated declaration names and routes may repeat."
+            Log.require(ksclass, ksclass.classKind == ClassKind.INTERFACE){
+                "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
+                "only on interfaces."
             }
-            Log.require(ksclass.packageName().any(), ksclass){
-                "Each interface annotated with `Phone.Api` should have a package name."
+            Log.require(ksclass, ksclass.parentDeclaration == null){
+                "Each interface with `Phone` can't be a nest class. Or the simple " +
+                "generated declaration names and routes may repeat."
+            }
+            Log.require(ksclass, ksclass.packageName().any()){
+                "Each interface with `Phone` should have a package name."
             }
 
             val polymorphic = ksclass.getAllFunctions()
@@ -56,9 +66,9 @@ internal object MyProcessor : KSProcessor{
                 .filter { it.size >= 2 }
                 .flatten()
 
-            Log.require(polymorphic.none(), polymorphic){
-                "Polymorphic functions are forbidden because it's error-prone " +
-                "when ensuring backward compatibility."
+            Log.require(polymorphic, polymorphic.none()){
+                "Polymorphic functions are forbidden in interfaces with `Phone`, " +
+                "because it's error-prone when ensuring backward compatibility."
             }
         }
 
@@ -70,17 +80,17 @@ internal object MyProcessor : KSProcessor{
                 || name == "equals"
                 || name == "hashCode"
             }
-            .forEach {
+            .filter { it.isAbstract }
+            .forEach { ksfun ->
                 Log.require(
-                    condition =
-                        !it.isAbstract
-                        || Modifier.SUSPEND in it.modifiers && it.typeParameters.none()
-                        && it.extensionReceiver == null,
-                    symbol = it,
-                ){
-                    "In each class annotated with `Phone.Api`, " +
-                    "all abstract functions must be suspend without extensional receivers and " +
-                    "type parameters, except 'toString', 'equals', and 'hashCode'."
+                    symbol = ksfun,
+                    condition = Modifier.SUSPEND in ksfun.modifiers
+                        && ksfun.typeParameters.none()
+                        && ksfun.extensionReceiver == null,
+                ) {
+                    "In each class with `Phone`, all abstract functions must be suspend " +
+                    "without extensional receivers and type parameters, except 'toString', " +
+                    "'equals', and 'hashCode'."
                 }
             }
 
@@ -90,7 +100,7 @@ internal object MyProcessor : KSProcessor{
             .also {
                 if (round > 0) return@also
 
-                Log.require(it.size <= 1, it){
+                Log.require(it, it.size <= 1){
                     "Multiple crypto objects are forbidden."
                 }
             }
@@ -111,10 +121,10 @@ internal object MyProcessor : KSProcessor{
 
                 if (cipherKSObj != null)
                     Log.require(
+                        cipherKSObj,
                         cipherKSObj.getAllSuperTypes().any {
                             it.declaration.qualifiedName() == Phone.Cipher::class.qualifiedName
                         },
-                        cipherKSObj
                     ){
                         "The object annotated with `@Phone.Crypto` should implement `Phone.Cipher`."
                     }
@@ -122,7 +132,7 @@ internal object MyProcessor : KSProcessor{
                 serializers = resolver
                     .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
                     .associateBy { ksclass ->
-                        Log.require(ksclass.classKind == ClassKind.OBJECT, ksclass) {
+                        Log.require(ksclass, ksclass.classKind == ClassKind.OBJECT) {
                             "Each class annotated with `Phone.Serializer` must be object."
                         }
 

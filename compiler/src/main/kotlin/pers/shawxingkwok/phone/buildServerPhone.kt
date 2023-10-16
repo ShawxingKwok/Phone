@@ -165,7 +165,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                     """.trimStart(),
                 end = "}\n",
             )
-                .let(::append)
+            .let(::append)
 
         append("}")
     }
