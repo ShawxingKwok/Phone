@@ -65,7 +65,7 @@ internal fun buildServerPhone(phoneApis: List<KSClassDeclaration>) {
             ){
                 ${phoneApis.joinToString("\n\n"){ ksclass ->
                     """
-                    routing.route("${ksclass.simpleName()}"){
+                    routing.route("/${ksclass.simpleName()}"){
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
                         }}

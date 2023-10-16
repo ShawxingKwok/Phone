@@ -97,7 +97,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) =
             },
         ) {
             append(" {\n")
-            append("val response = client.post(\"$${"mBasicUrl"}/${simpleName()}\")")
+            append("val response = client.post(\"/$${"mBasicUrl"}/${simpleName()}\")")
 
             if (parameters.any()) {
                 append(" {\n")
