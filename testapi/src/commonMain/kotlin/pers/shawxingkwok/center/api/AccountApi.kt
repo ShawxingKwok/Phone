@@ -5,15 +5,16 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 
 @Phone.Api
+@Phone.Auth
 interface AccountApi {
-    @Phone.Crypto
     suspend fun login(
         email: String,
         password: String,
     )
     : LoginResult
 
+    @Phone.Auth(["auth-bearer"])
     suspend fun delete(id: Long)
 
-    suspend fun search(id: Long): @Phone.Crypto User?
+    suspend fun search(id: Long): User?
 }
