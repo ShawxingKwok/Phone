@@ -49,7 +49,7 @@ private fun KSFunctionDeclaration.getWebSocketBody(
             maySecureWebSocket${insertIf(webSocket.isRaw){ "Raw" }}(
                 path = "$path",
                 request = {
-                    ${newLineIf(webSocket.protocol.any()){ "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.protocol}\")" }}
+                    ${newLineIf(webSocket.subProtocol.any()){ "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.subProtocol}\")" }}
                     ${newLineIf(parameters.any()){ getJsonParametersBody(ksclass) }} 
                 },
             ){

@@ -13,7 +13,7 @@ public annotation class Phone{
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)
     public annotation class WebSocket(
-        val protocol: String = "",
+        val subProtocol: String = "",
         val isRaw: Boolean = false,
     )
 

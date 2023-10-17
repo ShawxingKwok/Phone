@@ -96,8 +96,8 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
         append("""$postOrWebSocket("/${simpleName()}$mayPolymorphicId"""")
 
-        if (websocketsAnnot?.protocol?.any() == true)
-            append(""", "${websocketsAnnot.protocol}"""")
+        if (websocketsAnnot?.subProtocol?.any() == true)
+            append(""", "${websocketsAnnot.subProtocol}"""")
 
         append("){\n")
 

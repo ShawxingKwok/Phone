@@ -21,3 +21,9 @@ interface MySubProtocolWebSocket {
 interface MyWebSocketWithArgs {
     suspend fun getChats(id: Long, name: String)
 }
+
+@Phone.Auth
+@Phone.WebSocket
+interface MyWebSocketWithAuth {
+    suspend fun getChats(id: Long, name: String)
+}
