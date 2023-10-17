@@ -85,8 +85,8 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
     buildString {
         val websocketsAnnot = ksclass.getAnnotationByType(Phone.WebSocket::class)
 
-        val postOrWebSocket = when{
-            websocketsAnnot == null -> "post"
+        val postOrWebSocket = when(websocketsAnnot){
+            null -> "post"
             else -> getDeclText(
                 import = "io.ktor.server.websocket.webSocket${insertIf(websocketsAnnot.isRaw) { "Raw" }}",
                 innerName = null,
