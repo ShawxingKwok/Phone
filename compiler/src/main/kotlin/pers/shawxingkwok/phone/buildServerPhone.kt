@@ -28,11 +28,11 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
         """
         object Phone{
             ${phones.joinToString("\n"){ ksclass ->
-            """
-            interface ${ksclass.phoneName} : ${ksclass.qualifiedName()} {
-                ${ksclass.getPropStatement(true)}
-            }
-            """.trim()
+                """
+                interface ${ksclass.phoneName} : ${ksclass.qualifiedName()} {
+                    ${ksclass.getPropStatement(true)}
+                }
+                """.trim()
             }}
             
             ${getCoderFunctions()}
@@ -94,9 +94,9 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             )
         }
 
-        append("""$postOrWebSocket("/$mayPolymorphicPath"""")
+        append("""$postOrWebSocket("/${simpleName()}$mayPolymorphicId"""")
 
-        if (websocketsAnnot?.protocol != null)
+        if (websocketsAnnot?.protocol?.any() == true)
             append(""", "${websocketsAnnot.protocol}"""")
 
         append("){\n")
@@ -187,9 +187,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                         else{
                         """.trimStart(),
                     body = """
-                        val text = encode(ret, ${returnType.getSerializerText()}, ${
-                            this@getBody.getCipherTextForReturn(ksclass)
-                        })
+                        val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
                         call.respondText(text, status = HttpStatusCode.OK)
                     """.trimStart(),
                     end = "}\n",

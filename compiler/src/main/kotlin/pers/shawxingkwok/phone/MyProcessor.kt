@@ -6,6 +6,7 @@ import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
+import pers.shawxingkwok.phone.client.buildClientPhone
 import java.io.File
 
 @Suppress("unused")
@@ -49,7 +50,16 @@ internal object MyProcessor : KSProcessor{
         var (valid, invalid) = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
             .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
-            .partition { it.accept(KSDefaultValidator(), Unit) }
+            .partition { ksclass ->
+                ksclass.getAllSuperTypes()
+                    .map { it.declaration }
+                    .filter { it.containingFile != null }
+                    .all {
+                        // there are few super interfaces, so there is no need to
+                        // make caches for `accept` to accelerate.
+                        it.accept(KSDefaultValidator(), Unit)
+                    }
+            }
 
         // check each class with Phone.Api
         valid.forEach { ksclass ->
@@ -64,15 +74,25 @@ internal object MyProcessor : KSProcessor{
                 "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
                 "only on interfaces."
             }
-            // Log.require(ksclass, ksclass.parentDeclaration == null){
-            //     "Each interface with `Phone` can't be a nest class. Or the simple " +
-            //     "generated declaration names and routes may repeat."
-            // }
             Log.require(ksclass, ksclass.packageName().any()){
                 "Each interface with `Phone` should have a package name."
             }
-
-            val polymorphic = ksclass.getAllFunctions()
+            if (ksclass.isAnnotationPresent(Phone.WebSocket::class)){
+                Log.require(ksclass, ksclass.getNeededFunctions().any()){
+                    "Each interface annotated with `Phone.WebSocket` should contain at least one function. " +
+                    "Note that functions in super classes also count."
+                }
+                Log.require(
+                    symbol = ksclass,
+                    condition = ksclass.getNeededFunctions().all {
+                        it.returnType!!.resolve() == resolver.builtIns.unitType
+                    },
+                ){
+                    "Each function used by interfaces annotated with `Phone.WebSocket` " +
+                    "can't have a return type.(Only `Unit` is allowed in other words.)"
+                }
+            }
+            val polymorphic = ksclass.getNeededFunctions()
                 .groupBy { it.simpleName() }
                 .values
                 .filter { it.size >= 2 }
@@ -89,23 +109,18 @@ internal object MyProcessor : KSProcessor{
         }
 
         // check all functions in Phone classes
-        valid.flatMap { it.getAllFunctions() }
-            .filterNot {
-                val name = it.simpleName()
-                name == "toString"
-                || name == "equals"
-                || name == "hashCode"
-            }
-            .filter { it.isAbstract }
+        valid.flatMap { it.getNeededFunctions() }
             .forEach { ksfun ->
                 Log.require(
                     symbol = ksfun,
-                    condition = Modifier.SUSPEND in ksfun.modifiers
+                    condition =
+                        ksfun.isAbstract
+                        && Modifier.SUSPEND in ksfun.modifiers
                         && ksfun.typeParameters.none()
-                        && ksfun.extensionReceiver == null,
+                        && ksfun.extensionReceiver == null
                 ) {
-                    "In each class with `Phone`, all abstract functions must be suspend " +
-                    "without extensional receivers and type parameters, except 'toString', " +
+                    "In each class with `Phone`, all functions must be abstract, suspend, " +
+                    "and without extensional receivers and type parameters, except 'toString', " +
                     "'equals', and 'hashCode'."
                 }
             }
