@@ -29,7 +29,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
         object Phone{
             ${phones.joinToString("\n"){ ksclass ->
             """
-            interface ${ksclass.simpleName()} : ${ksclass.qualifiedName()} {
+            interface ${ksclass.phoneName} : ${ksclass.qualifiedName()} {
                 ${ksclass.getPropStatement(true)}
             }
             """.trim()
@@ -62,12 +62,12 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             fun configure(
                 routing: Routing,
                 ${phones.joinToString("\n"){
-                    "get${it.simpleName()}: (${it.getPropTypeText(true)}) -> ${it.simpleName()},"   
+                    "get${it.phoneName}: (${it.getPropTypeText(true)}) -> ${it.phoneName},"   
                 }}    
             ){
                 ${phones.joinToString("\n\n"){ ksclass ->
                     """
-                    routing.route("/${ksclass.simpleName()}"){
+                    routing.route("/${ksclass.phoneName}"){
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
                         }}
@@ -108,7 +108,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         if (returnType != resolver.builtIns.unitType)
             append("val ret = ")
 
-        append("get${parentDeclaration!!.simpleName()}(")
+        append("get${ksclass.phoneName}(")
 
         if (websocketsAnnot == null)
             append("call")

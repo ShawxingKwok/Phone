@@ -24,7 +24,7 @@ internal object MyProcessor : KSProcessor{
         .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
         .also { ksclasses ->
             val cognominal= ksclasses
-                .groupBy { it.simpleName() }
+                .groupBy { it.phoneName }
                 .values
                 .filter { it.size >= 2 }
                 .flatten()
@@ -64,10 +64,10 @@ internal object MyProcessor : KSProcessor{
                 "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
                 "only on interfaces."
             }
-            Log.require(ksclass, ksclass.parentDeclaration == null){
-                "Each interface with `Phone` can't be a nest class. Or the simple " +
-                "generated declaration names and routes may repeat."
-            }
+            // Log.require(ksclass, ksclass.parentDeclaration == null){
+            //     "Each interface with `Phone` can't be a nest class. Or the simple " +
+            //     "generated declaration names and routes may repeat."
+            // }
             Log.require(ksclass, ksclass.packageName().any()){
                 "Each interface with `Phone` should have a package name."
             }

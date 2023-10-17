@@ -53,8 +53,8 @@ internal fun buildClientPhone(phoneApis: List<KSClassDeclaration>) {
             
             ${phoneApis.joinToString("\n\n") { apiKSClass ->
                 """
-                val ${apiKSClass.simpleName().replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
-                    private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.simpleName()}" 
+                val ${apiKSClass.phoneName.replaceFirstChar(Char::lowercase)} = object : ${apiKSClass.asStarProjectedType().text} {                    
+                    private val mBasicUrl = "${"$"}{BASIC_URL}/${apiKSClass.phoneName}" 
                 
                     ${apiKSClass.getNeededFunctions().joinToString("\n\n"){ it.getBody(apiKSClass) }}
                 }
