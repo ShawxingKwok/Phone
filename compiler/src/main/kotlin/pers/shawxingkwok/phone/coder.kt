@@ -9,16 +9,16 @@ internal fun getCoderFunctions(): String =
     ): String =
         ~when(value){
             is String -> value
+            
             is Boolean, is Int, is Long,
-            is Float, is Double 
+            is Float, is Double
                 ~-> value.toString()!~
 
-            else -> {
-                if (serializer == null)
+            else -> 
+                ~if (serializer == null)
                     ~Json.encodeToString(value)!~
                 else
-                    ~Json.encodeToString(serializer, value)!~
-            }
+                    ~Json.encodeToString(serializer, value)!~!~
         }
         .let { text ->
             if (cipher == null) text
@@ -42,14 +42,14 @@ internal fun getCoderFunctions(): String =
         }
 
         return when{
+            serializer != null -> Json.decodeFromString(serializer, newText)
             T::class == String::class -> newText 
             T::class == Boolean::class -> newText.toBoolean() 
             T::class == Int::class -> newText.toInt() 
             T::class == Long::class -> newText.toLong() 
             T::class == Float::class -> newText.toFloat() 
             T::class == Double::class -> newText.toDouble() 
-            serializer == null -> Json.decodeFromString(newText)
-            else -> Json.decodeFromString(serializer, newText)
+            else -> Json.decodeFromString(newText)
         } as T
     }
     """.trim()

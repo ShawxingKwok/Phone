@@ -93,7 +93,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) =
                     append("if(response.status == HttpStatusCode.NotFound)\n")
                     append("~return null!~\n\n")
                 }
-                append("return decode(response.bodyAsText(), ${MyProcessor.serializers[returnType]?.text}, ${this@getBody.getCipherTextForReturn(ksclass)})\n")
+                append("return decode(response.bodyAsText(), ${returnType.getSerializerText()}, ${this@getBody.getCipherTextForReturn(ksclass)})\n")
             },
         ) {
             append(" {\n")
@@ -104,7 +104,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) =
                 parameters.forEach { ksParam ->
                     append("jsonParameter(\"${ksParam.name!!.asString()}\", ")
                     append("${ksParam.name!!.asString()}, ")
-                    append("${ksParam.getSerializer()?.text}, ")
+                    append("${ksParam.getSerializerText()}, ")
                     append("${ksParam.getCipherText(ksclass)})\n")
                 }
                 append("}")

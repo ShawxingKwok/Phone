@@ -145,7 +145,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             append(
                 """
                 ~?.let{ 
-                    tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializer()?.text}, ${
+                    tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${
                         param.getCipherText(ksclass)
                     }) 
                     ?: return@$postOrWebSocket 
@@ -187,7 +187,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                         else{
                         """.trimStart(),
                     body = """
-                        val text = encode(ret, ${MyProcessor.serializers[returnType]?.text}, ${
+                        val text = encode(ret, ${returnType.getSerializerText()}, ${
                             this@getBody.getCipherTextForReturn(ksclass)
                         })
                         call.respondText(text, status = HttpStatusCode.OK)
