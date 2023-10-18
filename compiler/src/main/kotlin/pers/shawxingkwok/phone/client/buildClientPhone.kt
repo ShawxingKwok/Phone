@@ -36,7 +36,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
         """
         class Phone(
             private val client: HttpClient,
-            private val mBasicUrl: String = "http://localhost:8080",
+            private val mBasicUrl: String = "http://localhost:80",
         ) {
             ${insertIf(phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """

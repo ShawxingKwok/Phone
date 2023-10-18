@@ -43,13 +43,14 @@ internal fun getCoderFunctions(): String =
 
         return when{
             serializer != null -> Json.decodeFromString(serializer, newText)
-            T::class == String::class -> newText 
-            T::class == Boolean::class -> newText.toBoolean() 
-            T::class == Int::class -> newText.toInt() 
-            T::class == Long::class -> newText.toLong() 
-            T::class == Float::class -> newText.toFloat() 
-            T::class == Double::class -> newText.toDouble() 
-            else -> Json.decodeFromString(newText)
-        } as T
+            T::class == String::class -> newText as T
+            T::class == Boolean::class -> newText.toBoolean() as T 
+            T::class == Int::class -> newText.toInt() as T
+            T::class == Long::class -> newText.toLong() as T
+            T::class == Float::class -> newText.toFloat() as T
+            T::class == Double::class -> newText.toDouble() as T
+            // `T` must be put here, or `Any` would be used for searching the serializer.
+            else -> Json.decodeFromString(newText) as T
+        } 
     }
     """

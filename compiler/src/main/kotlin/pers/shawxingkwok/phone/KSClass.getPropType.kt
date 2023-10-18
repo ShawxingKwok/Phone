@@ -7,7 +7,7 @@ import pers.shawxingkwok.ksputil.getAnnotationByType
 context (CodeFormatter)
 internal fun KSClassDeclaration.getPropStatement(isServerSide: Boolean): String =
     if (isServerSide)
-        when(val websocketsAnnot = getAnnotationByType(Phone.WebSocket::class)) {
+        when(getAnnotationByType(Phone.WebSocket::class)) {
             null -> "val call: ApplicationCall"
             else -> "val session: ${getPropTypeText(true)}"
         }

@@ -19,7 +19,7 @@ import pers.shawxingkwok.server.phone.Phone
 import java.time.Duration
 
 fun main() {
-    embeddedServer(Netty, port = 8080) {
+    embeddedServer(Netty) {
         routing {
             Phone.configure(this, ::AccountApiImpl, ::ChatApiImpl)
 
@@ -31,10 +31,6 @@ fun main() {
                         script(src = "/static/web.js") {}
                     }
                 }
-            }
-
-            post("/X"){
-                call.receiveParameters().get("x").let(::println)
             }
 
             staticResources("/static", null)

@@ -60,14 +60,14 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             }
     
             fun configure(
-                routing: Routing,
+                route: Route,
                 ${phones.joinToString("\n"){
                     "get${it.phoneName}: (${it.getPropTypeText(true)}) -> ${it.phoneName},"   
                 }}    
             ){
                 ${phones.joinToString(""){ ksclass ->
                     """
-                    routing.route("/${ksclass.phoneName}"){
+                    route.route("/${ksclass.phoneName}"){
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
                         }}
