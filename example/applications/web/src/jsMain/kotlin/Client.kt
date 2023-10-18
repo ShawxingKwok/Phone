@@ -1,6 +1,8 @@
 import csstype.HtmlAttributes
 import io.ktor.client.*
 import io.ktor.client.engine.js.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.util.logging.*
 import kotlinx.browser.document
 import kotlinx.coroutines.MainScope

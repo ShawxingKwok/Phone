@@ -31,6 +31,11 @@ fun main() {
                     }
                 }
             }
+
+            get("/X"){
+                call.respondText("X")
+            }
+
             staticResources("/static", null)
         }
     }.start(wait = true)
@@ -59,5 +64,7 @@ class AccountApiImpl(override val call: ApplicationCall) : Phone.AccountApi {
     }
 
     override suspend fun search(id: Long): User? =
-        fakeUsers.firstOrNull { it.id == id }
+        fakeUsers.firstOrNull { it.id == id }.also {
+            "on search: $it".let(::println)
+        }
 }

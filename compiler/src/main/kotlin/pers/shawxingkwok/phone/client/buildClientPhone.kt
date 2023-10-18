@@ -35,11 +35,11 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
         """
         class Phone(
             private val client: HttpClient,
-            private val mBasicUrl: String = "http://127.0.0.1:8080",
+            private val mBasicUrl: String = "http://localhost:8080",
         ) {
-            private val webSocketSecure = mBasicUrl.startsWith("https:")
             ${insertIf(phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """
+                private val webSocketSecure = mBasicUrl.startsWith("https:")
                 private val host = mBasicUrl.substringBeforeLast(":").substringAfter("://")
                 private val port = mBasicUrl.substringAfterLast(":").toIntOrNull() ?: error(TODO())
                 """.trim()               

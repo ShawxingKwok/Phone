@@ -37,7 +37,7 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
             },
         ) {
             append(" {\n")
-            append("""val response = client.post("/${'$'}basicUrl/${simpleName()}${mayPolymorphicId}")""")
+            append("""val response = client.post("${'$'}basicUrl/${simpleName()}${mayPolymorphicId}")""")
             if (parameters.any()){
                 append("{\n")
                 append(getJsonParametersBody(ksclass))
