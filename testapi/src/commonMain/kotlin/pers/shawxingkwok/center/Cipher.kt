@@ -9,6 +9,6 @@ object Cipher : Phone.Cipher{
     }
 
     override fun decrypt(bytes: ByteArray): ByteArray {
-        return bytes.copyOfRange(0, bytes.lastIndex - 1)
+        return bytes.copyOfRange(0, bytes.lastIndex)
     }
 }

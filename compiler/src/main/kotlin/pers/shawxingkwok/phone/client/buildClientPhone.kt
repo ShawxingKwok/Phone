@@ -65,7 +65,6 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                     act: suspend DefaultClientWebSocketSession.() -> Unit,
                 ) {
                     client.${getDeclText("io.ktor.client.plugins.websocket.webSocket", null, true)}(
-                        method = HttpMethod.Post,
                         host = host, port = port,
                         path = path,
                         request = {
