@@ -16,7 +16,7 @@ private val KSClassDeclaration.isAnnotatedWithSerializable: Boolean get() =
         }
     }
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSValueParameter.getSerializerText(): String? {
     val type = type.resolve()
 
@@ -33,7 +33,7 @@ internal fun KSValueParameter.getSerializerText(): String? {
         type.getSerializerText()
 }
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSType.getSerializerText(): String? =
     when(val serializer = MyProcessor.serializers[this]){
         null -> (declaration as KSClassDeclaration)

@@ -80,7 +80,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
     }
 }
 
-context (KtGen)
+context (CodeFormatter)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
         val websocketsAnnot = ksclass.getAnnotationByType(Phone.WebSocket::class)
@@ -115,16 +115,16 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         else
             append("this")
 
-        append(").${simpleName()}(\n")
+        append(").${simpleName()}(")
+
+        if (parameters.any()) append("\n")
 
         parameters.forEach { param ->
             val paramName = param.name!!.asString()
             val type = param.type.resolve()
 
-            append("$paramName = params[\"$paramName\"]\n")
-
             val typeText =
-                if (param.isVararg) {
+                if (param.isVararg)
                     when (type) {
                         resolver.builtIns.booleanType -> BooleanArray::class.text
                         resolver.builtIns.charType -> CharArray::class.text
@@ -139,46 +139,33 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
                         else -> Array::class.text + "<out ${type.text}>"
                     }
-                } else
+                else
                     type.text
 
-            append(
-                """
+            """
+            $paramName = params["$paramName"]
                 ~?.let{ 
-                    tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${
-                        param.getCipherText(ksclass)
-                    }) 
+                    tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${param.getCipherText(ksclass)}) 
                     ?: return@$postOrWebSocket 
                 }!~
-                """.trim() + "\n"
-            )
+                ${insertIf(!type.isMarkedNullable){
+                    "~?: return@$postOrWebSocket notFoundParam(call, \"$paramName\")!~\n"
+                }}                
+            """.trim().let(::append)
 
-            if (!type.isMarkedNullable)
-                append("~?: return@$postOrWebSocket notFoundParam(call, \"$paramName\")!~\n")
-
-            if (get(lastIndex - 1) == '~')
-                insert(length - 3, ",")
-            else
-                insert(length - 1, ",")
-
-            if (param != parameters.last())
-                append("\n")
+            insert(length - 2, ",")
+            append("\n\n")
         }
 
-        if (parameters.none())
-            insert(length - 1, ")")
-        else
-            append(")\n")
+        append(")\n\n")
 
         when {
             ksclass.isAnnotationPresent(Phone.WebSocket::class) -> {}
 
             returnType == resolver.builtIns.unitType ->
-                append("\ncall.response.status(HttpStatusCode.OK)\n")
+                append("call.response.status(HttpStatusCode.OK)\n")
 
-            else -> {
-                append("\n")
-
+            else ->
                 mayEmbrace(
                     condition = returnType.isMarkedNullable,
                     start = """
@@ -193,7 +180,6 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                     end = "}\n",
                 )
                 .let(::append)
-            }
         }
         append("}")
     }

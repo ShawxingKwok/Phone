@@ -2,12 +2,12 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.KtGen
+import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.phone.*
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSClassDeclaration.getCommonBody(): String =
     """
     val ${phoneName.replaceFirstChar(Char::lowercase)} = object : $text {                    
@@ -17,7 +17,7 @@ internal fun KSClassDeclaration.getCommonBody(): String =
     }
     """.trim()
 
-context (KtGen)
+context (CodeFormatter)
 private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
     buildString {
         append(getClientFunctionHeader())

@@ -30,7 +30,7 @@ internal object MyProcessor : KSProcessor{
                 .filter { it.size >= 2 }
                 .flatten()
 
-            Log.require(cognominal, cognominal.none()){
+            Log.check(cognominal, cognominal.none()){
                 "`Phone` interfaces can't share names."
             }
         }
@@ -63,26 +63,26 @@ internal object MyProcessor : KSProcessor{
 
         // check each class with Phone.Api
         valid.forEach { ksclass ->
-            Log.require(
+            Log.check(
                 symbol = ksclass,
                 condition = !ksclass.isAnnotationPresent(Phone.Api::class)
                     || !ksclass.isAnnotationPresent(Phone.WebSocket::class)
             ){
                 "`Phone.Api` is needless when you set web sockets."
             }
-            Log.require(ksclass, ksclass.classKind == ClassKind.INTERFACE){
+            Log.check(ksclass, ksclass.classKind == ClassKind.INTERFACE){
                 "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
                 "only on interfaces."
             }
-            Log.require(ksclass, ksclass.packageName().any()){
+            Log.check(ksclass, ksclass.packageName().any()){
                 "Each interface with `Phone` should have a package name."
             }
             if (ksclass.isAnnotationPresent(Phone.WebSocket::class)){
-                Log.require(ksclass, ksclass.getNeededFunctions().any()){
+                Log.check(ksclass, ksclass.getNeededFunctions().any()){
                     "Each interface annotated with `Phone.WebSocket` should contain at least one function. " +
                     "Note that functions in super classes also count."
                 }
-                Log.require(
+                Log.check(
                     symbol = ksclass,
                     condition = ksclass.getNeededFunctions().all {
                         it.returnType!!.resolve() == resolver.builtIns.unitType
@@ -98,7 +98,7 @@ internal object MyProcessor : KSProcessor{
                 .filter { it.size >= 2 }
                 .flatten()
 
-            Log.require(
+            Log.check(
                 symbols = polymorphic,
                 condition = polymorphic.filterNot { it.isAnnotationPresent(Phone.Polymorphic::class) }.size <= 1
             ){
@@ -111,7 +111,7 @@ internal object MyProcessor : KSProcessor{
         // check all functions in Phone classes
         valid.flatMap { it.getNeededFunctions() }
             .forEach { ksfun ->
-                Log.require(
+                Log.check(
                     symbol = ksfun,
                     condition =
                         ksfun.isAbstract
@@ -131,7 +131,7 @@ internal object MyProcessor : KSProcessor{
             .also {
                 if (round > 0) return@also
 
-                Log.require(it, it.size <= 1){
+                Log.check(it, it.size <= 1){
                     "Multiple crypto objects are forbidden."
                 }
             }
@@ -151,7 +151,7 @@ internal object MyProcessor : KSProcessor{
                 this.cipherKSObj = cipherKSObj
 
                 if (cipherKSObj != null)
-                    Log.require(
+                    Log.check(
                         cipherKSObj,
                         cipherKSObj.getAllSuperTypes().any {
                             it.declaration.qualifiedName() == Phone.Cipher::class.qualifiedName
@@ -163,7 +163,7 @@ internal object MyProcessor : KSProcessor{
                 serializers = resolver
                     .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
                     .associateBy { ksclass ->
-                        Log.require(ksclass, ksclass.classKind == ClassKind.OBJECT) {
+                        Log.check(ksclass, ksclass.classKind == ClassKind.OBJECT) {
                             "Each class annotated with `Phone.Serializer` must be object."
                         }
 
@@ -171,7 +171,7 @@ internal object MyProcessor : KSProcessor{
                             .map { it.resolve() }
                             .firstOrNull { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
                             .let {
-                                Log.require(
+                                Log.check(
                                     condition = it != null,
                                     symbol = ksclass,
                                 ) {

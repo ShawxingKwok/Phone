@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/compiler/Phone.compiler.main.iml" filepath="$PROJECT_DIR$/.idea/modules/compiler/Phone.compiler.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/testcaller/Phone.testcaller.commonMain.iml" filepath="$PROJECT_DIR$/.idea/modules/testcaller/Phone.testcaller.commonMain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/testcaller/Phone.testcaller.test.iml" filepath="$PROJECT_DIR$/.idea/modules/testcaller/Phone.testcaller.test.iml" />
     </modules>
   </component>
 </project>

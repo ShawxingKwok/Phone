@@ -4,9 +4,9 @@ import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
-import pers.shawxingkwok.ksputil.KtGen
+import pers.shawxingkwok.ksputil.CodeFormatter
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSFunctionDeclaration.getCipherTextForReturn(srcKSClass: KSClassDeclaration): String? {
     val isCrypto =
         returnType!!.isAnnotationPresent(Phone.Crypto::class)
@@ -17,7 +17,7 @@ internal fun KSFunctionDeclaration.getCipherTextForReturn(srcKSClass: KSClassDec
     return MyProcessor.cipherKSObj?.takeIf { isCrypto }?.text
 }
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSValueParameter.getCipherText(srcKSClass: KSClassDeclaration): String? {
     val isCrypto =
         isAnnotationPresent(Phone.Crypto::class)

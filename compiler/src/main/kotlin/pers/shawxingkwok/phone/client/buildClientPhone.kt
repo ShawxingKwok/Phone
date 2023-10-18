@@ -45,7 +45,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 """.trim()               
             }}
             
-            ${newLineIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == false }){
+            ${insertIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == false }){
                 """
                 private suspend fun maySecureWebSocket(
                     path: String,
@@ -66,9 +66,10 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                         block = act
                     )
                 }
-                """.trimStart()
+                """.trim()
             }}
-            ${newLineIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == true }){
+            
+            ${insertIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == true }){
                 """
                 private suspend fun maySecureWebSocketRaw(
                     path: String,
@@ -89,8 +90,9 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                         block = act
                     )
                 }
-                """.trimStart()
+                """.trim()
             }}
+            
             private inline fun <reified T> HttpRequestBuilder.jsonParameter(
                 key: String,
                 value: T,

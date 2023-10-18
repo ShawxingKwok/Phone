@@ -4,11 +4,10 @@ import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.KtGen
-import pers.shawxingkwok.ksputil.Log
+import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.getAnnotationByType
 
-internal inline fun KtGen.mayEmbraceWithAuth(
+internal inline fun CodeFormatter.mayEmbraceWithAuth(
     decl: KSDeclaration,
     getBody: () -> String,
 ): String =

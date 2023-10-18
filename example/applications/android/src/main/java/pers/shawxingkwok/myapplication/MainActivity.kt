@@ -3,6 +3,7 @@ package pers.shawxingkwok.myapplication
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -39,8 +40,8 @@ class MainActivity : AppCompatActivity() {
             runCatching {
                 phone.chatApi.getChats()
             }
-                .onFailure { tv.text = "failed getting chats" }
-                .onSuccess { tv.text = it.joinToString("\n") }
+            .onFailure { tv.text = "failed getting chats" }
+            .onSuccess { tv.text = it.joinToString("\n") }
         }
     }
 }

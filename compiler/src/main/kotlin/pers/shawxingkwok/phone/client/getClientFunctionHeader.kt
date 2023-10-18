@@ -1,11 +1,11 @@
 package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.KtGen
+import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.phone.insertIf
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientFunctionHeader(): String =
     buildString {
         append("override suspend fun ${simpleName()}(")

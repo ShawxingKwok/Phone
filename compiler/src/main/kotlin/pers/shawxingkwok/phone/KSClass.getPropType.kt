@@ -1,10 +1,10 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import pers.shawxingkwok.ksputil.KtGen
+import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.getAnnotationByType
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSClassDeclaration.getPropStatement(isServerSide: Boolean): String =
     if (isServerSide)
         when(val websocketsAnnot = getAnnotationByType(Phone.WebSocket::class)) {
@@ -13,7 +13,7 @@ internal fun KSClassDeclaration.getPropStatement(isServerSide: Boolean): String 
         }
     else TODO()
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSClassDeclaration.getPropTypeText(isServerSide: Boolean): String =
     if (isServerSide)
         when(val websocketsAnnot = getAnnotationByType(Phone.WebSocket::class)) {

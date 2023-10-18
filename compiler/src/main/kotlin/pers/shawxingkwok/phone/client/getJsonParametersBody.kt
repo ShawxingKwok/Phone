@@ -2,11 +2,11 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.KtGen
+import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.phone.getCipherText
 import pers.shawxingkwok.phone.getSerializerText
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSFunctionDeclaration.getJsonParametersBody(ksclass: KSClassDeclaration): String =
     parameters.joinToString("\n") { ksParam ->
         listOf(

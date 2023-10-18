@@ -2,7 +2,7 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.KtGen
+import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.qualifiedName
 import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.phone.*
@@ -10,7 +10,7 @@ import pers.shawxingkwok.phone.getNeededFunctions
 import pers.shawxingkwok.phone.insertIf
 import pers.shawxingkwok.phone.phoneName
 
-context (KtGen)
+context (CodeFormatter)
 internal fun KSClassDeclaration.getWebSocketBody(webSocket: Phone.WebSocket): String {
     val webSocketSessionKSClassText = getDeclText(
         import = "io.ktor.client.plugins.websocket.${insertIf(!webSocket.isRaw){ "Default" }}ClientWebSocketSession",
@@ -36,7 +36,7 @@ internal fun KSClassDeclaration.getWebSocketBody(webSocket: Phone.WebSocket): St
         """.trim()
 }
 
-context (KtGen)
+context (CodeFormatter)
 private fun KSFunctionDeclaration.getWebSocketBody(
     ksclass: KSClassDeclaration,
     webSocket: Phone.WebSocket,
@@ -49,8 +49,8 @@ private fun KSFunctionDeclaration.getWebSocketBody(
             maySecureWebSocket${insertIf(webSocket.isRaw){ "Raw" }}(
                 path = "$path",
                 request = {
-                    ${newLineIf(webSocket.subProtocol.any()){ "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.subProtocol}\")" }}
-                    ${newLineIf(parameters.any()){ getJsonParametersBody(ksclass) }} 
+                    ${insertIf(webSocket.subProtocol.any()){ "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.subProtocol}\")" }}
+                    ${insertIf(parameters.any()){ getJsonParametersBody(ksclass) }} 
                 },
             ){
                 checkNoBadRequest(call.response)
