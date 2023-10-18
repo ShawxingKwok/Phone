@@ -31,6 +31,14 @@ public annotation class Phone{
     public annotation class Crypto
 
     @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.FUNCTION)
+    public annotation class Get
+
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.FUNCTION)
+    public annotation class Post
+
+    @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class Auth(
         val configurations: Array<String> = [""],

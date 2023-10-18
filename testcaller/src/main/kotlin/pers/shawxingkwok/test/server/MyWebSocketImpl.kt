@@ -6,8 +6,4 @@ class MyWebSocketImpl(override val session: DefaultWebSocketServerSession) : Pho
     override suspend fun getChats() {
         TODO("Not yet implemented")
     }
-
-    override suspend fun getContacts(id: Long) {
-        TODO("Not yet implemented")
-    }
 }

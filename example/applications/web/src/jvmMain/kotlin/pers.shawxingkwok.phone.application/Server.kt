@@ -6,6 +6,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.html.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.Netty
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.*
@@ -32,8 +33,8 @@ fun main() {
                 }
             }
 
-            get("/X"){
-                call.respondText("X")
+            post("/X"){
+                call.receiveParameters().get("x").let(::println)
             }
 
             staticResources("/static", null)

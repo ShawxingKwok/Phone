@@ -52,4 +52,4 @@ internal fun getCoderFunctions(): String =
             else -> Json.decodeFromString(newText)
         } as T
     }
-    """.trim()
+    """

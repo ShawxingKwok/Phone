@@ -1,7 +1,6 @@
 package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.qualifiedName
 import pers.shawxingkwok.ksputil.simpleName
@@ -32,7 +31,7 @@ internal fun KSClassDeclaration.getWebSocketBody(webSocket: Phone.WebSocket): St
                     request = {
                         ${insertIf(webSocket.subProtocol.any()){ "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.subProtocol}\")" }}
             
-                        ${insertIf(ksfun.parameters.any()){ ksfun.getJsonParametersBody(this) }}
+                        ${insertIf(ksfun.parameters.any()){ ksfun.getParametersBody(this, "jsonParameter") }}
                     },
                 ){
                     checkNoBadRequest(call.response)

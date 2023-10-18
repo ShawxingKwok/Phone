@@ -1,9 +1,6 @@
 package pers.shawxingkwok.phone
 
-import com.google.devtools.ksp.isAnnotationPresent
-import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.getAnnotationByType
 
@@ -21,9 +18,9 @@ internal inline fun CodeFormatter.mayEmbraceWithAuth(
             append("""
                 $authenticate(
                     configurations = arrayOf(${auth.configurations.joinToString(", "){ "\"$it\"" }}),
-                    strategy = $strategy.${auth.strategy.name}
+                    strategy = $strategy.${auth.strategy.name},
                 ) {
-            """.trimStart())
+            """)
 
         append(getBody())
 

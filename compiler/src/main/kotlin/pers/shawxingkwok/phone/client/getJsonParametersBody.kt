@@ -7,7 +7,10 @@ import pers.shawxingkwok.phone.getCipherText
 import pers.shawxingkwok.phone.getSerializerText
 
 context (CodeFormatter)
-internal fun KSFunctionDeclaration.getJsonParametersBody(ksclass: KSClassDeclaration): String =
+internal fun KSFunctionDeclaration.getParametersBody(
+    ksclass: KSClassDeclaration,
+    prefix: String,
+): String =
     parameters.joinToString("\n") { ksParam ->
         listOf(
             "\"${ksParam.name!!.asString()}\"",
@@ -15,5 +18,5 @@ internal fun KSFunctionDeclaration.getJsonParametersBody(ksclass: KSClassDeclara
             ksParam.getSerializerText(),
             ksParam.getCipherText(ksclass),
         )
-        .joinToString(separator = ", ", prefix = "jsonParameter(", postfix = ")")
+        .joinToString(separator = ", ", prefix = "$prefix(", postfix = ")")
     }

@@ -17,7 +17,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             "io.ktor.server.application.*",
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
-            "io.ktor.util.pipeline.*",
+            "io.ktor.server.request.*",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
@@ -46,8 +46,8 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             ): T? =
                 ~try {
                     decode(text, serializer, cipher)
-                }catch (_: Throwable){
-                    val msg = "The parameter `${"$"}paramName` is incorrectly serialized."
+                }catch (tr: Throwable){
+                    val msg = "The parameter `${"$"}paramName` is incorrectly serialized.\n${'$'}tr"
                     call.respondText(msg, status = HttpStatusCode.BadRequest)
                     null
                 }!~
@@ -65,14 +65,14 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
                     "get${it.phoneName}: (${it.getPropTypeText(true)}) -> ${it.phoneName},"   
                 }}    
             ){
-                ${phones.joinToString("\n\n"){ ksclass ->
+                ${phones.joinToString(""){ ksclass ->
                     """
                     routing.route("/${ksclass.phoneName}"){
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
                         }}
                     }
-                    """.trim()
+                    """
                 }}
             }
         }
@@ -101,8 +101,12 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
         append("){\n")
 
-        if (parameters.any())
-            append("val params = call.request.queryParameters\n\n")
+        if (parameters.any()) {
+            if (websocketsAnnot == null)
+                append("val params = call.receiveParameters()\n\n")
+            else
+                append("val params = call.request.queryParameters\n\n")
+        }
 
         val returnType = returnType!!.resolve()
         if (returnType != resolver.builtIns.unitType)

@@ -1,8 +1,11 @@
 import csstype.HtmlAttributes
 import io.ktor.client.*
 import io.ktor.client.engine.js.*
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.util.logging.*
 import kotlinx.browser.document
 import kotlinx.coroutines.MainScope
@@ -30,5 +33,11 @@ fun main() {
                 else -> "found ${it.name} in search"
             }
         }
+        client.submitForm(
+            url = "/X",
+            parameters {
+                append("x", "1")
+            }
+        )
     }
 }

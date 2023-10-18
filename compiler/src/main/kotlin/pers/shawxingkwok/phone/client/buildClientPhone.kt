@@ -24,6 +24,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 "io.ktor.client.*",
                 "io.ktor.client.request.*",
                 "io.ktor.http.*",
+                "io.ktor.client.request.forms.*",
                 "io.ktor.client.statement.*",
                 "kotlinx.serialization.encodeToString",
                 "kotlinx.serialization.json.Json",
@@ -42,7 +43,18 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 private val webSocketSecure = mBasicUrl.startsWith("https:")
                 private val host = mBasicUrl.substringBeforeLast(":").substringAfter("://")
                 private val port = mBasicUrl.substringAfterLast(":").toIntOrNull() ?: error(TODO())
-                """.trim()               
+                            
+                private inline fun <reified T> HttpRequestBuilder.jsonParameter(
+                    key: String,
+                    value: T,
+                    serializer: KSerializer<T & Any>?,
+                    cipher: Phone.Cipher?,
+                ){
+                    if (value == null) return
+                    val newV = encode(value, serializer, cipher)
+                    parameter(key, newV)
+                }
+                """               
             }}
             
             ${insertIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == false }){
@@ -66,7 +78,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                         block = act
                     )
                 }
-                """.trim()
+                """
             }}
             
             ${insertIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == true }){
@@ -90,20 +102,24 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                         block = act
                     )
                 }
-                """.trim()
+                """
             }}
             
-            private inline fun <reified T> HttpRequestBuilder.jsonParameter(
-                key: String,
-                value: T,
-                serializer: KSerializer<T & Any>?,
-                cipher: Phone.Cipher?,
-            ){
-                if (value == null) return
-                val newV = encode(value, serializer, cipher)
-                parameter(key, newV)
-            }
-            
+            ${insertIf(phones.any { it.isAnnotationPresent(Phone.Api::class) }){
+                """
+                private inline fun <reified T> ParametersBuilder.appendWithJson(
+                    key: String,
+                    value: T,
+                    serializer: KSerializer<T & Any>?,
+                    cipher: Phone.Cipher?,
+                ){
+                    if (value == null) return
+                    val newV = encode(value, serializer, cipher)
+                    append(key, newV)
+                }
+                """
+            }}
+    
             private suspend fun checkNoBadRequest(response: HttpResponse){
                 check(response.status != HttpStatusCode.BadRequest){
                     response.bodyAsText()

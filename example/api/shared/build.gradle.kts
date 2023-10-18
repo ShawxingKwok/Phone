@@ -30,7 +30,7 @@ dependencies {
 }
 
 ksp{
-    arg("ksp-util.debug", "")
+    arg("phone.default-method", "post")
 
     // you could set your own local path
     arg("phone.server-package-path", "${projectDir.parent}/serverside/src/commonMain/kotlin")

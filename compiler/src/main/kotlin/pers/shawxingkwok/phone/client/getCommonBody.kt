@@ -1,5 +1,6 @@
 package pers.shawxingkwok.phone.client
 
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
@@ -37,13 +38,23 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
             },
         ) {
             append(" {\n")
-            append("""val response = client.post("${'$'}basicUrl/${simpleName()}${mayPolymorphicId}")""")
-            if (parameters.any()){
-                append("{\n")
-                append(getJsonParametersBody(ksclass))
-                append("\n}")
-            }
-            append("\n\ncheckNoBadRequest(response)\n")
+
+            """
+            val response = client.submitForm(
+                url = "${'$'}basicUrl/${simpleName()}${mayPolymorphicId}",
+                formParameters = parameters {
+                    ${getParametersBody(ksclass, "appendWithJson")}
+                },
+                encodeInQuery = ${when{
+                    this@getCommonBody.isAnnotationPresent(Phone.Get::class) -> true         
+                    this@getCommonBody.isAnnotationPresent(Phone.Post::class) -> false         
+                    else -> Args.defaultMethod == "get"
+                }},
+            )
+            
+            checkNoBadRequest(response)
+            """
+            .let(::append)
         }
 
         append("}")
