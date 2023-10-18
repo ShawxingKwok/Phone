@@ -32,7 +32,8 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
                     append("if(response.status == HttpStatusCode.NotFound)\n")
                     append("~return null!~\n\n")
                 }
-                append("return decode(response.bodyAsText(), ${returnType.getSerializerText()}, ${this@getCommonBody.getCipherTextForReturn(ksclass)})\n")
+                val serializerText = returnType.getSerializerText()
+                append("return decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})\n")
             },
         ) {
             append(" {\n")
