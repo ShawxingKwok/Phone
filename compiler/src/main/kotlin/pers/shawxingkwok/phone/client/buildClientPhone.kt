@@ -3,22 +3,14 @@
 package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.isAnnotationPresent
-import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.*
+import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.phone.*
-import pers.shawxingkwok.phone.Args
-import pers.shawxingkwok.phone.getCoderFunctions
-import pers.shawxingkwok.phone.insertIf
-import pers.shawxingkwok.phone.mayEmbrace
 
 internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
-    Environment.codeGenerator.createFileWithKtGen(
+    createFile(
+        phones = phones,
         packageName = Args.ClientPackageName,
-        dependencies = MyDependencies(phones),
-        fileName = "Phone",
-        extensionName = "",
         initialImports =
             setOf(
                 "io.ktor.client.*",

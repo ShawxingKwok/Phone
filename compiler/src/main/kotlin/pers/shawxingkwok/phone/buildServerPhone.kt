@@ -7,11 +7,9 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
 
 internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
-    Environment.codeGenerator.createFileWithKtGen(
+    createFile(
+        phones = phones,
         packageName = Args.ServerPackageName,
-        fileName = "Phone",
-        dependencies = MyDependencies(phones),
-        extensionName = "",
         initialImports = setOf(
             "io.ktor.http.*",
             "io.ktor.server.application.*",

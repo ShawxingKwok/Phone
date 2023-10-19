@@ -13,6 +13,8 @@ import kotlinx.serialization.json.Json
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.test.server.*
+import pers.shawxingkwok.test.server.AuthApiImpl.Multi
+import java.security.MessageDigest
 import java.util.*
 import kotlin.test.Test
 
@@ -26,6 +28,7 @@ class ApplicationTest {
                 ::AccountApiImpl,
                 AuthApiImpl::Partial,
                 AuthApiImpl::Whole,
+                AuthApiImpl::Multi,
                 CryptoApiImpl::Partial,
                 CryptoApiImpl::Whole,
                 // ::NestXApiImpl,
@@ -85,6 +88,17 @@ class ApplicationTest {
                         }
                     }
                 }
+
+                bearer("auth-bearer") {
+                    realm = "Access to the '/' path"
+                    authenticate { tokenCredential ->
+                        if (tokenCredential.token == "abc123") {
+                            UserIdPrincipal("jetbrains")
+                        } else {
+                            null
+                        }
+                    }
+                }
             }
         }
 
@@ -96,6 +110,12 @@ class ApplicationTest {
                     }
                     realm = "Access to the '/' path"
                 }
+                bearer {
+                    loadTokens {
+                        // Load tokens from a local storage and return them as the 'BearerTokens' instance
+                        BearerTokens("abc123", "xyz111")
+                    }
+                }
             }
         }
 
@@ -103,8 +123,13 @@ class ApplicationTest {
 
         assert(phone.authApi_Partial.search(1)?.id == 1L)
         phone.authApi_Partial.delete(1)
+        println(".".repeat(10))
 
         assert(phone.authApi_Whole.search(1)?.id == 1L)
         phone.authApi_Whole.delete(1)
+        println(".".repeat(10))
+
+        assert(phone.authApi_Multi.search(1)?.id == 1L)
+        phone.authApi_Multi.delete(1)
     }
 }

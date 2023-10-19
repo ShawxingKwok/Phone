@@ -43,10 +43,10 @@ public annotation class Phone{
     public annotation class Auth(
         val configurations: Array<String> = [""],
         val strategy: AuthenticationStrategy = AuthenticationStrategy.FirstSuccessful,
-    ){
-        public enum class AuthenticationStrategy{
-            Optional, FirstSuccessful, Required
-        }
+    )
+
+    public enum class AuthenticationStrategy{
+        Optional, FirstSuccessful, Required
     }
 
     public interface Cipher {
