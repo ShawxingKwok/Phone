@@ -3,10 +3,18 @@ package pers.shawxingkwok.center.api
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.phone.Phone
 
-@Phone.Api
-interface AuthApi {
-    @Phone.Auth(["auth-bearer"])
-    suspend fun delete(id: Long)
+object AuthApi {
+    @Phone.Api
+    @Phone.Auth(["auth-basic"])
+    interface Partial{
+        suspend fun delete(id: Long)
+        suspend fun search(id: Long): User?
+    }
 
-    suspend fun search(id: Long): User?
+    @Phone.Api
+    interface Whole{
+        @Phone.Auth(["auth-basic"])
+        suspend fun delete(id: Long)
+        suspend fun search(id: Long): User?
+    }
 }

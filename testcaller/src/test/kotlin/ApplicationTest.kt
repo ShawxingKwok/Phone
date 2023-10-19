@@ -1,4 +1,11 @@
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.websocket.*
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.builtins.ByteArraySerializer
@@ -6,16 +13,21 @@ import kotlinx.serialization.json.Json
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.test.server.*
+import java.util.*
 import kotlin.test.Test
 
 class ApplicationTest {
-    fun ApplicationTestBuilder.configureServer(){
+    fun ApplicationTestBuilder.configureServer(act: Application.() -> Unit = {}){
         application {
+            act()
+
             Phone.configure(
                 route = routing { },
                 ::AccountApiImpl,
-                ::CryptoApi_PartialImpl,
-                ::CryptoApi_WholeImpl,
+                AuthApiImpl::Partial,
+                AuthApiImpl::Whole,
+                CryptoApiImpl::Partial,
+                CryptoApiImpl::Whole,
                 // ::NestXApiImpl,
                 // ::PolymorphicApiImpl,
                 // ::SuperInterfaceApiImpl,
@@ -57,5 +69,42 @@ class ApplicationTest {
         bytes = Cipher.decrypt(bytes)
         text = bytes.decodeToString()
         assert(text == "hello")
+    }
+
+    @Test
+    fun auth() = testApplication{
+        configureServer{
+            this@configureServer.install(Authentication) {
+                basic("auth-basic") {
+                    realm = "Access to the '/' path"
+                    validate { credentials ->
+                        if (credentials.name == "jetbrains" && credentials.password == "foobar") {
+                            UserIdPrincipal(credentials.name)
+                        } else {
+                            null
+                        }
+                    }
+                }
+            }
+        }
+
+        val client = createClient {
+            install(Auth) {
+                basic {
+                    credentials {
+                        BasicAuthCredentials(username = "jetbrains", password = "foobar")
+                    }
+                    realm = "Access to the '/' path"
+                }
+            }
+        }
+
+        val phone = pers.shawxingkwok.test.client.Phone(client)
+
+        assert(phone.authApi_Partial.search(1)?.id == 1L)
+        phone.authApi_Partial.delete(1)
+
+        assert(phone.authApi_Whole.search(1)?.id == 1L)
+        phone.authApi_Whole.delete(1)
     }
 }
