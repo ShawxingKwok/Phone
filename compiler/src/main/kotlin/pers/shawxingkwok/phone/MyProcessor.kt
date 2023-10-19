@@ -61,7 +61,7 @@ internal object MyProcessor : KSProcessor{
 
         Log.check(
             symbol = ksclass,
-            condition = ksclass.asStarProjectedType().isAssignableFrom(superCipherType)
+            condition = superCipherType.isAssignableFrom(ksclass.asStarProjectedType())
         ){
             "The object annotated with `@Phone.Crypto` should be a subclass of `Phone.Cipher`."
         }
