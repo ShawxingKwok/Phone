@@ -21,7 +21,7 @@ class ApplicationTest {
         application {
             act()
 
-            Phone.configure(
+            Phone.route(
                 route = routing { },
                 ::AccountApiImpl,
                 AuthApiImpl::Partial,

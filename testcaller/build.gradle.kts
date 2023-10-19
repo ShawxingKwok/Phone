@@ -16,6 +16,8 @@ dependencies {
     implementation("io.ktor:ktor-server-websockets:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-core-jvm:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-websockets-jvm:${libs.versions.ktor.get()}")
+    implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.get()}")
+    implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.get()}")
     // implementation("ch.qos.logback:logback-classic:1.4.11")
 
     testImplementation ("io.ktor:ktor-server-tests-jvm:${libs.versions.ktor.get()}")

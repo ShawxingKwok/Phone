@@ -59,7 +59,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
                 )
             }
     
-            fun configure(
+            fun route(
                 route: Route,
                 ${phones.joinToString("\n"){
                     "get${it.phoneName}: (${it.getPropTypeText(true)}) -> ${it.phoneName},"   

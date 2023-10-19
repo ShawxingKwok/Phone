@@ -4,12 +4,12 @@ import pers.shawxingkwok.ksputil.Environment
 import pers.shawxingkwok.ksputil.Log
 
 internal object Args {
-    val defaultMethod = Environment.options["phone.default-method"]
-
-    init {
-        Log.check(null, defaultMethod == "get" || defaultMethod == "post"){
+    val defaultMethod = Environment.options["phone.default-method"].let {
+        require(it == "get" || it == "post"){
             "Set phone.default-method in build.gradle(.kts)."
         }
+        requireNotNull(it)
+        it
     }
 
     val ServerPackagePath = Environment.options["phone.server-package-path"]
