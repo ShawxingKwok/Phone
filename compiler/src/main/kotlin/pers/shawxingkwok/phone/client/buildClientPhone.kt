@@ -16,7 +16,7 @@ import pers.shawxingkwok.phone.mayEmbrace
 internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ClientPackageName,
-        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = MyDependencies(phones),
         fileName = "Phone",
         extensionName = "",
         initialImports =

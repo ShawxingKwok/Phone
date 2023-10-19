@@ -10,7 +10,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
     Environment.codeGenerator.createFileWithKtGen(
         packageName = Args.ServerPackageName,
         fileName = "Phone",
-        dependencies = Dependencies(true, *phones.map{ it.containingFile!! }.toTypedArray()),
+        dependencies = MyDependencies(phones),
         extensionName = "",
         initialImports = setOf(
             "io.ktor.http.*",
