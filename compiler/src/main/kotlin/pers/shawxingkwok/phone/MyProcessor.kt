@@ -2,11 +2,13 @@ package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getClassDeclarationByName
-import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
+import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.phone.client.buildClientPhone
+import pers.shawxingkwok.phone.validators.PhoneValidator
+import pers.shawxingkwok.phone.validators.SerializerValidator
 import java.io.File
 
 @Suppress("unused")
@@ -15,7 +17,6 @@ internal object MyProcessor : KSProcessor{
     private object Status{
         const val UNSTARTED = 0
         const val BUILT = 1
-        const val COPIED = 2
 
         var value = UNSTARTED
     }
@@ -40,105 +41,51 @@ internal object MyProcessor : KSProcessor{
     lateinit var serializers: Map<KSType, KSClassDeclaration>
         private set
 
-    var cipherKSObj: KSClassDeclaration? = null
+    val cipherKSObj: KSClassDeclaration? by fastLazy {
+        val ksclasses = resolver.getAnnotatedSymbols<Phone.Crypto, KSClassDeclaration>()
+            .filterNot { it.classKind == ClassKind.INTERFACE }
+
+        Log.check(
+            symbols = ksclasses,
+            condition = ksclasses.size <= 1
+                && (ksclasses.none() || ksclasses.first().classKind == ClassKind.OBJECT)
+        ){
+            "`Phone.Crypto` could be annotated only on interfaces and a single object."
+        }
+
+        val ksclass = ksclasses.firstOrNull() ?: return@fastLazy null
+
+        val superCipherType = resolver
+            .getClassDeclarationByName(Phone.Cipher::class.qualifiedName!!)!!
+            .asStarProjectedType()
+
+        Log.check(
+            symbol = ksclass,
+            condition = ksclass.asStarProjectedType().isAssignableFrom(superCipherType)
+        ){
+            "The object annotated with `@Phone.Crypto` should be a subclass of `Phone.Cipher`."
+        }
+
+        ksclass
+    }
+
+    var round = 0
         private set
 
     override fun process(round: Int): List<KSAnnotated> {
+        this.round = round
+
         if (phoneInterfacePaths.none())
             return emptyList()
 
-        var (valid, invalid) = resolver
+        val invalid = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
             .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
-            .partition { ksclass ->
-                ksclass.getAllSuperTypes()
-                    .map { it.declaration }
-                    .filter { it.containingFile != null }
-                    .all {
-                        // there are few super interfaces, so there is no need to
-                        // make caches for `accept` to accelerate.
-                        it.accept(KSDefaultValidator(), Unit)
-                    }
-            }
+            .filterNot { it.accept(PhoneValidator, Unit) }
+            .toMutableList()
 
-        // check each class with Phone.Api
-        valid.forEach { ksclass ->
-            Log.check(
-                symbol = ksclass,
-                condition = !ksclass.isAnnotationPresent(Phone.Api::class)
-                    || !ksclass.isAnnotationPresent(Phone.WebSocket::class)
-            ){
-                "`Phone.Api` is needless when you set web sockets."
-            }
-            Log.check(ksclass, ksclass.classKind == ClassKind.INTERFACE){
-                "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
-                "only on interfaces."
-            }
-            Log.check(ksclass, ksclass.packageName().any()){
-                "Each interface with `Phone` should have a package name."
-            }
-            if (ksclass.isAnnotationPresent(Phone.WebSocket::class)){
-                Log.check(ksclass, ksclass.getNeededFunctions().any()){
-                    "Each interface annotated with `Phone.WebSocket` should contain at least one function. " +
-                    "Note that functions in super classes also count."
-                }
-                Log.check(
-                    symbol = ksclass,
-                    condition = ksclass.getNeededFunctions().all {
-                        it.returnType!!.resolve() == resolver.builtIns.unitType
-                    },
-                ){
-                    "Each function used by interfaces annotated with `Phone.WebSocket` " +
-                    "can't have a return type.(Only `Unit` is allowed in other words.)"
-                }
-            }
-            val polymorphic = ksclass.getNeededFunctions()
-                .groupBy { it.simpleName() }
-                .values
-                .filter { it.size >= 2 }
-                .flatten()
-
-            Log.check(
-                symbols = polymorphic,
-                condition = polymorphic.filterNot { it.isAnnotationPresent(Phone.Polymorphic::class) }.size <= 1
-            ){
-                "Polymorphic functions in interfaces with `Phone` should be annotated with `Phone.Polymorphic`. " +
-                "Note that if you make a common function polymorphic in later versions, the first common function " +
-                "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
-            }
-        }
-
-        // check all functions in Phone classes
-        valid.flatMap { it.getNeededFunctions() }
-            .forEach { ksfun ->
-                Log.check(
-                    symbol = ksfun,
-                    condition =
-                        ksfun.isAbstract
-                        && Modifier.SUSPEND in ksfun.modifiers
-                        && ksfun.typeParameters.none()
-                        && ksfun.extensionReceiver == null
-                ) {
-                    "In each class with `Phone`, all functions must be abstract, suspend, " +
-                    "and without extensional receivers and type parameters, except 'toString', " +
-                    "'equals', and 'hashCode'."
-                }
-            }
-
-        val cipherKSObj = resolver
-            .getAnnotatedSymbols<Phone.Crypto, KSClassDeclaration>()
-            .filter { it.classKind == ClassKind.OBJECT }
-            .also {
-                if (round > 0) return@also
-
-                Log.check(it, it.size <= 1){
-                    "Multiple crypto objects are forbidden."
-                }
-            }
-            .firstOrNull()
-
-        if (cipherKSObj?.accept(KSDefaultValidator(), Unit) == false)
-            invalid += cipherKSObj
+        invalid += resolver.getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
+            .filterNot { it.accept(SerializerValidator, Unit) }
 
         // also output to dest paths from ksp args
         when(Status.value){
@@ -148,37 +95,12 @@ internal object MyProcessor : KSProcessor{
 
                 Status.value++
 
-                this.cipherKSObj = cipherKSObj
-
-                if (cipherKSObj != null)
-                    Log.check(
-                        cipherKSObj,
-                        cipherKSObj.getAllSuperTypes().any {
-                            it.declaration.qualifiedName() == Phone.Cipher::class.qualifiedName
-                        },
-                    ){
-                        "The object annotated with `@Phone.Crypto` should implement `Phone.Cipher`."
-                    }
-
                 serializers = resolver
                     .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
                     .associateBy { ksclass ->
-                        Log.check(ksclass, ksclass.classKind == ClassKind.OBJECT) {
-                            "Each class annotated with `Phone.Serializer` must be object."
-                        }
-
                         ksclass.superTypes
                             .map { it.resolve() }
-                            .firstOrNull { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
-                            .let {
-                                Log.check(
-                                    condition = it != null,
-                                    symbol = ksclass,
-                                ) {
-                                    "Each class annotated with `Phone.Serializer` must declare `KSerializer` in its implementations."
-                                }
-                                it
-                            }
+                            .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
                             .arguments
                             .first()
                             .type!!
@@ -227,8 +149,6 @@ internal object MyProcessor : KSProcessor{
                     newFile.writeBytes(file.readBytes())
                 }
             }
-
-            Status.COPIED -> {}
         }
         return invalid
     }

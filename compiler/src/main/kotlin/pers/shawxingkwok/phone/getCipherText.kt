@@ -14,7 +14,7 @@ internal fun KSFunctionDeclaration.getCipherTextForReturn(srcKSClass: KSClassDec
         // parent function may be from a super class
         || srcKSClass.isAnnotationPresent(Phone.Crypto::class)
 
-    return MyProcessor.cipherKSObj?.takeIf { isCrypto }?.text
+    return getCipherText(isCrypto)
 }
 
 context (CodeFormatter)
@@ -25,5 +25,12 @@ internal fun KSValueParameter.getCipherText(srcKSClass: KSClassDeclaration): Str
         || (parent as KSFunctionDeclaration).isAnnotationPresent(Phone.Crypto::class)
         || srcKSClass.isAnnotationPresent(Phone.Crypto::class)
 
-    return MyProcessor.cipherKSObj?.takeIf { isCrypto }?.text
+    return getCipherText(isCrypto)
 }
+
+context (CodeFormatter)
+private fun getCipherText(isCrypto: Boolean): String? =
+    if (isCrypto)
+        MyProcessor.cipherKSObj?.text ?: error(TODO("link"))
+    else
+        null
