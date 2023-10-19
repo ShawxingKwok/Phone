@@ -42,11 +42,11 @@ public annotation class Phone{
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class Auth(
         val configurations: Array<String> = [""],
-        val strategy: AuthenticationStrategy = AuthenticationStrategy.FirstSuccessful,
-    )
-
-    public enum class AuthenticationStrategy{
-        Optional, FirstSuccessful, Required
+        val strategy: Strategy = Strategy.FirstSuccessful,
+    ){
+        public enum class Strategy{
+            Optional, FirstSuccessful, Required
+        }
     }
 
     public interface Cipher {

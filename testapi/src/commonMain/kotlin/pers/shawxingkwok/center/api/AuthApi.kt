@@ -20,8 +20,11 @@ object AuthApi {
     }
 
     @Phone.Api
-    @Phone.Auth(["auth-bearer", "auth-basic"], strategy = Phone.AuthenticationStrategy.Required)
     interface Multi{
+        // is this allowed?
+        @Phone.Auth(["auth-basic", "auth-bearer"], Phone.Auth.Strategy.Required)
+        suspend fun get(): Int
+
         suspend fun delete(id: Long)
         suspend fun search(id: Long): User?
     }

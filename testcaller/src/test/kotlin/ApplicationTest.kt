@@ -3,9 +3,12 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.websocket.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.builtins.ByteArraySerializer
@@ -100,6 +103,14 @@ class ApplicationTest {
                     }
                 }
             }
+
+            routing {
+                authenticate("auth-basic", "auth-bearer", strategy = AuthenticationStrategy.Required) {
+                    get("/X") {
+                        call.respondText("X")
+                    }
+                }
+            }
         }
 
         val client = createClient {
@@ -129,6 +140,7 @@ class ApplicationTest {
         phone.authApi_Whole.delete(1)
         println(".".repeat(10))
 
+        // assert(phone.authApi_Multi.get() == 1)
         assert(phone.authApi_Multi.search(1)?.id == 1L)
         phone.authApi_Multi.delete(1)
     }

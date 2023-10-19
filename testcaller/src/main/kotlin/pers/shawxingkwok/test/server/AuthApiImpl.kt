@@ -26,6 +26,10 @@ object AuthApiImpl{
     }
 
     class Multi(override val call: ApplicationCall) : Phone.AuthApi_Multi{
+        override suspend fun get(): Int {
+            return 1
+        }
+
         override suspend fun delete(id: Long) {
         }
 
