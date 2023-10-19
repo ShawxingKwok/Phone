@@ -27,7 +27,7 @@ internal fun KSClassDeclaration.getWebSocketBody(webSocket: Phone.WebSocket): St
                 """
                 ${ksfun.getClientFunctionHeader()} {
                     maySecureWebSocket${insertIf(webSocket.isRaw){ "Raw" }}(
-                    path = "${'$'}mBasicUrl/$phoneName/${ksfun.simpleName()}${ksfun.mayPolymorphicId}",
+                    path = "/$phoneName/${ksfun.simpleName()}${ksfun.mayPolymorphicId}",
                     request = {
                         ${insertIf(webSocket.subProtocol.any()){ "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.subProtocol}\")" }}
             

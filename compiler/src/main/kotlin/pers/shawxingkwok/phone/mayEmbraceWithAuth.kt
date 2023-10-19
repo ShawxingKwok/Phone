@@ -11,16 +11,30 @@ internal inline fun CodeFormatter.mayEmbraceWithAuth(
     buildString {
         val auth = decl.getAnnotationByType(Phone.Auth::class)
 
-        val authenticate = getDeclText("io.ktor.server.auth.authenticate", null, true)
-        val strategy = getDeclText("io.ktor.server.auth.AuthenticationStrategy", null, false)
+        if (auth != null) {
+            val authenticate = getDeclText("io.ktor.server.auth.authenticate", null, true)
+            val strategy = getDeclText("io.ktor.server.auth.AuthenticationStrategy", null, false)
 
-        if (auth != null)
+            append("$authenticate(\n")
+
+            if (auth.configurations.any())
+                auth.configurations.joinToString(
+                    separator = ", ",
+                    prefix = "configurations = arrayOf(",
+                    postfix = "),\n"
+                ){
+                    if (it.any())
+                        "\"$it\""
+                    else
+                        "null"
+                }
+                .let(::append)
+
             append("""
-                $authenticate(
-                    configurations = arrayOf(${auth.configurations.joinToString(", "){ "\"$it\"" }}),
                     strategy = $strategy.${auth.strategy.name},
                 ) {
-            """)
+            """.trimStart())
+        }
 
         append(getBody())
 

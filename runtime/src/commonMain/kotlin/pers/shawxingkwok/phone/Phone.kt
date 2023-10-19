@@ -38,6 +38,10 @@ public annotation class Phone{
     @Target(AnnotationTarget.FUNCTION)
     public annotation class Post
 
+    /**
+     * @param configurations "" represents `null` which
+     * redirects to the default authentication.
+     */
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class Auth(

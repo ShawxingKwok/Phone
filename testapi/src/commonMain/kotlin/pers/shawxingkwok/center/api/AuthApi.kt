@@ -5,7 +5,7 @@ import pers.shawxingkwok.phone.Phone
 
 object AuthApi {
     @Phone.Api
-    @Phone.Auth(["auth-basic"])
+    @Phone.Auth
     interface Partial{
         suspend fun delete(id: Long)
         suspend fun search(id: Long): User?
