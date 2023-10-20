@@ -8,7 +8,7 @@ internal object Args {
         when(Environment.options["phone.default-method"]){
             "get" -> Method.GET
             "post" -> Method.POST
-            else -> error("Set phone.default-method in build.gradle(.kts).")
+            else -> error("Set phone.default-method with `get` or `post` in build.gradle(.kts).")
         }
 
     val ServerPackagePath = Environment.options["phone.server-package-path"]
