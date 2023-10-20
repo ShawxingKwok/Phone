@@ -1,7 +1,6 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.isAnnotationPresent
-import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
@@ -81,26 +80,26 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
 context (CodeFormatter)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
-        val websocketsAnnot = ksclass.getAnnotationByType(Phone.WebSocket::class)
+        val webSocketAnnot = ksclass.getAnnotationByType(Phone.WebSocket::class)
 
-        val postOrWebSocket = when(websocketsAnnot){
-            null -> "post"
+        val methodText = when(val method = getMethod(ksclass)){
+            Method.GET, Method.POST -> method.text
             else -> getDeclText(
-                import = "io.ktor.server.websocket.webSocket${insertIf(websocketsAnnot.isRaw) { "Raw" }}",
+                import = "io.ktor.server.websocket.webSocket${insertIf(method == Method.WEB_SOCKET_RAW) { "Raw" }}",
                 innerName = null,
                 isTopLevelAndExtensional = true
             )
         }
 
-        append("""$postOrWebSocket("/${simpleName()}$mayPolymorphicId"""")
+        append("""$methodText("/${simpleName()}$mayPolymorphicId"""")
 
-        if (websocketsAnnot?.subProtocol?.any() == true)
-            append(""", "${websocketsAnnot.subProtocol}"""")
+        if (webSocketAnnot?.subProtocol?.any() == true)
+            append(""", "${webSocketAnnot.subProtocol}"""")
 
         append("){\n")
 
         if (parameters.any()) {
-            if (websocketsAnnot == null)
+            if (webSocketAnnot == null)
                 append("val params = call.receiveParameters()\n\n")
             else
                 append("val params = call.request.queryParameters\n\n")
@@ -112,7 +111,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
         append("get${ksclass.phoneName}(")
 
-        if (websocketsAnnot == null)
+        if (webSocketAnnot == null)
             append("call")
         else
             append("this")
@@ -148,10 +147,10 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             $paramName = params["$paramName"]
                 ~?.let{ 
                     tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${param.getCipherText(ksclass)}) 
-                    ?: return@$postOrWebSocket 
+                    ?: return@$methodText 
                 }!~
                 ${insertIf(!type.isMarkedNullable){
-                    "~?: return@$postOrWebSocket notFoundParam(call, \"$paramName\")!~\n"
+                    "~?: return@$methodText notFoundParam(call, \"$paramName\")!~\n"
                 }}                
             """.trim().let(::append)
 

@@ -24,6 +24,10 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
     buildString {
         append(getClientFunctionHeader())
 
+        val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
+            ?: ksclass.getAnnotationByType(Phone.Auth::class)?.withToken
+            ?: false
+
         mayEmbrace(
             condition = returnType!!.resolve() != resolver.builtIns.unitType,
             getStart = { append(": ${returnType!!.text}") },
@@ -46,12 +50,8 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
                 formParameters = parameters {
                     ${getParametersBody(ksclass, "appendWithJson")}
                 },
-                encodeInQuery = ${when{
-                    this@getCommonBody.isAnnotationPresent(Phone.Get::class) -> true         
-                    this@getCommonBody.isAnnotationPresent(Phone.Post::class) -> false         
-                    else -> Args.defaultMethod == "get"
-                }},
-            )${insertIf(getAnnotationByType(Phone.Auth::class)?.withToken == true){
+                encodeInQuery = ${ getMethod(ksclass) == Method.GET },
+            )${insertIf(withToken){
                 """
                 {
                     header(HttpHeaders.Authorization, token)

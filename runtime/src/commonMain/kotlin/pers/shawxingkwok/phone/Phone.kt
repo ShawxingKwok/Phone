@@ -31,11 +31,11 @@ public annotation class Phone{
     public annotation class Crypto
 
     @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.FUNCTION)
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class Get
 
     @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.FUNCTION)
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class Post
 
     /**

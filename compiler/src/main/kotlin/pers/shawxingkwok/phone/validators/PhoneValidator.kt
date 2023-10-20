@@ -69,7 +69,7 @@ object PhoneValidator : KSDefaultValidator() {
                     "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
                 }
 
-                ksclass.getNeededFunctions().forEach {
+                ksclass.getNeededFunctions().plus(ksclass).forEach {
                     Log.check(
                         symbol = it,
                         condition = !(it.isAnnotationPresent(Phone.Get::class)
