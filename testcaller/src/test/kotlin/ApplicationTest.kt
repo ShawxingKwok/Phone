@@ -5,6 +5,7 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.server.application.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -194,6 +195,9 @@ class ApplicationTest {
     @Test
     fun myAuthWebSocket() = testApplication{
         application {
+            install(Authentication){
+                bearer {  }
+            }
             routing {
                 authenticate {
                     webSocket("/") {

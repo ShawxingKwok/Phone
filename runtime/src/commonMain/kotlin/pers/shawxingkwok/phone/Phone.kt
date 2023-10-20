@@ -47,6 +47,7 @@ public annotation class Phone{
     public annotation class Auth(
         val configurations: Array<String> = [""],
         val strategy: Strategy = Strategy.FirstSuccessful,
+        val withToken: Boolean = false,
     ){
         public enum class Strategy{
             Optional, FirstSuccessful, Required

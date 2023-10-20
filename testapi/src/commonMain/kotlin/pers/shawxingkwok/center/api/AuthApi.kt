@@ -28,4 +28,10 @@ object AuthApi {
         suspend fun delete(id: Long)
         suspend fun search(id: Long): User?
     }
+
+    @Phone.Api
+    interface Jwt{
+        @Phone.Auth(["jwt"], withToken = true)
+        suspend fun delete(id: String): Boolean
+    }
 }

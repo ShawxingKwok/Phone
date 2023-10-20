@@ -14,6 +14,11 @@ kotlin {
         browser()
     }
 
+    @Suppress("OPT_IN_USAGE")
+    wasm {
+        browser()
+    }
+
     macosX64()
     macosArm64()
 

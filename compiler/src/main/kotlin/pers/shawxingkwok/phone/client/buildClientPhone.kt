@@ -30,9 +30,15 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
             private val client: HttpClient,
             private val mBasicUrl: String = "http://localhost:80",
         ) {
+            private var token: String? = null
+    
+            fun setToken(token: String){
+                this.token = token
+            }    
+            
             ${insertIf(phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """
-                private val webSocketSecure = mBasicUrl.startsWith("https:")
+                private val securesWebSockets = mBasicUrl.startsWith("https:")
                 private val host = mBasicUrl.substringBeforeLast(":").substringAfter("://")
                 private val port = mBasicUrl.substringAfterLast(":").toIntOrNull() ?: error(TODO())
                             
@@ -46,54 +52,24 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                     val newV = encode(value, serializer, cipher)
                     parameter(key, newV)
                 }
+                
+                private fun webSocketRequest(
+                    withToken: Boolean, 
+                    request: HttpRequestBuilder.() -> Unit
+                ) = { 
+                    builder: HttpRequestBuilder ->
+                    
+                    if (securesWebSockets) {
+                        builder.url.protocol = URLProtocol.WSS
+                        builder.url.port = port
+                    }
+                    
+                    if (withToken)
+                        ~builder.header(HttpHeaders.Authorization, token)!~
+                        
+                    builder.request()
+                }
                 """               
-            }}
-            
-            ${insertIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == false }){
-                """
-                private suspend fun maySecureWebSocket(
-                    path: String,
-                    request: HttpRequestBuilder.() -> Unit,
-                    act: suspend DefaultClientWebSocketSession.() -> Unit,
-                ) {
-                    client.${getDeclText("io.ktor.client.plugins.websocket.webSocket", null, true)}(
-                        host = host, port = port,
-                        path = path,
-                        request = {
-                            if (webSocketSecure) {
-                                url.protocol = URLProtocol.WSS
-                                url.port = port
-                            }
-                            request()
-                        },
-                        block = act
-                    )
-                }
-                """
-            }}
-            
-            ${insertIf(phones.any { it.getAnnotationByType(Phone.WebSocket::class)?.isRaw == true }){
-                """
-                private suspend fun maySecureWebSocketRaw(
-                    path: String,
-                    request: HttpRequestBuilder.() -> Unit,
-                    act: suspend ClientWebSocketSession.() -> Unit,
-                ){
-                    client.${getDeclText("io.ktor.client.plugins.websocket.cio.webSocketRaw", null, true)}(
-                        method = HttpMethod.Post,
-                        host = host, port = port,
-                        path = path,
-                        request = {
-                            if (webSocketSecure) {
-                                url.protocol = URLProtocol.WSS
-                                url.port = port
-                            }
-                            request()
-                        },
-                        block = act
-                    )
-                }
-                """
             }}
             
             ${insertIf(phones.any { it.isAnnotationPresent(Phone.Api::class) }){

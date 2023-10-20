@@ -13,6 +13,7 @@ dependencyResolutionManagement {
         google()
         jcenter()
         mavenCentral()
+
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
         maven("https://www.jitpack.io")
         maven("https://nodejs.org/dist")

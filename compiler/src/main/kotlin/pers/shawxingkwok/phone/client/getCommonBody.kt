@@ -4,6 +4,7 @@ import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
+import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.phone.*
@@ -50,7 +51,13 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
                     this@getCommonBody.isAnnotationPresent(Phone.Post::class) -> false         
                     else -> Args.defaultMethod == "get"
                 }},
-            )
+            )${insertIf(getAnnotationByType(Phone.Auth::class)?.withToken == true){
+                """
+                {
+                    header(HttpHeaders.Authorization, token)
+                }
+                """.trim()
+            }}
             
             checkNoBadRequest(response)
             """

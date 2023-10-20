@@ -1,11 +1,13 @@
 package pers.shawxingkwok.test.server
 
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 
 class AccountApiImpl(override val call: ApplicationCall) : Phone.AccountApi{
     override suspend fun login(email: String, password: String): LoginResult {
+        call.principal<UserIdPrincipal>()
         return LoginResult.NotSigned
     }
 

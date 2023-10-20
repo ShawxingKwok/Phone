@@ -24,7 +24,7 @@ internal fun createFile(
                     .toTypedArray(),
             ),
         fileName = "Phone",
-        header = """@file:Suppress("LocalVariableName")""",
+        header = """@file:Suppress("LocalVariableName", "SameParameterValue")""",
         extensionName = "",
         initialImports = initialImports,
         getBody = getBody,
