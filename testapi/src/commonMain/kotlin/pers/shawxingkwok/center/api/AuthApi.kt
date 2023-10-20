@@ -12,7 +12,6 @@ object AuthApi {
     }
 
     @Phone.Api
-    @Phone.Auth(["auth-bearer"])
     interface Whole{
         @Phone.Auth(["auth-basic"])
         suspend fun delete(id: Long)
@@ -22,7 +21,7 @@ object AuthApi {
     @Phone.Api
     interface Multi{
         // is this allowed?
-        @Phone.Auth(["auth-basic", "auth-bearer"], Phone.Auth.Strategy.Required)
+        @Phone.Auth(["auth-basic"], Phone.Auth.Strategy.Required)
         suspend fun get(): Int
 
         suspend fun delete(id: Long)
@@ -30,8 +29,9 @@ object AuthApi {
     }
 
     @Phone.Api
+    @Phone.Auth(["auth-basic"])
     interface Jwt{
-        @Phone.Auth(["jwt"], withToken = true)
+        @Phone.Auth(["auth-jwt"], withToken = true)
         suspend fun delete(id: String): Boolean
     }
 }

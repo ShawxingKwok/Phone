@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kt.jvm)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -18,6 +19,7 @@ dependencies {
     implementation("io.ktor:ktor-server-websockets-jvm:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.get()}")
+    implementation("io.ktor:ktor-server-auth-jwt:${libs.versions.ktor.get()}")
     // implementation("ch.qos.logback:logback-classic:1.4.11")
 
     testImplementation ("io.ktor:ktor-server-tests-jvm:${libs.versions.ktor.get()}")

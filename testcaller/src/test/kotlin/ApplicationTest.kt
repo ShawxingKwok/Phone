@@ -1,12 +1,17 @@
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.client.*
 import io.ktor.client.engine.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.websocket.*
-import io.ktor.server.application.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -15,22 +20,22 @@ import io.ktor.server.websocket.WebSockets
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
-import org.apache.http.impl.auth.BasicScheme.authenticate
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.test.server.*
 import java.time.Duration
-import kotlin.reflect.KFunction
+import java.util.*
 import kotlin.test.Test
 
 class ApplicationTest {
-    private fun Application.routePhone(){
+    private fun Application.routePhone() {
         Phone.route(
             route = routing { },
             ::AccountApiImpl,
             AuthApiImpl::Partial,
             AuthApiImpl::Whole,
             AuthApiImpl::Multi,
+            AuthApiImpl::Jwt,
             CryptoApiImpl::Partial,
             CryptoApiImpl::Whole,
             ::PolymorphicApiImpl,
@@ -42,6 +47,13 @@ class ApplicationTest {
             ::MyWebSocketWithAuthImpl,
             ::MyWebSocketWithArgsImpl,
         )
+    }
+
+    object JwtConfig {
+        const val AUDIENCE = "jwt-audience"
+        const val REALM = "ktor sample app"
+        const val SECRET = "secret"
+        const val ISSUER = "jwt issuer"
     }
 
     private fun start(
@@ -81,6 +93,27 @@ class ApplicationTest {
                             }
                         }
                     }
+
+                    jwt("auth-jwt") {
+                        realm = JwtConfig.REALM
+                        authSchemes("Token")
+                        verifier(JWT
+                            .require(Algorithm.HMAC256(JwtConfig.SECRET))
+                            .withAudience(JwtConfig.AUDIENCE)
+                            .withIssuer(JwtConfig.ISSUER)
+                            .build())
+                        validate { credential ->
+                            if (credential.payload.getClaim("username").asString() == "shawxing") {
+                                JWTPrincipal(credential.payload)
+                            } else {
+                                null
+                            }
+                        }
+                        challenge { defaultScheme, realm ->
+                            println("115: $defaultScheme $realm ${this.call.request.header(HttpHeaders.Authorization)}")
+                            call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
+                        }
+                    }
                 }
 
                 install(WebSockets) {
@@ -90,10 +123,25 @@ class ApplicationTest {
                     masking = false
                 }
 
+                routing {
+                    post("/login") {
+                        val username = call.receiveText()
+                        // Check username and password
+                        // ...
+                        val token = JWT.create()
+                            .withAudience(JwtConfig.AUDIENCE)
+                            .withIssuer(JwtConfig.ISSUER)
+                            .withClaim("username", username)
+                            .withExpiresAt(Date(System.currentTimeMillis() + 60000))
+                            .sign(Algorithm.HMAC256(JwtConfig.SECRET))
+                        call.respondText(token)
+                    }
+                }
+
                 routePhone()
             }
 
-            val client = createClient{
+            val client = createClient {
                 configureClient()
                 install(io.ktor.client.plugins.websocket.WebSockets)
                 install(Auth) {
@@ -103,16 +151,17 @@ class ApplicationTest {
                         }
                         realm = "Access to the '/' path"
                     }
-
-                    bearer {
-                        loadTokens {
-                            // Load tokens from a local storage and return them as the 'BearerTokens' instance
-                            BearerTokens("abc123", "xyz111")
-                        }
-                    }
                 }
             }
+
             val phone = pers.shawxingkwok.test.client.Phone(client)
+
+            val token = phone.client
+                .post("login") { setBody("shawxing") }
+                .bodyAsText()
+
+            phone.setAuthorization("Token", token)
+
             act(phone)
         }
 
@@ -141,7 +190,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun auth() = start { phone ->
+    fun commonAuth() = start { phone ->
         assert(phone.authApi_Partial.search(1)?.id == 1L)
         phone.authApi_Partial.delete(1)
         println(".".repeat(10))
@@ -153,6 +202,16 @@ class ApplicationTest {
         // assert(phone.authApi_Multi.get() == 1)
         assert(phone.authApi_Multi.search(1)?.id == 1L)
         phone.authApi_Multi.delete(1)
+    }
+
+    @Test
+    fun jwtAuth() = start{phone ->
+        assert(phone.authApi_Jwt.delete("f"))
+
+        phone.MyWebSocketWithAuth {
+            assert((it.incoming.receive() as Frame.Text).readText() == "hello, world!")
+        }
+        .getChats()
     }
 
     @Test
@@ -183,51 +242,12 @@ class ApplicationTest {
         phone.MyWebSocket(::connect).getChats()
         phone.MyRawWebSocket(::connect).getChats()
         phone.MySubProtocolWebSocket(::connect).getChats()
-        phone.MyWebSocketWithArgs{ session ->
+        phone.MyWebSocketWithArgs { session ->
             val textFrame = session.incoming.receive() as Frame.Text
             assert(textFrame.readText() == "1 a")
         }
-        .getChats(1, "a")
+            .getChats(1, "a")
 
         phone.MyWebSocketWithAuth(::connect).getChats()
-    }
-
-    @Test
-    fun myAuthWebSocket() = testApplication{
-        application {
-            install(Authentication){
-                bearer {  }
-            }
-            routing {
-                authenticate {
-                    webSocket("/") {
-
-                    }
-                }
-            }
-        }
-
-        val client = createClient {
-            install(io.ktor.client.plugins.websocket.WebSockets)
-            install(Auth){
-                // basic {
-                //     realm = "Access to the '/' path"
-                //     credentials {
-                //         println(".".repeat(20))
-                //         BasicAuthCredentials(username = "jetbrains", password = "foobar")
-                //     }
-                // }
-                bearer {
-                    loadTokens {
-                        // Load tokens from a local storage and return them as the 'BearerTokens' instance
-                        BearerTokens("abc123", "xyz111")
-                    }
-                }
-            }
-        }
-
-        client.webSocket("/") {
-
-        }
     }
 }

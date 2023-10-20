@@ -26,16 +26,16 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
             )
     ) {
         """
-        class Phone(
-            private val client: HttpClient,
+        open class Phone(
+            internal val client: HttpClient,
             private val mBasicUrl: String = "http://localhost:80",
         ) {
-            private var token: String? = null
-    
-            fun setToken(token: String){
-                this.token = token
-            }    
-            
+            private var authorization: String? = null
+        
+            fun setAuthorization(scheme: String, token: String){
+                this.authorization = "${'$'}scheme ${'$'}token"
+            }
+
             ${insertIf(phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """
                 private val securesWebSockets = mBasicUrl.startsWith("https:")
@@ -65,7 +65,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                     }
                     
                     if (withToken)
-                        ~builder.header(HttpHeaders.Authorization, token)!~
+                        ~builder.header(HttpHeaders.Authorization, authorization)!~
                         
                     builder.request()
                 }

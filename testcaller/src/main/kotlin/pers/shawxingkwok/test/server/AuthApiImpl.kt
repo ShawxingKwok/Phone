@@ -37,4 +37,10 @@ object AuthApiImpl{
             return User(id, "Shawxing", 25)
         }
     }
+
+    class Jwt(override val call: ApplicationCall) : Phone.AuthApi_Jwt{
+        override suspend fun delete(id: String): Boolean {
+            return true
+        }
+    }
 }

@@ -54,7 +54,7 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
             )${insertIf(withToken){
                 """
                 {
-                    header(HttpHeaders.Authorization, token)
+                    header(HttpHeaders.Authorization, authorization)
                 }
                 """.trim()
             }}

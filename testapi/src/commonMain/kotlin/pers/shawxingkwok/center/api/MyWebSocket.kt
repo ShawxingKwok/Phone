@@ -17,7 +17,7 @@ interface MySubProtocolWebSocket {
     suspend fun getChats()
 }
 
-@Phone.Auth(["jwt"], withToken = true)
+@Phone.Auth(["auth-jwt"], withToken = true)
 @Phone.WebSocket
 interface MyWebSocketWithAuth {
     suspend fun getChats()
