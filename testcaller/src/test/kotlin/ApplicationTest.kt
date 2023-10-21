@@ -31,7 +31,7 @@ import kotlin.test.Test
 
 class ApplicationTest {
     private fun Application.routePhone() {
-        Phone.route(
+        Phone.routeAll(
             route = routing { },
             ::AccountApiImpl,
             AuthApiImpl::Partial,

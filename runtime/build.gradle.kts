@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.publish)
 }
 
+val isSnapshot = true
+
 kotlin {
     explicitApiWarning()
 
@@ -13,6 +15,12 @@ kotlin {
     js{
         browser()
     }
+
+    sourceSets {
+        val commonMain by getting
+    }
+
+    if (isSnapshot) return@kotlin
 
     @Suppress("OPT_IN_USAGE")
     wasm {
@@ -39,14 +47,9 @@ kotlin {
     mingwX64()
 
     linuxX64()
-
-    sourceSets {
-        val commonMain by getting
-    }
 }
 
 mavenPublishing {
-    val isSnapshot = true
     val version = "1.0.0"
     coordinates("io.github.shawxingkwok", "phone-runtime", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {

@@ -57,15 +57,24 @@ internal fun buildServerPhone() {
                 )
             }
     
-            fun route(
+            fun routeAll(
                 route: Route,
                 ${MyProcessor.phones.joinToString("\n"){
                     "get${it.phoneName}: (${it.getInterfacePropTypeText()}) -> ${it.phoneName},"   
                 }}    
             ){
-                ${MyProcessor.phones.joinToString(""){ ksclass ->
-                    val phonePropName = ksclass.phoneName.replaceFirstChar { it.lowercase() }
-                    """
+                ${MyProcessor.phones.joinToString("\n"){
+                    "route(route, get${it.phoneName})"
+                }}
+            }
+            
+            ${MyProcessor.phones.joinToString(""){ ksclass ->
+                """
+                @JvmName("${ksclass.phoneName}")
+                fun route(
+                    route: Route, 
+                    get${ksclass.phoneName}: (${ksclass.getInterfacePropTypeText()}) -> ${ksclass.phoneName},   
+                ){
                     route.route("/${ksclass.phoneName}"){
                         ${insertIf(ksclass.isAnnotationPresent(Phone.Api::class)){
                             """
@@ -74,16 +83,16 @@ internal fun buildServerPhone() {
                             }                                
                             """.trim()
                         }}
-
+                    
                         ${mayEmbraceWithAuth(ksclass) {
-                            ksclass.getNeededFunctions().joinToString("\n\n") { 
-                                it.getBody(ksclass) 
+                            ksclass.getNeededFunctions().joinToString("\n\n") {
+                                it.getBody(ksclass)
                             }
                         }}
                     }
-                    """
-                }}
-            }
+                }
+                """
+            }}
         }
         """
     }
