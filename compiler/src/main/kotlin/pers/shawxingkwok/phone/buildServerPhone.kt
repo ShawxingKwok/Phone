@@ -162,7 +162,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             """
             $paramName = params["$paramName"]
                 ~?.let{ 
-                    tryDecode${"<${typeText}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${param.getCipherText(ksclass)}) 
+                    tryDecode${"<${typeText.removeSuffix("?")}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${param.getCipherText(ksclass)}) 
                     ?: return@$methodText 
                 }!~
                 ${insertIf(!type.isMarkedNullable){
