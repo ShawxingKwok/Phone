@@ -80,7 +80,20 @@ object PhoneValidator : KSDefaultValidator() {
                 }
             }
 
-            ksclass.isAnnotationPresent(Phone.Api::class) -> {}
+            ksclass.isAnnotationPresent(Phone.Api::class) -> {
+                ksclass.getNeededFunctions().forEach { ksfun ->
+                    Log.check(
+                        ksfun,
+                        !(ksfun.simpleName() == "handle"
+                            && ksfun.typeParameters.none()
+                            && ksfun.parameters.none()
+                        )
+                    ){
+                        "There would be an additional function named `handle` for interception, " +
+                        "Therefore, rename this function or add parameters."
+                    }
+                }
+            }
 
             ksclass.isAnnotationPresent(Phone.WebSocket::class) -> {
                 Log.check(
