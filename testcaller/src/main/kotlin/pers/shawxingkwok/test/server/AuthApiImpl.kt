@@ -1,13 +1,14 @@
 package pers.shawxingkwok.test.server
 
 import io.ktor.server.application.*
+import io.ktor.util.pipeline.*
 import pers.shawxingkwok.center.api.AccountApi
 import pers.shawxingkwok.center.api.AuthApi
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 
 object AuthApiImpl{
-    class Partial(override val call: ApplicationCall) : Phone.AuthApi_Partial{
+    class Partial(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Partial{
         override suspend fun delete(id: Long) {
         }
 
@@ -16,7 +17,7 @@ object AuthApiImpl{
         }
     }
 
-    class Whole(override val call: ApplicationCall) : Phone.AuthApi_Whole{
+    class Whole(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Whole{
         override suspend fun delete(id: Long) {
         }
 
@@ -25,7 +26,7 @@ object AuthApiImpl{
         }
     }
 
-    class Multi(override val call: ApplicationCall) : Phone.AuthApi_Multi{
+    class Multi(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Multi{
         override suspend fun get(): Int {
             return 1
         }
@@ -38,7 +39,7 @@ object AuthApiImpl{
         }
     }
 
-    class Jwt(override val call: ApplicationCall) : Phone.AuthApi_Jwt{
+    class Jwt(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Jwt{
         override suspend fun delete(id: String): Boolean {
             return true
         }

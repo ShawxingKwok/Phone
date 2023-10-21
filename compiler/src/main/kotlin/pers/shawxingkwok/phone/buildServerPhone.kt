@@ -15,6 +15,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
             "io.ktor.server.request.*",
+            "io.ktor.util.pipeline.*",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
@@ -27,7 +28,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             ${phones.joinToString("\n"){ ksclass ->
                 """
                 interface ${ksclass.phoneName} : ${ksclass.qualifiedName()} {
-                    ${ksclass.getPropStatement(true)}
+                    ${ksclass.getInterfacePropStatement()}
                 }
                 """.trim()
             }}
@@ -59,14 +60,25 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
             fun route(
                 route: Route,
                 ${phones.joinToString("\n"){
-                    "get${it.phoneName}: (${it.getPropTypeText(true)}) -> ${it.phoneName},"   
+                    "get${it.phoneName}: (${it.getInterfacePropTypeText()}) -> ${it.phoneName},"   
                 }}    
             ){
                 ${phones.joinToString(""){ ksclass ->
+                    val phonePropName = ksclass.phoneName.replaceFirstChar { it.lowercase() }
                     """
                     route.route("/${ksclass.phoneName}"){
+                        ${insertIf(ksclass.isAnnotationPresent(Phone.Api::class)){
+                            """
+                            handle {
+                                get${ksclass.phoneName}(this).handle()
+                            }                                
+                            """.trim()
+                        }}
+
                         ${mayEmbraceWithAuth(ksclass) {
-                            ksclass.getNeededFunctions().joinToString("\n\n") { it.getBody(ksclass) }
+                            ksclass.getNeededFunctions().joinToString("\n\n") { 
+                                it.getBody(ksclass) 
+                            }
                         }}
                     }
                     """
@@ -109,14 +121,9 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         if (returnType != resolver.builtIns.unitType)
             append("val ret = ")
 
-        append("get${ksclass.phoneName}(")
+        append("get${ksclass.phoneName}(this)")
 
-        if (webSocketAnnot == null)
-            append("call")
-        else
-            append("this")
-
-        append(").${simpleName()}(")
+        append(".${simpleName()}(")
 
         if (parameters.any()) append("\n")
 
