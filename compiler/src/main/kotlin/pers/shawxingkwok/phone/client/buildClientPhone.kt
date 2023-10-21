@@ -30,7 +30,7 @@ internal fun buildClientPhone() {
             internal val client: HttpClient,
             private val mBasicUrl: String = "http://localhost:80",
         ) {
-            private var authorization: String? = null
+            private lateinit var authorization: String
         
             fun setAuthorization(token: String, scheme: String = "Bearer"){
                 authorization = "${'$'}scheme ${'$'}token"
