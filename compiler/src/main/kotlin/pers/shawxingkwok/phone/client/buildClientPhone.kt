@@ -87,7 +87,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 """
             }}
             
-            private suspend fun checkRequest(response: HttpResponse){
+            private suspend fun checkResponse(response: HttpResponse){
                 check(response.status == HttpStatusCode.OK){
                     response.bodyAsText()
                 }

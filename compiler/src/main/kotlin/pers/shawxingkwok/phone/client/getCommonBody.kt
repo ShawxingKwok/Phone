@@ -50,7 +50,7 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
                 """.trim()
             }}
                 
-            checkRequest(response)
+            checkResponse(response)
                 
             ${insertIf(hasReturn) {
                 val serializerText = returnType.getSerializerText()
