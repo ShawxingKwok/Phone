@@ -33,7 +33,7 @@ internal fun buildClientPhone() {
             private var authorization: String? = null
         
             fun setAuthorization(token: String, scheme: String = "Bearer"){
-                this.authorization = "${'$'}scheme ${'$'}token"
+                authorization = "${'$'}scheme ${'$'}token"
             }
 
             ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
