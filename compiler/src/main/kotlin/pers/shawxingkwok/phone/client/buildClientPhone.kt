@@ -7,9 +7,9 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.phone.*
 
-internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
+internal fun buildClientPhone() {
     createFile(
-        phones = phones,
+        phones = MyProcessor.phones,
         packageName = Args.ClientPackageName,
         initialImports =
             setOf(
@@ -36,7 +36,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 this.authorization = "${'$'}scheme ${'$'}token"
             }
 
-            ${insertIf(phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
+            ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """
                 private val securesWebSockets = mBasicUrl.startsWith("https:")
                 private val host = mBasicUrl.substringBeforeLast(":").substringAfter("://")
@@ -72,7 +72,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 """               
             }}
             
-            ${insertIf(phones.any { it.isAnnotationPresent(Phone.Api::class) }){
+            ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.Api::class) }){
                 """
                 private inline fun <reified T> ParametersBuilder.appendWithJson(
                     key: String,
@@ -95,7 +95,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
             
             ${getCoderFunctions()}
             
-            ${phones.joinToString("\n\n") { ksClass ->
+            ${MyProcessor.phones.joinToString("\n\n") { ksClass ->
                 when(val webSocket = ksClass.getAnnotationByType(Phone.WebSocket::class)) {
                     null -> ksClass.getCommonBody()
                     else -> ksClass.getWebSocketBody(webSocket)

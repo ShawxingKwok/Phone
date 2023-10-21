@@ -37,6 +37,13 @@ internal object MyProcessor : KSProcessor{
         }
         .map { it.qualifiedName()!! }
 
+    private val serializerPaths = resolver
+        .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
+        .map { it.qualifiedName()!! }
+
+    lateinit var phones: List<KSClassDeclaration>
+        private set
+
     // both nullable and non-nullable are mapped
     lateinit var serializers: Map<KSType, KSClassDeclaration>
         private set
@@ -95,8 +102,10 @@ internal object MyProcessor : KSProcessor{
 
                 Status.value++
 
-                serializers = resolver
-                    .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
+                phones = phoneInterfacePaths.map { resolver.getClassDeclarationByName(it)!! }
+
+                serializers = serializerPaths
+                    .map { resolver.getClassDeclarationByName(it)!! }
                     .associateBy { ksclass ->
                         ksclass.superTypes
                             .map { it.resolve() }
@@ -112,9 +121,8 @@ internal object MyProcessor : KSProcessor{
                     else ksType.makeNullable()
                 }
 
-                val phones = phoneInterfacePaths.map { resolver.getClassDeclarationByName(it)!! }
-                buildClientPhone(phones)
-                buildServerPhone(phones)
+                buildClientPhone()
+                buildServerPhone()
             }
 
             Status.BUILT -> {

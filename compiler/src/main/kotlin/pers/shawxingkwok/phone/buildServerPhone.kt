@@ -5,9 +5,9 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
 
-internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
+internal fun buildServerPhone() {
     createFile(
-        phones = phones,
+        phones = MyProcessor.phones,
         packageName = Args.ServerPackageName,
         initialImports = setOf(
             "io.ktor.http.*",
@@ -25,7 +25,7 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
     ){
         """
         object Phone{
-            ${phones.joinToString("\n"){ ksclass ->
+            ${MyProcessor.phones.joinToString("\n"){ ksclass ->
                 """
                 interface ${ksclass.phoneName} : ${ksclass.qualifiedName()} {
                     ${ksclass.getInterfacePropStatement()}
@@ -59,11 +59,11 @@ internal fun buildServerPhone(phones: List<KSClassDeclaration>) {
     
             fun route(
                 route: Route,
-                ${phones.joinToString("\n"){
+                ${MyProcessor.phones.joinToString("\n"){
                     "get${it.phoneName}: (${it.getInterfacePropTypeText()}) -> ${it.phoneName},"   
                 }}    
             ){
-                ${phones.joinToString(""){ ksclass ->
+                ${MyProcessor.phones.joinToString(""){ ksclass ->
                     val phonePropName = ksclass.phoneName.replaceFirstChar { it.lowercase() }
                     """
                     route.route("/${ksclass.phoneName}"){
