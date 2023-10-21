@@ -32,7 +32,7 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
         ) {
             private var authorization: String? = null
         
-            fun setAuthorization(scheme: String, token: String){
+            fun setAuthorization(token: String, scheme: String = "Bearer"){
                 this.authorization = "${'$'}scheme ${'$'}token"
             }
 
@@ -86,9 +86,9 @@ internal fun buildClientPhone(phones: List<KSClassDeclaration>) {
                 }
                 """
             }}
-    
-            private suspend fun checkNoBadRequest(response: HttpResponse){
-                check(response.status != HttpStatusCode.BadRequest){
+            
+            private suspend fun checkRequest(response: HttpResponse){
+                check(response.status == HttpStatusCode.OK){
                     response.bodyAsText()
                 }
             }

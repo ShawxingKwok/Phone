@@ -8,6 +8,7 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.auth.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -20,6 +21,7 @@ import io.ktor.server.websocket.WebSockets
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
+import org.apache.http.client.methods.HttpHead
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.test.server.*
@@ -96,12 +98,13 @@ class ApplicationTest {
 
                     jwt("auth-jwt") {
                         realm = JwtConfig.REALM
-                        authSchemes("Token")
-                        verifier(JWT
-                            .require(Algorithm.HMAC256(JwtConfig.SECRET))
+
+                        JWT.require(Algorithm.HMAC256(JwtConfig.SECRET))
                             .withAudience(JwtConfig.AUDIENCE)
                             .withIssuer(JwtConfig.ISSUER)
-                            .build())
+                            .build()
+                            .let(::verifier)
+
                         validate { credential ->
                             if (credential.payload.getClaim("username").asString() == "shawxing") {
                                 JWTPrincipal(credential.payload)
@@ -134,6 +137,7 @@ class ApplicationTest {
                             .withClaim("username", username)
                             .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                             .sign(Algorithm.HMAC256(JwtConfig.SECRET))
+
                         call.respondText(token)
                     }
                 }
@@ -160,7 +164,7 @@ class ApplicationTest {
                 .post("login") { setBody("shawxing") }
                 .bodyAsText()
 
-            phone.setAuthorization("Token", token)
+            phone.setAuthorization(token)
 
             act(phone)
         }
@@ -246,7 +250,7 @@ class ApplicationTest {
             val textFrame = session.incoming.receive() as Frame.Text
             assert(textFrame.readText() == "1 a")
         }
-            .getChats(1, "a")
+        .getChats(1, "a")
 
         phone.MyWebSocketWithAuth(::connect).getChats()
     }

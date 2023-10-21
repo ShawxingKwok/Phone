@@ -1,6 +1,5 @@
 package pers.shawxingkwok.phone.client
 
-import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
@@ -20,49 +19,43 @@ internal fun KSClassDeclaration.getCommonBody(): String =
     """.trim()
 
 context (CodeFormatter)
-private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration) =
-    buildString {
-        append(getClientFunctionHeader())
+private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): String {
+    val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
+        ?: ksclass.getAnnotationByType(Phone.Auth::class)?.withToken
+        ?: false
 
-        val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
-            ?: ksclass.getAnnotationByType(Phone.Auth::class)?.withToken
-            ?: false
+    val returnType = returnType!!.resolve()
+    val hasReturn = returnType != resolver.builtIns.unitType
 
-        mayEmbrace(
-            condition = returnType!!.resolve() != resolver.builtIns.unitType,
-            getStart = { append(": ${returnType!!.text}") },
-            getEnd = {
-                append("\n")
-                val returnType = returnType!!.resolve()
-                if (returnType.isMarkedNullable) {
-                    append("if(response.status == HttpStatusCode.NotFound)\n")
-                    append("~return null!~\n\n")
-                }
-                val serializerText = returnType.getSerializerText()
-                append("return decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})\n")
-            },
-        ) {
-            append(" {\n")
-
-            """
+    return """
+        ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }}{
             val response = client.submitForm(
-                url = "${'$'}basicUrl/${simpleName()}${mayPolymorphicId}",
-                formParameters = parameters {
-                    ${getParametersBody(ksclass, "appendWithJson")}
-                },
-                encodeInQuery = ${ getMethod(ksclass) == Method.GET },
-            )${insertIf(withToken){
+                    url = "${'$'}basicUrl/${simpleName()}${mayPolymorphicId}",
+                    formParameters = parameters {
+                        ${getParametersBody(ksclass, "appendWithJson")}
+                    },
+                    encodeInQuery = ${getMethod(ksclass) == Method.GET},
+                )${insertIf(withToken) {
+                    """
+                    {
+                        header(HttpHeaders.Authorization, authorization)
+                    }
+                    """.trim()
+                }}
+                
+            ${insertIf(returnType.isMarkedNullable) {
                 """
-                {
-                    header(HttpHeaders.Authorization, authorization)
-                }
+                if(response.status == HttpStatusCode.NotFound)
+                    ~return null!~
                 """.trim()
             }}
-            
-            checkNoBadRequest(response)
-            """
-            .let(::append)
+                
+            checkRequest(response)
+                
+            ${insertIf(hasReturn) {
+                val serializerText = returnType.getSerializerText()
+                "return decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"
+            }}
         }
-
-        append("}")
-    }
+        """
+}

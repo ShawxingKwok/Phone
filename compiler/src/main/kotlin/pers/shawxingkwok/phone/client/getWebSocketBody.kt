@@ -54,10 +54,8 @@ internal fun KSClassDeclaration.getWebSocketBody(webSocket: Phone.WebSocket): St
                                 ksfun.getParametersBody(this, "jsonParameter") 
                             }}
                         },
-                    ){
-                        checkNoBadRequest(call.response)
-                        act(this)
-                    }
+                        block = act,
+                    )
                 }
                 """.trim()
             }}
