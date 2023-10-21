@@ -164,7 +164,7 @@ class ApplicationTest {
                 .post("login") { setBody("shawxing") }
                 .bodyAsText()
 
-            phone.setAuthorization(token)
+            phone.token = token
 
             act(phone)
         }

@@ -30,18 +30,15 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
     return """
         ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }}{
             val response = client.submitForm(
-                    url = "${'$'}basicUrl/${simpleName()}${mayPolymorphicId}",
-                    formParameters = parameters {
-                        ${getParametersBody(ksclass, "appendWithJson")}
-                    },
-                    encodeInQuery = ${getMethod(ksclass) == Method.GET},
-                )${insertIf(withToken) {
-                    """
-                    {
-                        header(HttpHeaders.Authorization, authorization)
-                    }
-                    """.trim()
-                }}
+                url = "${'$'}basicUrl/${simpleName()}${mayPolymorphicId}",
+                formParameters = parameters {
+                    ${getParametersBody(ksclass, "appendWithJson")}
+                },
+                encodeInQuery = ${getMethod(ksclass) == Method.GET},
+            ){
+                additionalRequest?.invoke(this)
+                ${insertIf(withToken){ "addToken(this)" }}
+            }
                 
             ${insertIf(returnType.isMarkedNullable) {
                 """

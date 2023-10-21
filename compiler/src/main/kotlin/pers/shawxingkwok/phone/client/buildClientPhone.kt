@@ -26,22 +26,58 @@ internal fun buildClientPhone() {
             )
     ) {
         """
-        open class Phone(
+        open class Phone private constructor(
             internal val client: HttpClient,
-            private val mBasicUrl: String = "http://localhost:80",
+            private val mBasicUrl: String,
+            private val host: String,
+            private val port: Int,
+            private val securesWebSockets: Boolean,
+            private val authScheme: String,
         ) {
-            private lateinit var authorization: String
+            constructor(
+                client: HttpClient,
+                basicUrl: String = "http://localhost:80",
+                authScheme: String = "Bearer",
+                token: String? = null,
+            ) :
+                ~this(
+                    client = client,
+                    mBasicUrl = basicUrl,
+                    host = basicUrl.substringBeforeLast(":").substringAfter("://"),
+                    port = basicUrl.substringAfterLast(":").toInt(),
+                    securesWebSockets = basicUrl.startsWith("https:"),
+                    authScheme = authScheme,
+                ){
+                    check(
+                        mBasicUrl.startsWith("http://")
+                        || mBasicUrl.startsWith("https://")
+                    )
+                    this.token = token
+                }!~
         
-            fun setAuthorization(token: String, scheme: String = "Bearer"){
-                authorization = "${'$'}scheme ${'$'}token"
-            }
+            private var additionalRequest: (HttpRequestBuilder.() -> Unit)? = null
+        
+            var token: String? = null
+                ~set(value) {
+                    check(additionalRequest == null){
+                        "You can't set the token in a phone after the single-use `addRequest`."
+                    }
+                    field = value
+                }!~
+        
+            open fun addRequest(request: HttpRequestBuilder.() -> Unit) =
+                ~Phone(client, mBasicUrl, host, port, securesWebSockets, authScheme)
+                .also { additionalRequest = request }!~
 
+            private fun addToken(builder: HttpRequestBuilder){
+                checkNotNull(token){
+                    "Set token before the request with authentication."
+                }
+                builder.header(HttpHeaders.Authorization, "${'$'}authScheme ${'$'}token")
+            }
+    
             ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """
-                private val securesWebSockets = mBasicUrl.startsWith("https:")
-                private val host = mBasicUrl.substringBeforeLast(":").substringAfter("://")
-                private val port = mBasicUrl.substringAfterLast(":").toIntOrNull() ?: error(TODO())
-                            
                 private inline fun <reified T> HttpRequestBuilder.jsonParameter(
                     key: String,
                     value: T,
@@ -59,13 +95,14 @@ internal fun buildClientPhone() {
                 ) = { 
                     builder: HttpRequestBuilder ->
                     
+                    additionalRequest?.invoke(builder)
+                    
                     if (securesWebSockets) {
                         builder.url.protocol = URLProtocol.WSS
                         builder.url.port = port
                     }
                     
-                    if (withToken)
-                        ~builder.header(HttpHeaders.Authorization, authorization)!~
+                    if (withToken) addToken(builder)
                         
                     builder.request()
                 }
