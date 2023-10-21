@@ -167,20 +167,19 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                 append("call.response.status(HttpStatusCode.OK)\n")
 
             else ->
-                mayEmbrace(
-                    condition = returnType.isMarkedNullable,
-                    start = """
-                        if(ret == null)
-                            ~call.response.status(HttpStatusCode.NotFound)!~
-                        else{
-                        """.trimStart(),
-                    body = """
-                        val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
-                        call.respondText(text, status = HttpStatusCode.OK)
-                    """.trimStart(),
-                    end = "}\n",
-                )
-                .let(::append)
+                """
+                ${insertIf(returnType.isMarkedNullable){
+                    """
+                    if(ret == null)
+                        ~call.response.status(HttpStatusCode.NotFound)!~
+                    else{
+                    """
+                }}    
+                    val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                    call.respondText(text, status = HttpStatusCode.OK)
+                ${insertIf(returnType.isMarkedNullable){ "}" }}
+                """.trimStart()
+                    .let(::append)
         }
         append("}")
     }
