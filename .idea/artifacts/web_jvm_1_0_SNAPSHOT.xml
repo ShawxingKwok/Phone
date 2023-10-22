@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="web-jvm-1.0-SNAPSHOT">
-    <output-path>$PROJECT_DIR$/example/applications/web/build/libs</output-path>
-    <root id="archive" name="web-jvm-1.0-SNAPSHOT.jar">
-      <element id="module-output" name="Phone.example.applications.web.jvmMain" />
-    </root>
-  </artifact>
-</component>

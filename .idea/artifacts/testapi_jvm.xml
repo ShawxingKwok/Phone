@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="testapi-jvm">
-    <output-path>$PROJECT_DIR$/testapi/build/libs</output-path>
-    <root id="archive" name="testapi-jvm.jar">
-      <element id="module-output" name="Phone.testapi.jvmMain" />
-    </root>
-  </artifact>
-</component>

@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="center-js">
-    <output-path>$PROJECT_DIR$/example/api/center/build/libs</output-path>
-    <root id="archive" name="center-js.jar">
-      <element id="module-output" name="Phone.example.api.center.jsMain" />
-    </root>
-  </artifact>
-</component>

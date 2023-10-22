@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="serverside-jvm">
-    <output-path>$PROJECT_DIR$/example/api/serverside/build/libs</output-path>
-    <root id="archive" name="serverside-jvm.jar">
-      <element id="module-output" name="Phone.example.api.serverside.jvmMain" />
-    </root>
-  </artifact>
-</component>
