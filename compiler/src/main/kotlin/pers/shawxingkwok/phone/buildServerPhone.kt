@@ -106,16 +106,13 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         val methodText = when(val method = getMethod(ksclass)){
             Method.GET, Method.POST -> method.text
             else -> getDeclText(
-                import = "io.ktor.server.websocket.webSocket${insertIf(method == Method.WEB_SOCKET_RAW) { "Raw" }}",
+                import = TODO(),
                 innerName = null,
                 isTopLevelAndExtensional = true
             )
         }
 
         append("""$methodText("/${simpleName()}$mayPolymorphicId"""")
-
-        if (webSocketAnnot?.subProtocol?.any() == true)
-            append(""", "${webSocketAnnot.subProtocol}"""")
 
         append("){\n")
 

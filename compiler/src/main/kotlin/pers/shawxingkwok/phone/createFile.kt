@@ -1,7 +1,9 @@
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.Environment
 import pers.shawxingkwok.ksputil.createFile
@@ -18,6 +20,7 @@ internal fun createFile(
             Dependencies(
                 aggregating = true,
                 sources = phones
+                    .plus(phones.flatMap { it.getAllSuperTypes().map(KSType::declaration) })
                     .plus(MyProcessor.cipherKSObj)
                     .plus(MyProcessor.serializers.values)
                     .mapNotNull { it?.containingFile }
@@ -27,7 +30,7 @@ internal fun createFile(
         header = """
             |@file:Suppress(
             |    "LocalVariableName", "SameParameterValue", "unused", "PropertyName", "HttpUrlsUsage",
-            |    "ClassName"            
+            |    "ClassName", "KotlinRedundantDiagnosticSuppress"            
             |)
             """.trimMargin(),
         extensionName = "",

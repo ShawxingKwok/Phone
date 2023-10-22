@@ -10,17 +10,16 @@ public annotation class Phone{
     @Target(AnnotationTarget.FUNCTION)
     public annotation class Polymorphic(val id: String)
 
+    /**
+     * Not supported at present.
+     */
     @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.CLASS)
-    public annotation class WebSocket(
-        val funDecl: String,
-        val subProtocol: String = "",
-        val isRaw: Boolean = false,
-    )
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+    public annotation class WebSocket
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.VALUE_PARAMETER)
-    public annotation class Default(val value: String)
+    public annotation class Default(val valueText: String)
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)

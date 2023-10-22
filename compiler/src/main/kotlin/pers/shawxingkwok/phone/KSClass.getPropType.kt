@@ -21,7 +21,7 @@ internal fun KSClassDeclaration.getInterfacePropTypeText(): String =
     when(val websocketsAnnot = getAnnotationByType(Phone.WebSocket::class)) {
         null -> "PipelineContext<Unit, ApplicationCall>"
         else -> getDeclText(
-            import = "io.ktor.server.websocket.${insertIf(!websocketsAnnot.isRaw) { "Default" }}WebSocketServerSession",
+            import = TODO(),
             innerName = null,
             isTopLevelAndExtensional = false
         )

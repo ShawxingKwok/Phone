@@ -3,8 +3,6 @@
 package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.isAnnotationPresent
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.phone.*
 
 internal fun buildClientPhone() {
@@ -50,39 +48,6 @@ internal fun buildClientPhone() {
                 builder.header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
             }
     
-            ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
-                """
-                private inline fun <reified T> HttpRequestBuilder.jsonParameter(
-                    key: String,
-                    value: T,
-                    serializer: KSerializer<T & Any>?,
-                    cipher: Phone.Cipher?,
-                ){
-                    if (value == null) return
-                    val newV = encode(value, serializer, cipher)
-                    parameter(key, newV)
-                }
-                
-                private fun webSocketRequest(
-                    withToken: Boolean, 
-                    request: HttpRequestBuilder.() -> Unit
-                ) = { 
-                    builder: HttpRequestBuilder ->
-                    
-                    additionalRequest?.invoke(builder)
-                    
-                    if (securesWebSockets) {
-                        builder.url.protocol = URLProtocol.WSS
-                        builder.url.port = port
-                    }
-                    
-                    if (withToken) addToken(builder)
-                        
-                    builder.request()
-                }
-                """               
-            }}
-            
             ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.Api::class) }){
                 """
                 private inline fun <reified T> ParametersBuilder.appendWithJson(
@@ -106,12 +71,7 @@ internal fun buildClientPhone() {
             
             ${getCoderFunctions()}
             
-            ${MyProcessor.phones.joinToString("\n\n") { ksClass ->
-                when(val webSocket = ksClass.getAnnotationByType(Phone.WebSocket::class)) {
-                    null -> ksClass.getCommonBody()
-                    else -> ksClass.getWebSocketBody(webSocket)
-                }
-            }}    
+            ${MyProcessor.phones.joinToString("\n\n") { it.getCommonBody() }}    
         }
         """
     }

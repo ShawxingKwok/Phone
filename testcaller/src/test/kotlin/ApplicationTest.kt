@@ -30,27 +30,6 @@ import java.util.*
 import kotlin.test.Test
 
 class ApplicationTest {
-    private fun Application.routePhone() {
-        Phone.routeAll(
-            route = routing { },
-            ::AccountApiImpl,
-            AuthApiImpl::Partial,
-            AuthApiImpl::Whole,
-            AuthApiImpl::Multi,
-            AuthApiImpl::Jwt,
-            CryptoApiImpl::Partial,
-            CryptoApiImpl::Whole,
-            ::PolymorphicApiImpl,
-            ::SuperInterfaceApiImpl,
-            ::VarargApiImpl,
-            // ::MyWebSocketImpl,
-            // ::MyRawWebSocketImpl,
-            // ::MySubProtocolWebSocketImpl,
-            // ::MyWebSocketWithAuthImpl,
-            // ::MyWebSocketWithArgsImpl,
-        )
-    }
-
     object JwtConfig {
         const val AUDIENCE = "jwt-audience"
         const val REALM = "ktor sample app"
@@ -236,11 +215,6 @@ class ApplicationTest {
         }
     ) { phone ->
         assert(phone.AuthApi_Jwt().delete("f"))
-
-        // phone.MyWebSocketWithAuth {
-        //     assert((it.incoming.receive() as Frame.Text).readText() == "hello, world!")
-        // }
-        // .getChats()
     }
 
     @Test
@@ -271,25 +245,5 @@ class ApplicationTest {
         }
     ) { phone ->
         assert(phone.VarargApi().sumTime(1, 2, 3) == 6)
-    }
-
-    @Test
-    fun websocket() = start { phone ->
-        suspend fun connect(session: ClientWebSocketSession) {
-            val textFrame = session.incoming.receive() as Frame.Text
-            assert(textFrame.readText() == "hello, world!")
-        }
-
-        // phone.MyWebSocket(::connect).getChats()
-        // phone.MyRawWebSocket(::connect).getChats()
-        // phone.MySubProtocolWebSocket(::connect).getChats()
-        // phone.MyWebSocketWithArgs { session ->
-        //     val textFrame = session.incoming.receive() as Frame.Text
-        //     assert(textFrame.readText() == "1 a")
-        // }
-        // .getChats(1, "a")
-        //
-        // phone.varargApi.addRequest()
-        // phone.MyWebSocketWithAuth(::connect).getChats()
     }
 }

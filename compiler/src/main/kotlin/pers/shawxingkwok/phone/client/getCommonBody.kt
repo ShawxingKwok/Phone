@@ -9,7 +9,7 @@ context (CodeFormatter)
 internal fun KSClassDeclaration.getCommonBody(): String =
     """
     inner class $phoneName(
-        private val additionalRequest: (HttpRequestBuilder.() -> Unit)? = null
+        private val extendRequest: (HttpRequestBuilder.() -> Unit)? = null
     )
         ~: ${qualifiedName()}!~ 
     {                    
@@ -24,6 +24,7 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
         ?: false
 
     val returnType = returnType!!.resolve()
+
     val hasReturn = returnType != resolver.builtIns.unitType
 
     return """
@@ -35,7 +36,7 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
                 },
                 encodeInQuery = ${getMethod(ksclass) == Method.GET},
             ){
-                additionalRequest?.invoke(this)
+                extendRequest?.invoke(this)
                 ${insertIf(withToken){ "addToken(this)" }}
             }
                 
