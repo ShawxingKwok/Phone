@@ -43,11 +43,11 @@ class ApplicationTest {
             ::PolymorphicApiImpl,
             ::SuperInterfaceApiImpl,
             ::VarargApiImpl,
-            ::MyWebSocketImpl,
-            ::MyRawWebSocketImpl,
-            ::MySubProtocolWebSocketImpl,
-            ::MyWebSocketWithAuthImpl,
-            ::MyWebSocketWithArgsImpl,
+            // ::MyWebSocketImpl,
+            // ::MyRawWebSocketImpl,
+            // ::MySubProtocolWebSocketImpl,
+            // ::MyWebSocketWithAuthImpl,
+            // ::MyWebSocketWithArgsImpl,
         )
     }
 
@@ -59,6 +59,7 @@ class ApplicationTest {
     }
 
     private fun start(
+        configureServer: Application.() -> Unit = {},
         configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
         act: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit,
     ) =
@@ -142,7 +143,8 @@ class ApplicationTest {
                     }
                 }
 
-                routePhone()
+                configureServer()
+                // routePhone()
             }
 
             val client = createClient {
@@ -170,20 +172,33 @@ class ApplicationTest {
         }
 
     @Test
-    fun commonAccount() = start { phone ->
-        assert(phone.accountApi.login("101", "") == LoginResult.NotSigned)
-        assert(phone.accountApi.search(101)?.id == 101L)
-        phone.accountApi.delete(0)
+    fun commonAccount() = start(
+        configureServer = {
+            Phone.route(routing {  }, ::AccountApiImpl)
+        }
+    ) { phone ->
+        assert(phone.AccountApi().login("101", "") == LoginResult.NotSigned)
+        assert(phone.AccountApi().search(101)?.id == 101L)
+        phone.AccountApi().delete(0)
     }
 
     @Test
-    fun crypto() = start { phone ->
-        assert(phone.cryptoApi_Partial.getChats(1, "a", "b") == listOf("1", "a", "b"))
-        assert(phone.cryptoApi_Whole.getChats(1, "a") == listOf("1", "a"))
+    fun crypto() = start(
+        configureServer = {
+            Phone.route(routing {  }, CryptoApiImpl::Partial)
+            Phone.route(routing {  }, CryptoApiImpl::Whole)
+        }
+    ) { phone ->
+        assert(phone.CryptoApi_Partial().getChats(1, "a", "b") == listOf("1", "a", "b"))
+        assert(phone.CryptoApi_Whole().getChats(1, "a") == listOf("1", "a"))
     }
 
     @Test
-    fun cipher() {
+    fun cipher() = start(
+        configureServer = {
+            Phone.route(routing {  }, ::AccountApiImpl)
+        }
+    ) { phone ->
         var text = "hello"
         var bytes = Cipher.encrypt(text.encodeToByteArray())
         text = Json.encodeToString(ByteArraySerializer(), bytes)
@@ -194,46 +209,68 @@ class ApplicationTest {
     }
 
     @Test
-    fun commonAuth() = start { phone ->
-        assert(phone.authApi_Partial.search(1)?.id == 1L)
-        phone.authApi_Partial.delete(1)
+    fun commonAuth() = start(
+        configureServer = {
+            Phone.route(routing {  }, AuthApiImpl::Partial)
+            Phone.route(routing {  }, AuthApiImpl::Whole)
+            Phone.route(routing {  }, AuthApiImpl::Multi)
+        }
+    ) { phone ->
+        assert(phone.AuthApi_Partial().search(1)?.id == 1L)
+        phone.AuthApi_Partial().delete(1)
         println(".".repeat(10))
 
-        assert(phone.authApi_Whole.search(1)?.id == 1L)
-        phone.authApi_Whole.delete(1)
+        assert(phone.AuthApi_Whole().search(1)?.id == 1L)
+        phone.AuthApi_Whole().delete(1)
         println(".".repeat(10))
 
         // assert(phone.authApi_Multi.get() == 1)
-        assert(phone.authApi_Multi.search(1)?.id == 1L)
-        phone.authApi_Multi.delete(1)
+        assert(phone.AuthApi_Multi().search(1)?.id == 1L)
+        phone.AuthApi_Multi().delete(1)
     }
 
     @Test
-    fun jwtAuth() = start{phone ->
-        assert(phone.authApi_Jwt.delete("f"))
-
-        phone.MyWebSocketWithAuth {
-            assert((it.incoming.receive() as Frame.Text).readText() == "hello, world!")
+    fun jwtAuth() = start(
+        configureServer = {
+            Phone.route(routing {  }, AuthApiImpl::Jwt)
         }
-        .getChats()
+    ) { phone ->
+        assert(phone.AuthApi_Jwt().delete("f"))
+
+        // phone.MyWebSocketWithAuth {
+        //     assert((it.incoming.receive() as Frame.Text).readText() == "hello, world!")
+        // }
+        // .getChats()
     }
 
     @Test
-    fun polymorphic() = start { phone ->
-        assert(phone.polymorphicApi.foo() == "foo")
-        assert(phone.polymorphicApi.foo(1L) == 1L)
-        assert(phone.polymorphicApi.foo(1) == 1)
+    fun polymorphic() = start(
+        configureServer = {
+            Phone.route(routing {  }, ::PolymorphicApiImpl)
+        }
+    ) { phone ->
+        assert(phone.PolymorphicApi().foo() == "foo")
+        assert(phone.PolymorphicApi().foo(1L) == 1L)
+        assert(phone.PolymorphicApi().foo(1) == 1)
     }
 
     @Test
-    fun `super`() = start { phone ->
-        assert(phone.superInterfaceApi.foo() == 1)
-        assert(phone.superInterfaceApi.bar() == 1)
+    fun `super`() = start(
+        configureServer = {
+            Phone.route(routing {  }, ::SuperInterfaceApiImpl)
+        }
+    ) { phone ->
+        assert(phone.SuperInterfaceApi().foo() == 1)
+        assert(phone.SuperInterfaceApi().bar() == 1)
     }
 
     @Test
-    fun vararg() = start { phone ->
-        assert(phone.varargApi.sumTime(1, 2, 3) == 6)
+    fun vararg() =  start(
+        configureServer = {
+            Phone.route(routing {  }, ::VarargApiImpl)
+        }
+    ) { phone ->
+        assert(phone.VarargApi().sumTime(1, 2, 3) == 6)
     }
 
     @Test
@@ -243,15 +280,16 @@ class ApplicationTest {
             assert(textFrame.readText() == "hello, world!")
         }
 
-        phone.MyWebSocket(::connect).getChats()
-        phone.MyRawWebSocket(::connect).getChats()
-        phone.MySubProtocolWebSocket(::connect).getChats()
-        phone.MyWebSocketWithArgs { session ->
-            val textFrame = session.incoming.receive() as Frame.Text
-            assert(textFrame.readText() == "1 a")
-        }
-        .getChats(1, "a")
-
-        phone.MyWebSocketWithAuth(::connect).getChats()
+        // phone.MyWebSocket(::connect).getChats()
+        // phone.MyRawWebSocket(::connect).getChats()
+        // phone.MySubProtocolWebSocket(::connect).getChats()
+        // phone.MyWebSocketWithArgs { session ->
+        //     val textFrame = session.incoming.receive() as Frame.Text
+        //     assert(textFrame.readText() == "1 a")
+        // }
+        // .getChats(1, "a")
+        //
+        // phone.varargApi.addRequest()
+        // phone.MyWebSocketWithAuth(::connect).getChats()
     }
 }

@@ -26,51 +26,22 @@ internal fun buildClientPhone() {
             )
     ) {
         """
-        open class Phone private constructor(
+        open class Phone(
             val client: HttpClient,
-            private val mBasicUrl: String,
-            private val host: String,
-            private val port: Int,
-            private val securesWebSockets: Boolean,
-            private val tokenScheme: String,
+            private val basicUrl: String = "http://localhost:80",
+            private val tokenScheme: String = "Bearer",
+            var token: String? = null,
         ) {
-            constructor(
-                client: HttpClient,
-                basicUrl: String = "http://localhost:80",
-                tokenScheme: String = "Bearer",
-                token: String? = null,
-            ) :
-                ~this(
-                    client = client,
-                    mBasicUrl = basicUrl,
-                    host = basicUrl.substringBeforeLast(":").substringAfter("://"),
-                    port = basicUrl.substringAfterLast(":").toInt(),
-                    securesWebSockets = basicUrl.startsWith("https:"),
-                    tokenScheme = tokenScheme,
-                ){
-                    check(
-                        mBasicUrl.startsWith("http://")
-                        || mBasicUrl.startsWith("https://")
-                    )
-                    this.token = token
-                }!~
-        
-            private var additionalRequest: (HttpRequestBuilder.() -> Unit)? = null
-        
-            var token: String? = null
-                ~set(value) {
-                    check(additionalRequest == null){
-                        "You can't set the token in a phone after a single-use `addRequest`."
-                    }
-                    field = value
-                }!~
-        
-            open fun addRequest(request: HttpRequestBuilder.() -> Unit) =
-                ~Phone(client, mBasicUrl, host, port, securesWebSockets, tokenScheme)
-                .also { 
-                    it.additionalRequest = request 
-                    it.token = token
-                }!~
+            init{
+                check(
+                    basicUrl.startsWith("http://")
+                    || basicUrl.startsWith("https://")
+                )            
+            }
+
+            private val host = basicUrl.substringBeforeLast(":").substringAfter("://")
+            private val port = basicUrl.substringAfterLast(":").toInt()
+            private val securesWebSockets = basicUrl.startsWith("https:")
 
             private fun addToken(builder: HttpRequestBuilder){
                 checkNotNull(token){

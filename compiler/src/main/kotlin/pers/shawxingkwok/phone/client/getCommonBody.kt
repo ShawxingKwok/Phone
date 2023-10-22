@@ -2,18 +2,17 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.CodeFormatter
-import pers.shawxingkwok.ksputil.getAnnotationByType
-import pers.shawxingkwok.ksputil.resolver
-import pers.shawxingkwok.ksputil.simpleName
+import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.phone.*
 
 context (CodeFormatter)
 internal fun KSClassDeclaration.getCommonBody(): String =
     """
-    val ${phoneName.replaceFirstChar(Char::lowercase)} = object : $text {                    
-        private val basicUrl = "${"$"}mBasicUrl/${phoneName}" 
-    
+    inner class $phoneName(
+        private val additionalRequest: (HttpRequestBuilder.() -> Unit)? = null
+    )
+        ~: ${qualifiedName()}!~ 
+    {                    
         ${getNeededFunctions().joinToString("\n\n"){ it.getCommonBody(this) }}
     }
     """.trim()
@@ -28,9 +27,9 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
     val hasReturn = returnType != resolver.builtIns.unitType
 
     return """
-        ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }}{
+        ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }} {
             val response = client.submitForm(
-                url = "${'$'}basicUrl/${simpleName()}${mayPolymorphicId}",
+                url = "${'$'}basicUrl/${ksclass.phoneName}/${simpleName()}${mayPolymorphicId}",
                 formParameters = parameters {
                     ${getParametersBody(ksclass, "appendWithJson")}
                 },

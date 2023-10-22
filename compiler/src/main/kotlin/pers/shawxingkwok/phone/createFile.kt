@@ -25,8 +25,11 @@ internal fun createFile(
             ),
         fileName = "Phone",
         header = """
-            @file:Suppress("LocalVariableName", "SameParameterValue", "unused", "PropertyName", "HttpUrlsUsage")
-            """.trim(),
+            |@file:Suppress(
+            |    "LocalVariableName", "SameParameterValue", "unused", "PropertyName", "HttpUrlsUsage",
+            |    "ClassName"            
+            |)
+            """.trimMargin(),
         extensionName = "",
         initialImports = initialImports,
         getBody = getBody,

@@ -13,9 +13,14 @@ public annotation class Phone{
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)
     public annotation class WebSocket(
+        val funDecl: String,
         val subProtocol: String = "",
         val isRaw: Boolean = false,
     )
+
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.VALUE_PARAMETER)
+    public annotation class Default(val value: String)
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)
