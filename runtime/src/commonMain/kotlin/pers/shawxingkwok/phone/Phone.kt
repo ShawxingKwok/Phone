@@ -18,10 +18,6 @@ public annotation class Phone{
     public annotation class WebSocket
 
     @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.VALUE_PARAMETER)
-    public annotation class Default(val valueText: String)
-
-    @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)
     public annotation class Serializer
 

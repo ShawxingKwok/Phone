@@ -27,6 +27,7 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.test.server.*
 import java.time.Duration
 import java.util.*
+import kotlin.reflect.KClass
 import kotlin.test.Test
 
 class ApplicationTest {
