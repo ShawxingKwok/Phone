@@ -38,6 +38,8 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
             ){
                 extendRequest?.invoke(this)
                 ${insertIf(withToken){ "addToken(this)" }}
+                extensionalRequests[this@Phone::class]?.invoke(this)
+                extensionalRequests[this@${ksclass.phoneName}::class]?.invoke(this)
             }
                 
             ${insertIf(returnType.isMarkedNullable) {

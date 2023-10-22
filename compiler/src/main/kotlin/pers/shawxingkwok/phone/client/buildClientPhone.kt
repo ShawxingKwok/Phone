@@ -20,6 +20,7 @@ internal fun buildClientPhone() {
                 "kotlinx.serialization.json.Json",
                 "kotlinx.serialization.KSerializer",
                 "kotlinx.serialization.builtins.ByteArraySerializer",
+                "kotlin.reflect.KClass",
                 "pers.shawxingkwok.phone.Phone",
             )
     ) {
@@ -36,11 +37,17 @@ internal fun buildClientPhone() {
                     || basicUrl.startsWith("https://")
                 )            
             }
+        
+            protected open val extensionalRequests = mapOf<KClass<*>, HttpRequestBuilder.() -> Unit>()
 
-            private val host = basicUrl.substringBeforeLast(":").substringAfter("://")
-            private val port = basicUrl.substringAfterLast(":").toInt()
-            private val securesWebSockets = basicUrl.startsWith("https:")
-
+            ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
+                """
+                private val host = basicUrl.substringBeforeLast(":").substringAfter("://")
+                private val port = basicUrl.substringAfterLast(":").toInt()
+                private val securesWebSockets = basicUrl.startsWith("https:")
+                """
+            }}
+            
             private fun addToken(builder: HttpRequestBuilder){
                 checkNotNull(token){
                     "Set token before the request with authentication."
