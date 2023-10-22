@@ -36,10 +36,10 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
                 },
                 encodeInQuery = ${getMethod(ksclass) == Method.GET},
             ){
-                extendRequest?.invoke(this)
-                ${insertIf(withToken){ "addToken(this)" }}
                 extensionalRequests[this@Phone::class]?.invoke(this)
                 extensionalRequests[this@${ksclass.phoneName}::class]?.invoke(this)
+                extendRequest?.invoke(this)
+                ${insertIf(withToken){ "addToken(this)" }}
             }
                 
             ${insertIf(returnType.isMarkedNullable) {
