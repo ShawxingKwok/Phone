@@ -67,7 +67,10 @@ internal fun buildClientPhone() {
         
             open fun addRequest(request: HttpRequestBuilder.() -> Unit) =
                 ~Phone(client, mBasicUrl, host, port, securesWebSockets, tokenScheme)
-                .also { additionalRequest = request }!~
+                .also { 
+                    it.additionalRequest = request 
+                    it.token = token
+                }!~
 
             private fun addToken(builder: HttpRequestBuilder){
                 checkNotNull(token){
