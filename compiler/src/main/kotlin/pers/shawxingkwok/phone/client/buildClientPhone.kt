@@ -27,17 +27,17 @@ internal fun buildClientPhone() {
     ) {
         """
         open class Phone private constructor(
-            internal val client: HttpClient,
+            val client: HttpClient,
             private val mBasicUrl: String,
             private val host: String,
             private val port: Int,
             private val securesWebSockets: Boolean,
-            private val authScheme: String,
+            private val tokenScheme: String,
         ) {
             constructor(
                 client: HttpClient,
                 basicUrl: String = "http://localhost:80",
-                authScheme: String = "Bearer",
+                tokenScheme: String = "Bearer",
                 token: String? = null,
             ) :
                 ~this(
@@ -46,7 +46,7 @@ internal fun buildClientPhone() {
                     host = basicUrl.substringBeforeLast(":").substringAfter("://"),
                     port = basicUrl.substringAfterLast(":").toInt(),
                     securesWebSockets = basicUrl.startsWith("https:"),
-                    authScheme = authScheme,
+                    tokenScheme = tokenScheme,
                 ){
                     check(
                         mBasicUrl.startsWith("http://")
@@ -60,20 +60,20 @@ internal fun buildClientPhone() {
             var token: String? = null
                 ~set(value) {
                     check(additionalRequest == null){
-                        "You can't set the token in a phone after the single-use `addRequest`."
+                        "You can't set the token in a phone after a single-use `addRequest`."
                     }
                     field = value
                 }!~
         
             open fun addRequest(request: HttpRequestBuilder.() -> Unit) =
-                ~Phone(client, mBasicUrl, host, port, securesWebSockets, authScheme)
+                ~Phone(client, mBasicUrl, host, port, securesWebSockets, tokenScheme)
                 .also { additionalRequest = request }!~
 
             private fun addToken(builder: HttpRequestBuilder){
                 checkNotNull(token){
                     "Set token before the request with authentication."
                 }
-                builder.header(HttpHeaders.Authorization, "${'$'}authScheme ${'$'}token")
+                builder.header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
             }
     
             ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
