@@ -44,7 +44,7 @@ internal fun KSClassDeclaration.getWebSocketBody(webSocket: Phone.WebSocket): St
                 ${ksfun.getClientFunctionHeader()} {
                     client.$webSocketKSFunText(
                         host = host, port = port,
-                        path = "/$phoneName/${ksfun.simpleName()}${ksfun.mayPolymorphicId}",
+                        path = "$phoneName/${ksfun.simpleName()}${ksfun.mayPolymorphicId}",
                         request = webSocketRequest($withToken){
                             ${insertIf(webSocket.subProtocol.any()){ 
                                 "header(HttpHeaders.SecWebSocketProtocol, \"${webSocket.subProtocol}\")" 
