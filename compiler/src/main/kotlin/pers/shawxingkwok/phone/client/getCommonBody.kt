@@ -6,9 +6,9 @@ import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.phone.*
 
 context (CodeFormatter)
-internal fun KSClassDeclaration.getCommonBody(): String =
+internal fun KSClassDeclaration.getBody(): String =
     """
-    inner class $implName(
+    inner class $apiNameInPhone(
         private val extendRequest: (HttpRequestBuilder.() -> Unit)? = null
     )
         ~: ${qualifiedName()}!~ 
@@ -30,13 +30,13 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
     return """
         ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }} {
             val response = client.submitForm(
-                url = "${'$'}basicUrl/${ksclass.implName}/${simpleName()}${mayPolymorphicId}",
+                url = "${'$'}basicUrl/${ksclass.apiNameInPhone}/${simpleName()}${mayPolymorphicId}",
                 formParameters = parameters {
                     ${getParametersBody(ksclass, "appendWithJson")}
                 },
-                encodeInQuery = ${getMethod(ksclass) == Method.GET},
+                encodeInQuery = ${getOrPost(ksclass) == "get"},
             ){
-                onEachRequest(this@${ksclass.implName}::class)
+                onEachRequest(this@${ksclass.apiNameInPhone}::class)
                 extendRequest?.invoke(this)
                 ${insertIf(withToken){ "addToken(this)" }}
             }

@@ -1,9 +1,6 @@
 package pers.shawxingkwok.phone
 
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSValueParameter
-import com.google.devtools.ksp.symbol.Variance
+import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 
 private val cache = mutableMapOf<KSClassDeclaration, Boolean>().alsoRegister()
@@ -20,17 +17,20 @@ context (CodeFormatter)
 internal fun KSValueParameter.getSerializerText(): String? {
     val type = type.resolve()
 
-    return if (isVararg)
-        MyProcessor.serializers.entries
+    return when {
+        isVararg -> MyProcessor.serializers.entries
             .firstOrNull { (key, _) ->
                 key.declaration == resolver.builtIns.arrayType.declaration
-                && key.arguments.first().type!!.resolve() == type
-                && key.arguments.first().variance == Variance.COVARIANT
+                        && key.arguments.first().type!!.resolve() == type
+                        && key.arguments.first().variance == Variance.COVARIANT
             }
             ?.value
             ?.text
-    else
-        type.getSerializerText()
+
+        type.declaration is KSTypeParameter -> null
+
+        else -> type.getSerializerText()
+    }
 }
 
 context (CodeFormatter)

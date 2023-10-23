@@ -78,7 +78,7 @@ internal fun buildClientPhone() {
             
             ${getCoderFunctions()}
             
-            ${MyProcessor.phones.joinToString("\n\n") { it.getCommonBody() }}    
+            ${MyProcessor.phones.joinToString("\n\n") { it.getBody() }}    
         }
         """
     }

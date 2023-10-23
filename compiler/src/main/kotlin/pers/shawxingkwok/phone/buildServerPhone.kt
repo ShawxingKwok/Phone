@@ -3,6 +3,7 @@ package pers.shawxingkwok.phone
 import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSTypeParameter
 import pers.shawxingkwok.ksputil.*
 
 internal fun buildServerPhone() {
@@ -14,8 +15,6 @@ internal fun buildServerPhone() {
             "io.ktor.server.application.*",
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
-            "io.ktor.server.request.*",
-            "io.ktor.util.pipeline.*",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
@@ -26,11 +25,17 @@ internal fun buildServerPhone() {
         """
         object Phone{
             ${MyProcessor.phones.joinToString("\n"){ ksclass ->
-                """
-                interface ${ksclass.implName} : ${ksclass.qualifiedName()} {
-                    ${ksclass.getInterfacePropStatement()}
+                val header = "interface ${ksclass.apiNameInPhone} : ${ksclass.qualifiedName()}"
+                
+                when(ksclass.getAnnotationByType(Phone.WebSocket::class)?.isRaw){
+                    null -> """
+                        $header{
+                            val context: ${Types().PipelineContextUnitCall}
+                        }
+                        """.trim()
+                    false -> "$header<${Types().DefaultWebSocketServerSession}>"
+                    true -> "$header<${Types().WebSocketServerSession}>"
                 }
-                """.trim()
             }}
             
             ${getCoderFunctions()}
@@ -60,22 +65,22 @@ internal fun buildServerPhone() {
             fun routeAll(
                 route: Route,
                 ${MyProcessor.phones.joinToString("\n"){
-                    "get${it.implName}: (${it.getInterfacePropTypeText()}) -> ${it.implName},"   
+                    it.apiGetterParam + ","
                 }}    
             ){
                 ${MyProcessor.phones.joinToString("\n"){
-                    "route(route, get${it.implName})"
+                    "route(route, get${it.apiNameInPhone})"
                 }}
             }
             
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
-                @JvmName("${ksclass.implName}")
+                @JvmName("${ksclass.apiNameInPhone}")
                 fun route(
                     route: Route, 
-                    get${ksclass.implName}: (${ksclass.getInterfacePropTypeText()}) -> ${ksclass.implName},   
+                    ${ksclass.apiGetterParam},
                 ){
-                    route.route("/${ksclass.implName}"){
+                    route.route("/${ksclass.apiNameInPhone}"){
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") {
                                 it.getBody(ksclass)
@@ -93,24 +98,24 @@ internal fun buildServerPhone() {
 context (CodeFormatter)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
-        val methodText = when(val method = getMethod(ksclass)){
-            Method.GET, Method.POST -> method.text
-            else -> getDeclText(
-                import = TODO(),
-                innerName = null,
-                isTopLevelAndExtensional = true
-            )
+        val isWebSocket = ksclass.isAnnotationPresent(Phone.WebSocket::class)
+        val isWebSocketRaw = ksclass.getAnnotationByType(Phone.WebSocket::class)?.isRaw == true
+
+        val methodText = when {
+            !isWebSocket -> getOrPost(ksclass)
+            isWebSocketRaw -> Types().serverWebSocketRaw
+            else -> Types().serverWebSocket
         }
 
-        append("""$methodText("/${simpleName()}$mayPolymorphicId"""")
-
-        append("){\n")
+        append("""
+            $methodText("/${simpleName()}$mayPolymorphicId"){
+            """.trimStart()
+        )
 
         if (parameters.any()) {
-            when(getMethod(ksclass)){
-                Method.GET -> append("val params = call.request.queryParameters\n\n")
-                Method.POST -> append("val params = call.receiveParameters\n\n")
-                else -> TODO()
+            when(methodText){
+                "post" -> append("val params = call.receiveParameters\n\n")
+                else -> append("val params = call.request.queryParameters\n\n")
             }
         }
 
@@ -118,7 +123,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         if (returnType != resolver.builtIns.unitType)
             append("val ret = ")
 
-        append("get${ksclass.implName}(this)")
+        append("get${ksclass.apiNameInPhone}(${insertIf(!isWebSocket){ "this" }})")
 
         append(".${simpleName()}(")
 
@@ -128,9 +133,13 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             val paramName = param.name!!.asString()
             val type = param.type.resolve()
 
-            val typeText =
-                if (param.isVararg)
-                    when (type) {
+            if (ksclass.isAnnotationPresent(Phone.WebSocket::class)
+                && type.declaration is KSTypeParameter
+            )
+                append("$paramName = this,")
+            else {
+                val typeText =
+                    if (param.isVararg) when (type) {
                         resolver.builtIns.booleanType -> BooleanArray::class.text
                         resolver.builtIns.charType -> CharArray::class.text
 
@@ -144,21 +153,28 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
                         else -> Array::class.text + "<out ${type.text}>"
                     }
-                else
-                    type.text
+                    else
+                        type.text
 
-            """
-            $paramName = params["$paramName"]
-                ~?.let{ 
-                    tryDecode${"<${typeText.removeSuffix("?")}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${param.getCipherText(ksclass)}) 
-                    ?: return@$methodText 
-                }!~
-                ${insertIf(!type.isMarkedNullable){
-                    "~?: return@$methodText notFoundParam(call, \"$paramName\")!~\n"
-                }}                
-            """.trim().let(::append)
+                """
+                $paramName = params["$paramName"]
+                    ~?.let{ 
+                        tryDecode${"<${typeText.removeSuffix("?")}>"}(call, it, "$paramName", ${param.getSerializerText()}, ${
+                        param.getCipherText(
+                            ksclass
+                        )
+                    }) 
+                        ?: return@$methodText 
+                    }!~
+                    ${
+                        insertIf(!type.isMarkedNullable) {
+                            "~?: return@$methodText notFoundParam(call, \"$paramName\")!~\n"
+                        }
+                    }                
+                """.trim().let(::append)
 
-            insert(length - 2, ",")
+                insert(length - 2, ",")
+            }
             append("\n\n")
         }
 

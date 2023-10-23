@@ -22,10 +22,10 @@ internal object MyProcessor : KSProcessor{
 
     private val phoneInterfacePaths = resolver
         .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-        // .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
+        .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
         .also { ksclasses ->
             val cognominal= ksclasses
-                .groupBy { it.implName }
+                .groupBy { it.apiNameInPhone }
                 .values
                 .filter { it.size >= 2 }
                 .flatten()

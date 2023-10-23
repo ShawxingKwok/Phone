@@ -1,15 +1,13 @@
 package pers.shawxingkwok.phone
 
 import pers.shawxingkwok.ksputil.Environment
-import pers.shawxingkwok.ksputil.Log
 
 internal object Args {
-    val defaultMethod =
-        when(Environment.options["phone.default-method"]){
-            "get" -> Method.GET
-            "post" -> Method.POST
-            else -> error("Set phone.default-method with `get` or `post` in build.gradle(.kts).")
-        }
+    val defaultGetOrPost = when(Environment.options["phone.default-method"]){
+        "get" -> "get"
+        "post" -> "post"
+        else -> error("Set phone.default-method with `get` or `post` in build.gradle(.kts).")
+    }
 
     val ServerPackagePath = Environment.options["phone.server-package-path"]
 

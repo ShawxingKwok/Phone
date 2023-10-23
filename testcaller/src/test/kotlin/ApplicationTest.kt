@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -16,11 +17,15 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
 import io.ktor.server.websocket.WebSockets
+import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
+import pers.shawxingkwok.test.client.WebSocketApiImpl
+import pers.shawxingkwok.test.client.WebSocketClientPhone
+import pers.shawxingkwok.test.client.WebSocketServerPhone
 import pers.shawxingkwok.test.server.*
 import java.time.Duration
 import java.util.*
@@ -255,5 +260,31 @@ class ApplicationTest {
         val b = Time(4, 5, 6)
         val ab = phone.CustomSerializerApi().sumTime(a, b)
         assert(ab == Time(5, 7, 9))
+    }
+
+    @Test
+    fun websocket() = testApplication {
+        application {
+            install(WebSockets)
+            WebSocketServerPhone.route(routing {  }, ::WebSocketApiImpl)
+            routing {
+                post {
+                }
+                webSocket {
+
+                }
+                webSocketRaw {  }
+            }
+        }
+        val client = createClient {
+            install(io.ktor.client.plugins.websocket.WebSockets)
+        }
+        WebSocketClientPhone(client).WebSocketServiceImpl().get {
+            send("X")
+            val textFrame = this.incoming.receive() as Frame.Text
+            val text = textFrame.readText()
+            println(text)
+            assert(text == "X")
+        }
     }
 }
