@@ -10,7 +10,6 @@ internal fun KSClassDeclaration.getInterfacePropStatement(): String =
     when(getAnnotationByType(Phone.WebSocket::class)) {
         null -> """
             val context: ${getInterfacePropTypeText()} 
-            suspend fun handle(){}
             """.trim()
 
         else -> "val session: ${getInterfacePropTypeText()}"

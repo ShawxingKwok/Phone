@@ -76,14 +76,6 @@ internal fun buildServerPhone() {
                     get${ksclass.implName}: (${ksclass.getInterfacePropTypeText()}) -> ${ksclass.implName},   
                 ){
                     route.route("/${ksclass.implName}"){
-                        ${insertIf(ksclass.isAnnotationPresent(Phone.Api::class)){
-                            """
-                            handle {
-                                get${ksclass.implName}(this).handle()
-                            }                                
-                            """.trim()
-                        }}
-                    
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") {
                                 it.getBody(ksclass)
