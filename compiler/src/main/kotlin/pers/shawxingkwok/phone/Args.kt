@@ -20,4 +20,9 @@ internal object Args {
 
     val ClientPackageName = Environment.options["phone.client-package-name"]
         ?.takeIf { it.any() } ?: error(TODO())
+
+    init {
+        check(ClientPackageName != ServerPackageName)
+        check(ClientPackagePath != ServerPackagePath)
+    }
 }

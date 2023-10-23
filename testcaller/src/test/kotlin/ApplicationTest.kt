@@ -5,7 +5,6 @@ import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -176,6 +175,7 @@ class ApplicationTest {
             Phone.route(routing {  }, ::AccountApiImpl)
         }
     ) { phone ->
+        @Suppress("JsonStandardCompliance")
         var text = "hello"
         var bytes = Cipher.encrypt(text.encodeToByteArray())
         text = Json.encodeToString(ByteArraySerializer(), bytes)

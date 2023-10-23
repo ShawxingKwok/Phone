@@ -5,9 +5,11 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import pers.shawxingkwok.ksputil.CodeFormatter
+import pers.shawxingkwok.ksputil.Delicate
 import pers.shawxingkwok.ksputil.Environment
 import pers.shawxingkwok.ksputil.createFile
 
+@OptIn(Delicate::class)
 internal fun createFile(
     phones: List<KSClassDeclaration>,
     packageName: String,
