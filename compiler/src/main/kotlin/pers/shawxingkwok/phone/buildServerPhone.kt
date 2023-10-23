@@ -101,8 +101,6 @@ internal fun buildServerPhone() {
 context (CodeFormatter)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
-        val webSocketAnnot = ksclass.getAnnotationByType(Phone.WebSocket::class)
-
         val methodText = when(val method = getMethod(ksclass)){
             Method.GET, Method.POST -> method.text
             else -> getDeclText(
@@ -117,10 +115,11 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         append("){\n")
 
         if (parameters.any()) {
-            if (webSocketAnnot == null)
-                append("val params = call.receiveParameters()\n\n")
-            else
-                append("val params = call.request.queryParameters\n\n")
+            when(getMethod(ksclass)){
+                Method.GET -> append("val params = call.request.queryParameters\n\n")
+                Method.POST -> append("val params = call.receiveParameters\n\n")
+                else -> TODO()
+            }
         }
 
         val returnType = returnType!!.resolve()

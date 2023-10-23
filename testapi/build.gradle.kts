@@ -29,7 +29,7 @@ dependencies {
 ksp{
     arg("ksp-util.debug", "")
 
-    arg("phone.default-method", "post")
+    arg("phone.default-method", "get")
 
     // set your own path
     arg("phone.server-package-path", "${projectDir.parent}/testcaller/src/main/kotlin")
