@@ -27,7 +27,7 @@ internal fun buildServerPhone() {
         object Phone{
             ${MyProcessor.phones.joinToString("\n"){ ksclass ->
                 """
-                interface ${ksclass.phoneName} : ${ksclass.qualifiedName()} {
+                interface ${ksclass.implName} : ${ksclass.qualifiedName()} {
                     ${ksclass.getInterfacePropStatement()}
                 }
                 """.trim()
@@ -60,26 +60,26 @@ internal fun buildServerPhone() {
             fun routeAll(
                 route: Route,
                 ${MyProcessor.phones.joinToString("\n"){
-                    "get${it.phoneName}: (${it.getInterfacePropTypeText()}) -> ${it.phoneName},"   
+                    "get${it.implName}: (${it.getInterfacePropTypeText()}) -> ${it.implName},"   
                 }}    
             ){
                 ${MyProcessor.phones.joinToString("\n"){
-                    "route(route, get${it.phoneName})"
+                    "route(route, get${it.implName})"
                 }}
             }
             
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
-                @JvmName("${ksclass.phoneName}")
+                @JvmName("${ksclass.implName}")
                 fun route(
                     route: Route, 
-                    get${ksclass.phoneName}: (${ksclass.getInterfacePropTypeText()}) -> ${ksclass.phoneName},   
+                    get${ksclass.implName}: (${ksclass.getInterfacePropTypeText()}) -> ${ksclass.implName},   
                 ){
-                    route.route("/${ksclass.phoneName}"){
+                    route.route("/${ksclass.implName}"){
                         ${insertIf(ksclass.isAnnotationPresent(Phone.Api::class)){
                             """
                             handle {
-                                get${ksclass.phoneName}(this).handle()
+                                get${ksclass.implName}(this).handle()
                             }                                
                             """.trim()
                         }}
@@ -127,7 +127,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         if (returnType != resolver.builtIns.unitType)
             append("val ret = ")
 
-        append("get${ksclass.phoneName}(this)")
+        append("get${ksclass.implName}(this)")
 
         append(".${simpleName()}(")
 

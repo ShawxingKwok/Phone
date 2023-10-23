@@ -6,7 +6,7 @@ import pers.shawxingkwok.ksputil.qualifiedName
 
 private val cache = mutableMapOf<String, String>()
 
-internal val KSClassDeclaration.phoneName: String get() =
+internal val KSClassDeclaration.implName: String get() =
     cache.getOrPut(qualifiedName()!!) {
         noPackageName()!!.replace(".", "_")
     }

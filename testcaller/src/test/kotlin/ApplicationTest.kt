@@ -4,11 +4,9 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
-import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.http.auth.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -18,16 +16,14 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
 import io.ktor.server.websocket.WebSockets
-import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
-import org.apache.http.client.methods.HttpHead
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
+import pers.shawxingkwok.center.model.Time
 import pers.shawxingkwok.test.server.*
 import java.time.Duration
 import java.util.*
-import kotlin.reflect.KClass
 import kotlin.test.Test
 
 class ApplicationTest {
@@ -245,6 +241,18 @@ class ApplicationTest {
             Phone.route(routing {  }, ::VarargApiImpl)
         }
     ) { phone ->
-        assert(phone.VarargApi().sumTime(1, 2, 3) == 6)
+        assert(phone.VarargApi().sum(1, 2, 3) == 6)
+    }
+
+    @Test
+    fun customSerializer() = start(
+        configureServer = {
+            Phone.route(routing{ }, ::CustomSerializerApiImpl)
+        }
+    ) { phone ->
+        val a = Time(1, 2, 3)
+        val b = Time(4, 5, 6)
+        val ab = phone.CustomSerializerApi().sumTime(a, b)
+        assert(ab == Time(5, 7, 9))
     }
 }

@@ -1,6 +1,5 @@
 package pers.shawxingkwok.phone
 
-import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
@@ -26,7 +25,7 @@ internal object MyProcessor : KSProcessor{
         // .plus(resolver.getAnnotatedSymbols<Phone.WebSocket, KSClassDeclaration>())
         .also { ksclasses ->
             val cognominal= ksclasses
-                .groupBy { it.phoneName }
+                .groupBy { it.implName }
                 .values
                 .filter { it.size >= 2 }
                 .flatten()

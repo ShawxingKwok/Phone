@@ -38,7 +38,7 @@ internal fun buildClientPhone() {
                 )            
             }
         
-            protected open val extensionalRequests = mapOf<KClass<*>, HttpRequestBuilder.() -> Unit>()
+            protected open fun HttpRequestBuilder.onEachRequest(apiKClass: KClass<*>) {}
 
             ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
                 """

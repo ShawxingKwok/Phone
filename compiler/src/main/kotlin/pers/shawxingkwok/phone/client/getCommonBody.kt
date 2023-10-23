@@ -8,7 +8,7 @@ import pers.shawxingkwok.phone.*
 context (CodeFormatter)
 internal fun KSClassDeclaration.getCommonBody(): String =
     """
-    inner class $phoneName(
+    inner class $implName(
         private val extendRequest: (HttpRequestBuilder.() -> Unit)? = null
     )
         ~: ${qualifiedName()}!~ 
@@ -30,14 +30,13 @@ private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): St
     return """
         ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }} {
             val response = client.submitForm(
-                url = "${'$'}basicUrl/${ksclass.phoneName}/${simpleName()}${mayPolymorphicId}",
+                url = "${'$'}basicUrl/${ksclass.implName}/${simpleName()}${mayPolymorphicId}",
                 formParameters = parameters {
                     ${getParametersBody(ksclass, "appendWithJson")}
                 },
                 encodeInQuery = ${getMethod(ksclass) == Method.GET},
             ){
-                extensionalRequests[this@Phone::class]?.invoke(this)
-                extensionalRequests[this@${ksclass.phoneName}::class]?.invoke(this)
+                onEachRequest(this@${ksclass.implName}::class)
                 extendRequest?.invoke(this)
                 ${insertIf(withToken){ "addToken(this)" }}
             }
