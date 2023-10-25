@@ -7,15 +7,16 @@ public annotation class Phone{
     public annotation class Api
 
     @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.FUNCTION)
-    public annotation class Polymorphic(val id: String)
-
-    /**
-     * Not supported at present.
-     */
-    @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class WebSocket(val isRaw: Boolean = false)
+
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+    public annotation class Common<T>
+
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.FUNCTION)
+    public annotation class Polymorphic(val id: String)
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)

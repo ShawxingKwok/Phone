@@ -1,5 +1,6 @@
 package pers.shawxingkwok.center.api
 
+import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.phone.Phone
 
@@ -7,31 +8,42 @@ object AuthApi {
     @Phone.Api
     @Phone.Auth
     interface Partial{
-        suspend fun delete(id: Long)
-        suspend fun search(id: Long): User?
+        @Phone.Common<Unit>
+        suspend fun delete(id: Long): Any?
+
+        @Phone.Common<User?>
+        suspend fun search(id: Long): Any?
     }
 
     @Phone.Api
     interface Whole{
+        @Phone.Common<Unit>
         @Phone.Auth(["auth-basic"])
-        suspend fun delete(id: Long)
-        suspend fun search(id: Long): User?
+        suspend fun delete(id: Long): Any?
+
+        @Phone.Common<User?>
+        suspend fun search(id: Long): Any?
     }
 
     @Phone.Api
     interface Multi{
         // is this allowed?
+        @Phone.Common<Int>
         @Phone.Auth(["auth-basic"], Phone.Auth.Strategy.Required)
-        suspend fun get(): Int
+        suspend fun get(): Any?
 
-        suspend fun delete(id: Long)
-        suspend fun search(id: Long): User?
+        @Phone.Common<Unit>
+        suspend fun delete(id: Long): Any?
+
+        @Phone.Common<User?>
+        suspend fun search(id: Long): Any?
     }
 
     @Phone.Api
     @Phone.Auth(["auth-basic"])
     interface Jwt{
+        @Phone.Common<Boolean>
         @Phone.Auth(["auth-jwt"], withToken = true)
-        suspend fun delete(id: String): Boolean
+        suspend fun delete(id: String): Any?
     }
 }

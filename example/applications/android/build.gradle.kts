@@ -44,6 +44,9 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    implementation(project(":example:api:clientside"))
-    implementation(libs.ktor.client.android)
+    // implementation(project(":example:api:clientside"))
+    // implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
+    implementation("io.ktor:ktor-client-websockets:${libs.versions.ktor.get()}")
+    implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")
 }

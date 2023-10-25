@@ -2,6 +2,7 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.phone.*
 
@@ -13,47 +14,58 @@ internal fun KSClassDeclaration.getBody(): String =
     )
         ~: ${qualifiedName()}!~ 
     {                    
-        ${getNeededFunctions().joinToString("\n\n"){ it.getCommonBody(this) }}
+        ${getNeededFunctions().joinToString("\n\n"){ ksFun ->
+            val commonType = ksFun.commonType
+            val webSocketAnnot = ksFun.getAnnotationByType(Phone.WebSocket::class)
+            
+            when {
+                commonType != null -> ksFun.getCommonBody(this, commonType)
+                webSocketAnnot == null -> TODO()
+                else -> ksFun.getWebSocketBody()    
+            }
+        }}
     }
     """.trim()
 
 context (CodeFormatter)
-private fun KSFunctionDeclaration.getCommonBody(ksclass: KSClassDeclaration): String {
+private fun KSFunctionDeclaration.getCommonBody(
+    ksclass: KSClassDeclaration,
+    commonType: KSType,
+)
+    : String
+{
     val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
         ?: ksclass.getAnnotationByType(Phone.Auth::class)?.withToken
         ?: false
 
-    val returnType = returnType!!.resolve()
-
-    val hasReturn = returnType != resolver.builtIns.unitType
-
     return """
-        ${getClientFunctionHeader()}${insertIf(hasReturn) { ": ${returnType.text}" }} {
-            val response = client.submitForm(
-                url = "${'$'}basicUrl/${ksclass.apiNameInPhone}/${simpleName()}${mayPolymorphicId}",
-                formParameters = parameters {
-                    ${getParametersBody(ksclass, "appendWithJson")}
-                },
-                encodeInQuery = ${getOrPost(ksclass) == "get"},
-            ){
-                onEachRequest(this@${ksclass.apiNameInPhone}::class)
-                extendRequest?.invoke(this)
-                ${insertIf(withToken){ "addToken(this)" }}
-            }
-                
-            ${insertIf(returnType.isMarkedNullable) {
-                """
-                if(response.status == HttpStatusCode.NotFound)
-                    ~return null!~
-                """.trim()
-            }}
-                
-            checkResponse(response)
-                
-            ${insertIf(hasReturn) {
-                val serializerText = returnType.getSerializerText()
-                "return decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"
-            }}
-        }
+        ${getHeader("Result<${commonType.text}>")} =
+            ~runCatching{
+                val response = client.submitForm(
+                    url = "${'$'}basicUrl/${ksclass.apiNameInPhone}/${simpleName()}${mayPolymorphicId}",
+                    formParameters = parameters {
+                        ${getParametersBody(ksclass, "appendWithJson")}
+                    },
+                    encodeInQuery = ${getOrPost(ksclass) == "get"},
+                ){
+                    onEachRequest(this@${ksclass.apiNameInPhone}::class)
+                    extendRequest?.invoke(this)
+                    ${insertIf(withToken){ "addToken(this)" }}
+                }
+                    
+                ${insertIf(commonType.isMarkedNullable) {
+                    """
+                    if(response.status == HttpStatusCode.NotFound)
+                        ~return null!~
+                    """.trim()
+                }}
+                    
+                checkResponse(response)
+                    
+                ${insertIf(commonType != resolver.builtIns.unitType) {
+                    val serializerText = commonType.getSerializerText()
+                    "decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"
+                }}
+            }!~
         """
 }

@@ -1,3 +1,4 @@
+/*
 import csstype.HtmlAttributes
 import io.ktor.client.*
 import io.ktor.client.engine.js.*
@@ -25,19 +26,19 @@ fun main() {
     container.style.fontSize = "100px"
 
     scope.launch {
-        runCatching { phone.accountApi.search(101) }
-        .onFailure { container.textContent = "failed connection" }
-        .onSuccess {
-            container.textContent = when(it){
-                null -> "not found the user"
-                else -> "found ${it.name} in search"
-            }
-        }
-        client.submitForm(
-            url = "/X",
-            parameters {
-                append("x", "1")
-            }
-        )
+        // runCatching { phone.accountApi.search(101) }
+        // .onFailure { container.textContent = "failed connection" }
+        // .onSuccess {
+        //     container.textContent = when(it){
+        //         null -> "not found the user"
+        //         else -> "found ${it.name} in search"
+        //     }
+        // }
+        // client.submitForm(
+        //     url = "/X",
+        //     parameters {
+        //         append("x", "1")
+        //     }
+        // )
     }
-}
+}*/

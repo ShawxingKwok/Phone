@@ -32,7 +32,7 @@ internal fun createFile(
         header = """
             |@file:Suppress(
             |    "LocalVariableName", "SameParameterValue", "unused", "PropertyName", "HttpUrlsUsage",
-            |    "ClassName", "KotlinRedundantDiagnosticSuppress"            
+            |    "ClassName", "KotlinRedundantDiagnosticSuppress", "DuplicatedCode"            
             |)
             """.trimMargin(),
         extensionName = "",

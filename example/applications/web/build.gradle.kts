@@ -32,7 +32,7 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation(project(":example:api:serverside"))
+                // implementation(project(":example:api:serverside"))
                 implementation(libs.ktor.server.netty)
                 implementation("io.ktor:ktor-server-html-builder-jvm:${libs.versions.ktor.get()}")
                 implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
@@ -41,7 +41,7 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(project(":example:api:clientside"))
+                // implementation(project(":example:api:clientside"))
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react:18.2.0-pre.346")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:18.2.0-pre.346")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-emotion:11.9.3-pre.346")
@@ -67,6 +67,7 @@ tasks.named<JavaExec>("run") {
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:2.3.5")
     implementation("io.ktor:ktor-server-websockets-jvm:2.3.5")
+    implementation("io.ktor:ktor-server-cors-jvm:2.3.5")
 }
 
 // tasks.register<Copy>("moveJsLibs") {

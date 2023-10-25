@@ -5,5 +5,6 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface CustomSerializerApi {
-    suspend fun sumTime(a: Time, b: Time): Time
+    @Phone.Common<Time>
+    suspend fun sumTime(a: Time, b: Time): Any?
 }

@@ -10,3 +10,6 @@ internal val KSClassDeclaration.apiNameInPhone: String get() =
     cache.getOrPut(qualifiedName()!!) {
         noPackageName()!!.replace(".", "_")
     }
+
+internal val KSClassDeclaration.apiPropNameInPhone: String get() =
+    apiNameInPhone.replaceFirstChar { it.lowercase() }
