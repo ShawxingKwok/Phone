@@ -105,8 +105,8 @@ internal fun buildServerPhone() {
 context (CodeFormatter)
 private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbraceWithAuth(this) {
     buildString {
-        val isWebSocket = ksclass.isAnnotationPresent(Phone.WebSocket::class)
-        val isWebSocketRaw = ksclass.getAnnotationByType(Phone.WebSocket::class)?.isRaw == true
+        val isWebSocket = isAnnotationPresent(Phone.WebSocket::class)
+        val isWebSocketRaw = getAnnotationByType(Phone.WebSocket::class)?.isRaw == true
 
         val methodText = when {
             !isWebSocket -> getOrPost(ksclass)
@@ -168,7 +168,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                             ${run {  
                                 val text = "The parameter `${paramName}` is incorrectly serialized.\\n${'$'}tr"  
                                 if (isWebSocket)
-                                    "unacceptedClose($text)"
+                                    "unacceptedClose(\"$text\")"
                                 else
                                     """
                                     call.respondText(
@@ -186,7 +186,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                             val text = "Not found `${paramName}` in parameters."
                             
                             if (isWebSocket)
-                                "unacceptedClose($text)!~"
+                                "unacceptedClose(\"$text\")!~"
                             else
                                 """
                                 call.respondText(
