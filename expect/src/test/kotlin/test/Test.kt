@@ -19,7 +19,8 @@ class Test {
     fun websocket() = testApplication {
         application {
             this@application.install(WebSockets)
-            WebSocketServerPhone.route(routing { }, ::TestApiImpl)
+
+            WebSocketServerPhone.route(routing { }, TestApiImpl)
         }
 
         val client = createClient {
