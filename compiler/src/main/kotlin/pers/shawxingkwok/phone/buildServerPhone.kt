@@ -76,12 +76,13 @@ internal fun buildServerPhone() {
             
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
-                @JvmName("${ksclass.apiNameInPhone}")
                 fun route(
                     route: Route, 
                     ${ksclass.apiPropNameInPhone}: ${ksclass.apiNameInPhone},
                 ){
                     route.route("/${ksclass.apiNameInPhone}"){
+                        ${ksclass.apiPropNameInPhone}.run { doOtherTasks() }
+                        
                         ${mayEmbraceWithAuth(ksclass) {
                             ksclass.getNeededFunctions().joinToString("\n\n") {
                                 it.getBody(ksclass)
@@ -177,7 +178,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                     ${insertIf(!type.isMarkedNullable){
                         """
                         ~?: return@$methodText ${run{
-                            val text = "Not found `${paramName}` in parameters."
+                            val text = "Not found `${paramName}` in received parameters."
                             
                             if (isWebSocket)
                                 "unacceptedClose(\"$text\")!~"
