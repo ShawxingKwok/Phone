@@ -44,23 +44,23 @@ private fun KSFunctionDeclaration.getCommonBody(
                 val response = client.submitForm(
                     url = "${'$'}basicUrl/${ksclass.apiNameInPhone}/${simpleName()}${mayPolymorphicId}",
                     formParameters = parameters {
-                        ${getParametersBody(ksclass, "appendWithJson")}
+                        ${getParametersBody(ksclass, "append")}
                     },
                     encodeInQuery = ${getOrPost(ksclass) == "get"},
                 ){
                     onEachRequest(this@${ksclass.apiNameInPhone}::class)
                     extendRequest?.invoke(this)
-                    ${insertIf(withToken){ "addToken(this)" }}
+                    ${insertIf(withToken){ "addToken()" }}
                 }
                     
                 ${insertIf(commonType.isMarkedNullable) {
                     """
                     if(response.status == HttpStatusCode.NotFound)
-                        ~return null!~
+                        ~return@runCatching null!~
                     """.trim()
                 }}
                     
-                checkResponse(response)
+                response.checkIsOK()
                     
                 ${insertIf(commonType != resolver.builtIns.unitType) {
                     val serializerText = commonType.getSerializerText()

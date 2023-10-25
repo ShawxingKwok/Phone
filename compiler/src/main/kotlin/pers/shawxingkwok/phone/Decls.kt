@@ -5,7 +5,7 @@ package pers.shawxingkwok.phone
 import pers.shawxingkwok.ksputil.CodeFormatter
 
 context (CodeFormatter)
-class Types {
+class Decls {
     val clientWebSocket get() =
         getDeclText(
             outermostDeclPath = "io.ktor.client.plugins.websocket.webSocket",
@@ -65,14 +65,14 @@ class Types {
 
     val DefaultWebSocketClientSession get() =
         getDeclText(
-            outermostDeclPath = "io.ktor.client.plugins.websocket.DefaultWebSocketClientSession",
+            outermostDeclPath = "io.ktor.client.plugins.websocket.DefaultClientWebSocketSession",
             innerName = null,
             isTopLevelAndExtensional = false,
         )
 
     val WebSocketClientSession get() =
         getDeclText(
-            outermostDeclPath = "io.ktor.client.plugins.websocket.WebSocketClientSession",
+            outermostDeclPath = "io.ktor.client.plugins.websocket.ClientWebSocketSession",
             innerName = null,
             isTopLevelAndExtensional = false,
         )

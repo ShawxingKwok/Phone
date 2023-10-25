@@ -12,7 +12,7 @@ internal inline fun CodeFormatter.mayEmbraceWithAuth(
         val auth = decl.getAnnotationByType(Phone.Auth::class)
 
         if (auth != null) {
-            append("${Types().authenticate}(\n")
+            append("${Decls().authenticate}(\n")
 
             if (auth.configurations.any())
                 auth.configurations.joinToString(
@@ -28,7 +28,7 @@ internal inline fun CodeFormatter.mayEmbraceWithAuth(
                 .let(::append)
 
             append("""
-                    strategy = ${Types().AuthenticationStrategy}.${auth.strategy.name},
+                    strategy = ${Decls().AuthenticationStrategy}.${auth.strategy.name},
                 ) {
             """.trimStart())
         }

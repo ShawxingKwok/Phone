@@ -7,16 +7,14 @@ import pers.shawxingkwok.phone.getCipherText
 import pers.shawxingkwok.phone.getSerializerText
 
 context (CodeFormatter)
-internal fun KSFunctionDeclaration.getParametersBody(
-    ksclass: KSClassDeclaration,
-    prefix: String,
-): String =
+internal fun KSFunctionDeclaration.getParametersBody(ksclass: KSClassDeclaration, addWay: String): String =
     parameters.joinToString("\n") { ksParam ->
         listOf(
+            "::$addWay",
             "\"${ksParam.name!!.asString()}\"",
             ksParam.name!!.asString(),
             ksParam.getSerializerText(),
             ksParam.getCipherText(ksclass),
         )
-        .joinToString(separator = ", ", prefix = "$prefix(", postfix = ")")
+        .joinToString(separator = ", ", prefix = "addParamWithJson(", postfix = ")")
     }

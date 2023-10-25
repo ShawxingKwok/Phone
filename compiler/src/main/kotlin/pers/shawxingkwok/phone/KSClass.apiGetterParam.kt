@@ -10,7 +10,7 @@ internal val KSClassDeclaration.apiGetterParam: String
         append("get$apiNameInPhone: (")
 
         if (!isAnnotationPresent(Phone.WebSocket::class))
-            append(Types().PipelineContextUnitCall)
+            append(Decls().PipelineContextUnitCall)
 
         append(") -> $apiNameInPhone")
     }

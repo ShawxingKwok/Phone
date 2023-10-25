@@ -23,20 +23,21 @@ open class WebSocketClientPhone(
     init{
         check(
             basicUrl.startsWith("http://")
-                    || basicUrl.startsWith("https://")
+            || basicUrl.startsWith("https://")
         )
     }
 
     protected open fun HttpRequestBuilder.onEachRequest(apiKClass: KClass<*>) {}
 
-    private fun addToken(builder: HttpRequestBuilder){
+    private fun HttpRequestBuilder.addToken() {
         checkNotNull(token){
             "Set token before the request with authentication."
         }
-        builder.header(HttpHeaders.Authorization, "$tokenScheme $token")
+        header(HttpHeaders.Authorization, "$tokenScheme $token")
     }
 
-    private inline fun <reified T> ParametersBuilder.appendWithJsonInForm(
+    private inline fun <reified T> addParamWithJson(
+        add: (String, String) -> Unit,
         key: String,
         value: T,
         serializer: KSerializer<T & Any>?,
@@ -44,12 +45,12 @@ open class WebSocketClientPhone(
     ){
         if (value == null) return
         val newV = encode(value, serializer, cipher)
-        append(key, newV)
+        add(key, newV)
     }
 
-    private suspend fun checkResponseIsOK(response: HttpResponse){
-        check(response.status == HttpStatusCode.OK){
-            response.bodyAsText()
+    private suspend fun HttpResponse.checkIsOK() {
+        check(status == HttpStatusCode.OK){
+            bodyAsText()
         }
     }
 
@@ -115,7 +116,7 @@ open class WebSocketClientPhone(
                 val response = client.submitForm(
                     url = "http://localhost:80/TestApi/delete",
                     formParameters = parameters{
-                        appendWithJsonInForm("id", id, null, null)
+                        addParamWithJson(::append,"id", id, null, null)
                     },
                     encodeInQuery = false,
                 ){
@@ -126,7 +127,7 @@ open class WebSocketClientPhone(
                 if(response.status == HttpStatusCode.NotFound)
                     return@runCatching null
 
-                checkResponseIsOK(response)
+                response.checkIsOK()
 
                 decode(response.bodyAsText(), User.serializer(), null)
             }
@@ -136,7 +137,7 @@ open class WebSocketClientPhone(
                 val response = client.submitForm(
                     url = "http://localhost:80/TestApi/delete",
                     formParameters = parameters{
-                        appendWithJsonInForm("id", id, null, null)
+                        addParamWithJson(::append,"id", id, null, null)
                     },
                     encodeInQuery = false,
                 ){
@@ -144,7 +145,7 @@ open class WebSocketClientPhone(
                     extendRequest?.invoke(this)
                 }
 
-                checkResponseIsOK(response)
+                response.checkIsOK()
             }
 
         override suspend fun get(i: Int): Result<DefaultClientWebSocketSession> =
@@ -155,7 +156,7 @@ open class WebSocketClientPhone(
                     block = {
                         onEachRequest(this@TestApi::class)
                         extendRequest?.invoke(this)
-                        parameter("i", i) // jsonParameter
+                        addParamWithJson(::parameter,"i", i, null, null)
                     },
                 )
             }
@@ -168,7 +169,7 @@ open class WebSocketClientPhone(
                     block = {
                         onEachRequest(this@TestApi::class)
                         extendRequest?.invoke(this)
-                        parameter("i", i) // jsonParameter
+                        addParamWithJson(::parameter,"i", i, null, null)
                     },
                 )
             }

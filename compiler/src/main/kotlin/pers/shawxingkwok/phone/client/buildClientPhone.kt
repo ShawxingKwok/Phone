@@ -2,7 +2,6 @@
 
 package pers.shawxingkwok.phone.client
 
-import com.google.devtools.ksp.isAnnotationPresent
 import pers.shawxingkwok.phone.*
 
 internal fun buildClientPhone() {
@@ -25,6 +24,14 @@ internal fun buildClientPhone() {
             )
     ) {
         """
+        ${insertIf(MyProcessor.hasWebSocket){
+            """
+            inline fun <T: ${Decls().WebSocketClientSession}> Result<T>.onReceivedSuccess(act: T.() -> Unit){
+                onSuccess{ it.act() }
+            }
+            """.trim()
+        }}    
+        
         open class Phone(
             val client: HttpClient,
             private val basicUrl: String = "http://localhost:80",
@@ -38,9 +45,7 @@ internal fun buildClientPhone() {
                 )            
             }
         
-            protected open fun HttpRequestBuilder.onEachRequest(apiKClass: KClass<*>) {}
-
-            ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.WebSocket::class) }){
+            ${insertIf(MyProcessor.hasWebSocket){
                 """
                 private val host = basicUrl.substringBeforeLast(":").substringAfter("://")
                 private val port = basicUrl.substringAfterLast(":").toInt()
@@ -48,31 +53,30 @@ internal fun buildClientPhone() {
                 """
             }}
             
-            private fun addToken(builder: HttpRequestBuilder){
+            protected open fun HttpRequestBuilder.onEachRequest(apiKClass: KClass<*>) {}
+        
+            private fun HttpRequestBuilder.addToken() {
                 checkNotNull(token){
                     "Set token before the request with authentication."
                 }
-                builder.header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
+                header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
             }
-    
-            ${insertIf(MyProcessor.phones.any { it.isAnnotationPresent(Phone.Api::class) }){
-                """
-                private inline fun <reified T> ParametersBuilder.appendWithJson(
-                    key: String,
-                    value: T,
-                    serializer: KSerializer<T & Any>?,
-                    cipher: Phone.Cipher?,
-                ){
-                    if (value == null) return
-                    val newV = encode(value, serializer, cipher)
-                    append(key, newV)
-                }
-                """
-            }}
-            
-            private suspend fun checkResponse(response: HttpResponse){
-                check(response.status == HttpStatusCode.OK){
-                    response.bodyAsText()
+        
+            private inline fun <reified T> addParamWithJson(
+                add: (String, String) -> Unit,
+                key: String,
+                value: T,
+                serializer: KSerializer<T & Any>?,
+                cipher: Phone.Cipher?,
+            ){
+                if (value == null) return
+                val newV = encode(value, serializer, cipher)
+                add(key, newV)
+            }
+        
+            private suspend fun HttpResponse.checkIsOK() {
+                check(status == HttpStatusCode.OK){
+                    bodyAsText()
                 }
             }
             

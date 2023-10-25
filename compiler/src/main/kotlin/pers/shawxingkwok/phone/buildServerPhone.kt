@@ -25,11 +25,11 @@ internal fun buildServerPhone() {
         """
         ${insertIf(MyProcessor.hasWebSocket){
             """
-            typealias WebSocketConnector = suspend ${Types().DefaultWebSocketServerSession}.() -> Unit
-            typealias WebSocketRawConnector = suspend ${Types().WebSocketServerSession}.() -> Unit
+            typealias WebSocketConnector = suspend ${Decls().DefaultWebSocketServerSession}.() -> Unit
+            typealias WebSocketRawConnector = suspend ${Decls().WebSocketServerSession}.() -> Unit
             """
         }}
-        typealias CommonConnector<T> = suspend ${Types().PipelineContextUnitCall}.() -> T
+        typealias CommonConnector<T> = suspend ${Decls().PipelineContextUnitCall}.() -> T
 
         object Phone{
             ${MyProcessor.phones.joinToString("\n\n"){ ksclass ->
@@ -105,8 +105,8 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
         val methodText = when {
             !isWebSocket -> getOrPost(ksclass)
-            isWebSocketRaw -> Types().serverWebSocketRaw
-            else -> Types().serverWebSocket
+            isWebSocketRaw -> Decls().serverWebSocketRaw
+            else -> Decls().serverWebSocket
         }
 
         append("""
