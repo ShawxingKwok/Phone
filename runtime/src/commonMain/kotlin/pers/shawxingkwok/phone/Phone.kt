@@ -11,7 +11,7 @@ public annotation class Phone{
     public annotation class WebSocket(val isRaw: Boolean = false)
 
     @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+    @Target(AnnotationTarget.FUNCTION)
     public annotation class Common<T>
 
     @Retention(AnnotationRetention.SOURCE)
