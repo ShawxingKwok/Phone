@@ -2,6 +2,10 @@
 
 package pers.shawxingkwok.phone.client
 
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import pers.shawxingkwok.ksputil.CodeFormatter
+import pers.shawxingkwok.ksputil.getAnnotationByType
+import pers.shawxingkwok.ksputil.qualifiedName
 import pers.shawxingkwok.phone.*
 
 internal fun buildClientPhone() {
@@ -26,7 +30,7 @@ internal fun buildClientPhone() {
         """
         ${insertIf(MyProcessor.hasWebSocket){
             """
-            inline fun <T: ${Decls().WebSocketClientSession}> Result<T>.onReceivedSuccess(act: T.() -> Unit){
+            inline fun <T: ${Decls().ClientWebSocketSession}> Result<T>.onReceivedSuccess(act: T.() -> Unit){
                 onSuccess{ it.act() }
             }
             """.trim()
@@ -34,27 +38,44 @@ internal fun buildClientPhone() {
         
         open class Phone(
             val client: HttpClient,
-            private val basicUrl: String = "http://localhost:80",
+            private val host: String,
+            private val port: Int,
+            private val usesHttps: Boolean,
+            private val usesWss: Boolean,
             private val tokenScheme: String = "Bearer",
             var token: String? = null,
         ) {
-            init{
-                check(
-                    basicUrl.startsWith("http://")
-                    || basicUrl.startsWith("https://")
-                )            
-            }
+            constructor(
+                client: HttpClient,
+                tokenScheme: String = "Bearer",
+                token: String? = null,
+            ) :
+                ~this(
+                    client = client,
+                    host = "localhost",
+                    port = 80,
+                    usesHttps = false,
+                    usesWss = false,
+                    tokenScheme = tokenScheme,
+                    token = token
+                )!~
         
-            ${insertIf(MyProcessor.hasWebSocket){
-                """
-                private val host = basicUrl.substringBeforeLast(":").substringAfter("://")
-                private val port = basicUrl.substringAfterLast(":").toInt()
-                private val securesWebSockets = basicUrl.startsWith("https:")
-                """
-            }}
+            private val basicUrl: String =
+                ~buildString {
+                    append("http")
+                    if (usesHttps) append("s")
+                    append("://${'$'}host:${'$'}port")
+                }!~
             
             protected open fun HttpRequestBuilder.onEachRequest(apiKClass: KClass<*>) {}
-        
+                
+            private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
+                if(!usesWss) return
+
+                url.protocol = URLProtocol.WSS
+                url.port = if(isRaw) port else url.protocol.defaultPort
+            }
+                
             private fun HttpRequestBuilder.addToken() {
                 checkNotNull(token){
                     "Set token before the request with authentication."
@@ -87,3 +108,28 @@ internal fun buildClientPhone() {
         """
     }
 }
+
+context (CodeFormatter)
+internal fun KSClassDeclaration.getBody(): String =
+    """
+    inner class $apiNameInPhone(
+        private val extendRequest: (HttpRequestBuilder.() -> Unit)? = null
+    )
+        ~: ${qualifiedName()}!~ 
+    {                    
+        ${getNeededFunctions().joinToString("\n\n"){ ksFun ->
+            val commonType = ksFun.commonType
+            val webSocketAnnot = ksFun.getAnnotationByType(Phone.WebSocket::class)
+
+            val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
+                ?: getAnnotationByType(Phone.Auth::class)?.withToken
+                ?: false
+
+            when {
+                commonType != null -> ksFun.getCommonBody(this, commonType, withToken)
+                webSocketAnnot == null -> TODO()
+                else -> ksFun.getWebSocketBody(this, webSocketAnnot, withToken)
+            }
+        }}
+    }
+    """.trim()

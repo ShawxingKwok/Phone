@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kt.jvm)
     alias(libs.plugins.ktor)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -11,7 +12,6 @@ kotlin {
 dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.server.core)
-    implementation(project(":runtime"))
     implementation("io.ktor:ktor-server-auth:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-websockets:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-core-jvm:${libs.versions.ktor.get()}")
@@ -27,4 +27,8 @@ dependencies {
     implementation("io.ktor:ktor-client-auth:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-client-websockets:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-client-cio:${libs.versions.ktor.get()}")
+}
+
+dependencies {
+    implementation(project(":runtime"))
 }

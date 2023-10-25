@@ -16,15 +16,11 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
 import io.ktor.server.websocket.WebSockets
-import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
-import pers.shawxingkwok.test.client.TestApiImpl
-import pers.shawxingkwok.test.client.WebSocketClientPhone
-import pers.shawxingkwok.test.client.WebSocketServerPhone
 import pers.shawxingkwok.test.server.*
 import java.time.Duration
 import java.util.*
@@ -154,29 +150,29 @@ class ApplicationTest {
     @Test
     fun commonAccount() = start(
         configureServer = {
-            Phone.route(routing {  }, ::AccountApiImpl)
+            Phone.route(routing {  }, AccountApiImpl)
         }
     ) { phone ->
-        assert(phone.AccountApi().login("101", "") == LoginResult.NotSigned)
-        assert(phone.AccountApi().search(101)?.id == 101L)
+        assert(phone.AccountApi().login("101", "", emptyList()).getOrThrow() == LoginResult.NotSigned)
+        assert(phone.AccountApi().search(101).getOrThrow()?.id == 101L)
         phone.AccountApi().delete(0)
     }
 
     @Test
     fun crypto() = start(
         configureServer = {
-            Phone.route(routing {  }, CryptoApiImpl::Partial)
-            Phone.route(routing {  }, CryptoApiImpl::Whole)
+            Phone.route(routing {  }, CryptoApiImpl.Partial)
+            Phone.route(routing {  }, CryptoApiImpl.Whole)
         }
     ) { phone ->
-        assert(phone.CryptoApi_Partial().getChats(1, "a", "b") == listOf("1", "a", "b"))
-        assert(phone.CryptoApi_Whole().getChats(1, "a") == listOf("1", "a"))
+        assert(phone.CryptoApi_Partial().getChats(1, "a", "b").getOrThrow() == listOf("1", "a", "b"))
+        assert(phone.CryptoApi_Whole().getChats(1, "a").getOrThrow() == listOf("1", "a"))
     }
 
     @Test
     fun cipher() = start(
         configureServer = {
-            Phone.route(routing {  }, ::AccountApiImpl)
+            Phone.route(routing {  }, AccountApiImpl)
         }
     ) { phone ->
         @Suppress("JsonStandardCompliance")
@@ -192,72 +188,72 @@ class ApplicationTest {
     @Test
     fun commonAuth() = start(
         configureServer = {
-            Phone.route(routing {  }, AuthApiImpl::Partial)
-            Phone.route(routing {  }, AuthApiImpl::Whole)
-            Phone.route(routing {  }, AuthApiImpl::Multi)
+            Phone.route(routing {  }, AuthApiImpl.Partial)
+            Phone.route(routing {  }, AuthApiImpl.Whole)
+            Phone.route(routing {  }, AuthApiImpl.Multi)
         }
     ) { phone ->
-        assert(phone.AuthApi_Partial().search(1)?.id == 1L)
+        assert(phone.AuthApi_Partial().search(1).getOrThrow()?.id == 1L)
         phone.AuthApi_Partial().delete(1)
         println(".".repeat(10))
 
-        assert(phone.AuthApi_Whole().search(1)?.id == 1L)
+        assert(phone.AuthApi_Whole().search(1).getOrThrow()?.id == 1L)
         phone.AuthApi_Whole().delete(1)
         println(".".repeat(10))
 
         // assert(phone.authApi_Multi.get() == 1)
-        assert(phone.AuthApi_Multi().search(1)?.id == 1L)
+        assert(phone.AuthApi_Multi().search(1).getOrThrow()?.id == 1L)
         phone.AuthApi_Multi().delete(1)
     }
 
     @Test
     fun jwtAuth() = start(
         configureServer = {
-            Phone.route(routing {  }, AuthApiImpl::Jwt)
+            Phone.route(routing {  }, AuthApiImpl.Jwt)
         }
     ) { phone ->
-        assert(phone.AuthApi_Jwt().delete("f"))
+        phone.AuthApi_Jwt().delete("f").getOrThrow()
     }
 
     @Test
     fun polymorphic() = start(
         configureServer = {
-            Phone.route(routing {  }, ::PolymorphicApiImpl)
+            Phone.route(routing {  }, PolymorphicApiImpl)
         }
     ) { phone ->
-        assert(phone.PolymorphicApi().foo() == "foo")
-        assert(phone.PolymorphicApi().foo(1L) == 1L)
-        assert(phone.PolymorphicApi().foo(1) == 1)
+        assert(phone.PolymorphicApi().foo().getOrThrow() == "foo")
+        assert(phone.PolymorphicApi().foo(1L).getOrThrow() == 1L)
+        assert(phone.PolymorphicApi().foo(1).getOrThrow() == 1)
     }
 
     @Test
     fun `super`() = start(
         configureServer = {
-            Phone.route(routing {  }, ::SuperInterfaceApiImpl)
+            Phone.route(routing {  }, SuperInterfaceApiImpl)
         }
     ) { phone ->
-        assert(phone.SuperInterfaceApi().foo() == 1)
-        assert(phone.SuperInterfaceApi().bar() == 1)
+        assert(phone.SuperInterfaceApi().foo().getOrThrow() == 1)
+        assert(phone.SuperInterfaceApi().bar().getOrThrow() == 1)
     }
 
     @Test
     fun vararg() =  start(
         configureServer = {
-            Phone.route(routing {  }, ::VarargApiImpl)
+            Phone.route(routing {  }, VarargApiImpl)
         }
     ) { phone ->
-        assert(phone.VarargApi().sum(1, 2, 3) == 6)
+        assert(phone.VarargApi().sum(1, 2, 3).getOrThrow() == 6)
     }
 
     @Test
     fun customSerializer() = start(
         configureServer = {
-            Phone.route(routing{ }, ::CustomSerializerApiImpl)
+            Phone.route(routing{ }, CustomSerializerApiImpl)
         }
     ) { phone ->
         val a = Time(1, 2, 3)
         val b = Time(4, 5, 6)
-        val ab = phone.CustomSerializerApi().sumTime(a, b)
+        val ab = phone.CustomSerializerApi().sumTime(a, b).getOrThrow()
         assert(ab == Time(5, 7, 9))
     }
 }

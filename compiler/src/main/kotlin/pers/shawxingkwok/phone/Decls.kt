@@ -63,14 +63,14 @@ class Decls {
             isTopLevelAndExtensional = false,
         )
 
-    val DefaultWebSocketClientSession get() =
+    val DefaultClientWebSocketSession get() =
         getDeclText(
             outermostDeclPath = "io.ktor.client.plugins.websocket.DefaultClientWebSocketSession",
             innerName = null,
             isTopLevelAndExtensional = false,
         )
 
-    val WebSocketClientSession get() =
+    val ClientWebSocketSession get() =
         getDeclText(
             outermostDeclPath = "io.ktor.client.plugins.websocket.ClientWebSocketSession",
             innerName = null,
@@ -89,5 +89,42 @@ class Decls {
             outermostDeclPath = "io.ktor.server.auth.AuthenticationStrategy",
             innerName = null,
             isTopLevelAndExtensional = false
+        )
+
+    @get:JvmName("fun clientWebSocketSession")
+    val clientWebSocketSession get() =
+        getDeclText(
+            outermostDeclPath = "io.ktor.client.plugins.websocket.webSocketSession",
+            innerName = null,
+            isTopLevelAndExtensional = true,
+        )
+
+    @get:JvmName("fun clientWebSocketRawSession")
+    val clientWebSocketRawSession get() =
+        getDeclText(
+            outermostDeclPath = "io.ktor.client.plugins.websocket.cio.webSocketRawSession",
+            innerName = null,
+            isTopLevelAndExtensional = true,
+        )
+
+    val receiveParameters get() =
+        getDeclText(
+            outermostDeclPath = "io.ktor.server.request.receiveParameters",
+            innerName = null,
+            isTopLevelAndExtensional = true
+        )
+
+    val CloseReason get() =
+        getDeclText(
+            outermostDeclPath = "io.ktor.websocket.CloseReason",
+            innerName = null,
+            isTopLevelAndExtensional = false
+        )
+
+    val close get() =
+        getDeclText(
+            outermostDeclPath = "io.ktor.websocket.close",
+            innerName = null,
+            isTopLevelAndExtensional = true
         )
 }

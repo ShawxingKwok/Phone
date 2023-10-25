@@ -8,40 +8,51 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 
 object AuthApiImpl{
-    class Partial(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Partial{
-        override suspend fun delete(id: Long) {
+    object Partial : Phone.AuthApi_Partial{
+        override suspend fun delete(id: Long): CommonConnector<Unit> =
+        {
+
         }
 
-        override suspend fun search(id: Long): User? {
-            return User(id, "Shawxing", 25)
-        }
-    }
-
-    class Whole(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Whole{
-        override suspend fun delete(id: Long) {
-        }
-
-        override suspend fun search(id: Long): User? {
-            return User(id, "Shawxing", 25)
+        override suspend fun search(id: Long): CommonConnector<User?> =
+        {
+            User(id, "Shawxing", 25)
         }
     }
 
-    class Multi(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Multi{
-        override suspend fun get(): Int {
-            return 1
+    object Whole : Phone.AuthApi_Whole{
+        override suspend fun delete(id: Long): CommonConnector<Unit> =
+        {
+
         }
 
-        override suspend fun delete(id: Long) {
-        }
-
-        override suspend fun search(id: Long): User? {
-            return User(id, "Shawxing", 25)
+        override suspend fun search(id: Long): CommonConnector<User?> =
+        {
+            User(id, "Shawxing", 25)
         }
     }
 
-    class Jwt(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AuthApi_Jwt{
-        override suspend fun delete(id: String): Boolean {
-            return true
+    object Multi : Phone.AuthApi_Multi{
+        override suspend fun get(): CommonConnector<Int> =
+        {
+            1
+        }
+
+        override suspend fun delete(id: Long): CommonConnector<Unit> =
+        {
+
+        }
+
+        override suspend fun search(id: Long): CommonConnector<User?> =
+        {
+            User(id, "Shawxing", 25)
+        }
+    }
+
+    object Jwt : Phone.AuthApi_Jwt{
+        override suspend fun delete(id: String): CommonConnector<Boolean> =
+        {
+            true
         }
     }
 }

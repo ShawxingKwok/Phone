@@ -3,11 +3,14 @@ package expect
 import io.ktor.client.plugins.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.delay
+import pers.shawxingkwok.expect.server.CommonConnector
+import pers.shawxingkwok.expect.server.Phone
+import pers.shawxingkwok.expect.server.WebSocketConnector
+import pers.shawxingkwok.expect.server.WebSocketRawConnector
 
-object TestApiImpl : WebSocketServerPhone.TestApi{
+object TestApiImpl : Phone.TestApi{
     override suspend fun get(i: Int): WebSocketConnector = {
         send("$i")
-        while (true) delay(100)
     }
 
     override suspend fun obtain(i: Int): WebSocketRawConnector = {
@@ -18,7 +21,7 @@ object TestApiImpl : WebSocketServerPhone.TestApi{
         User(id)
     }
 
-    override suspend fun delete(id: String): Any? {
-        TODO("Not yet implemented")
+    override suspend fun delete(id: String): CommonConnector<Unit> = {
+
     }
 }

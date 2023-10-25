@@ -55,6 +55,15 @@ internal object MyProcessor : KSProcessor{
         }
     }
 
+    val anyNotWebSocket by fastLazy {
+        check(Status.value != Status.UNSTARTED)
+        phones.any { ksclass ->
+            ksclass.getNeededFunctions().any {
+                !it.isAnnotationPresent(Phone.WebSocket::class)
+            }
+        }
+    }
+
     // both nullable and non-nullable are mapped
     val serializers: Map<KSType, KSClassDeclaration> by fastLazy {
         check(Status.value != Status.UNSTARTED)

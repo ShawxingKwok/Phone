@@ -56,9 +56,9 @@ internal fun buildServerPhone() {
             
             ${insertIf(MyProcessor.hasWebSocket){
                 """
-                private suspend fun WebSocketServerSession.unacceptedClose(text: String){
-                    val closeReason = CloseReason(CloseReason.Codes.CANNOT_ACCEPT, text)
-                    close(closeReason)
+                private suspend fun ${Decls().WebSocketServerSession}.unacceptedClose(text: String){
+                    val closeReason = ${Decls().CloseReason}(${Decls().CloseReason}.Codes.CANNOT_ACCEPT, text)
+                    ${Decls().close}(closeReason)
                 }
                 """                
             }}
@@ -116,7 +116,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
         if (parameters.any())
             when(methodText){
-                "post" -> append("val params = call.receiveParameters\n\n")
+                "post" -> append("val params = call.${Decls().receiveParameters}()\n\n")
                 else -> append("val params = call.request.queryParameters\n\n")
             }
 

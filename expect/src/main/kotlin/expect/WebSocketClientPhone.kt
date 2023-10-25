@@ -1,3 +1,4 @@
+/*
 package expect
 
 import io.ktor.client.*
@@ -14,6 +15,10 @@ import kotlinx.serialization.json.Json
 import pers.shawxingkwok.phone.Phone
 import kotlin.reflect.KClass
 
+inline fun <T: ClientWebSocketSession> Result<T>.onReceivedSuccess(act: T.() -> Unit){
+    onSuccess{ it.act() }
+}
+
 open class WebSocketClientPhone(
     val client: HttpClient,
     private val basicUrl: String = "http://localhost:80",
@@ -26,6 +31,9 @@ open class WebSocketClientPhone(
             || basicUrl.startsWith("https://")
         )
     }
+
+    private val host = basicUrl.substringBeforeLast(":").substringAfter("://")
+    private val port = basicUrl.substringAfterLast(":").toInt()
 
     protected open fun HttpRequestBuilder.onEachRequest(apiKClass: KClass<*>) {}
 
@@ -114,7 +122,7 @@ open class WebSocketClientPhone(
         override suspend fun search(id: String): Result<User?> =
             runCatching{
                 val response = client.submitForm(
-                    url = "http://localhost:80/TestApi/delete",
+                    url = "$basicUrl/TestApi/delete",
                     formParameters = parameters{
                         addParamWithJson(::append,"id", id, null, null)
                     },
@@ -135,7 +143,7 @@ open class WebSocketClientPhone(
         override suspend fun delete(id: String): Result<Unit> =
             runCatching{
                 val response = client.submitForm(
-                    url = "http://localhost:80/TestApi/delete",
+                    url = "$basicUrl/TestApi/delete",
                     formParameters = parameters{
                         addParamWithJson(::append,"id", id, null, null)
                     },
@@ -152,7 +160,7 @@ open class WebSocketClientPhone(
             runCatching {
                 client.webSocketSession(
                     path = "TestApi/get",
-                    host = "localhost", port = 80,
+                    host = host, port = port,
                     block = {
                         onEachRequest(this@TestApi::class)
                         extendRequest?.invoke(this)
@@ -165,7 +173,8 @@ open class WebSocketClientPhone(
             runCatching {
                 client.webSocketRawSession(
                     path = "TestApi/obtain",
-                    host = "localhost", port = 80,
+                    host = host, port = port,
+                    method = HttpMethod.Post,
                     block = {
                         onEachRequest(this@TestApi::class)
                         extendRequest?.invoke(this)
@@ -175,3 +184,4 @@ open class WebSocketClientPhone(
             }
     }
 }
+*/

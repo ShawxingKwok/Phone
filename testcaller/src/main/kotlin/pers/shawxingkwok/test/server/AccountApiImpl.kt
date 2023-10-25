@@ -6,16 +6,17 @@ import io.ktor.util.pipeline.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 
-class AccountApiImpl(override val context: PipelineContext<Unit, ApplicationCall>) : Phone.AccountApi{
-    override suspend fun login(email: String, password: String): LoginResult {
-        return LoginResult.NotSigned
+object AccountApiImpl : Phone.AccountApi{
+    override suspend fun login(email: String, password: String, code: List<String>): CommonConnector<LoginResult> =
+    {
+        LoginResult.NotSigned
     }
 
-    override suspend fun delete(id: Long) {
+    override suspend fun delete(id: Long): CommonConnector<Unit> = {
 
     }
 
-    override suspend fun search(id: Long): User? {
-        return User(id, "S", 25)
+    override suspend fun search(id: Long): CommonConnector<User?> = {
+        User(id, "William", 21)
     }
 }
