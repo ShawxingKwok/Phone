@@ -1,6 +1,7 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getClassDeclarationByName
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
@@ -40,12 +41,42 @@ internal object MyProcessor : KSProcessor{
         .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
         .map { it.qualifiedName()!! }
 
-    lateinit var phones: List<KSClassDeclaration>
-        private set
+    val phones by fastLazy {
+        check(Status.value != Status.UNSTARTED)
+        phoneInterfacePaths.map { resolver.getClassDeclarationByName(it)!! }
+    }
+
+    val hasWebSocket by fastLazy {
+        check(Status.value != Status.UNSTARTED)
+        phones.any { ksclass ->
+            ksclass.getNeededFunctions().any {
+                it.isAnnotationPresent(Phone.WebSocket::class)
+            }
+        }
+    }
 
     // both nullable and non-nullable are mapped
-    lateinit var serializers: Map<KSType, KSClassDeclaration>
-        private set
+    val serializers: Map<KSType, KSClassDeclaration> by fastLazy {
+        check(Status.value != Status.UNSTARTED)
+
+        @Suppress("LocalVariableName")
+        val _serializers = serializerPaths
+            .map { resolver.getClassDeclarationByName(it)!! }
+            .associateBy { ksclass ->
+                ksclass.superTypes
+                    .map { it.resolve() }
+                    .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
+                    .arguments
+                    .first()
+                    .type!!
+                    .resolve()
+            }
+
+        _serializers + _serializers.mapKeys { (ksType, _) ->
+            if (ksType.isMarkedNullable) ksType.makeNotNullable()
+            else ksType.makeNullable()
+        }
+    }
 
     val cipherKSObj: KSClassDeclaration? by fastLazy {
         val ksclasses = resolver.getAnnotatedSymbols<Phone.Crypto, KSClassDeclaration>()
@@ -100,25 +131,6 @@ internal object MyProcessor : KSProcessor{
                     return invalid
 
                 Status.value++
-
-                phones = phoneInterfacePaths.map { resolver.getClassDeclarationByName(it)!! }
-
-                serializers = serializerPaths
-                    .map { resolver.getClassDeclarationByName(it)!! }
-                    .associateBy { ksclass ->
-                        ksclass.superTypes
-                            .map { it.resolve() }
-                            .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
-                            .arguments
-                            .first()
-                            .type!!
-                            .resolve()
-                    }
-
-                serializers += serializers.mapKeys { (ksType, _) ->
-                    if (ksType.isMarkedNullable) ksType.makeNotNullable()
-                    else ksType.makeNullable()
-                }
 
                 buildClientPhone()
                 buildServerPhone()

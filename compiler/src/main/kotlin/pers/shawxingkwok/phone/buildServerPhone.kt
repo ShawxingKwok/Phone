@@ -7,12 +7,6 @@ import com.google.devtools.ksp.symbol.KSTypeParameter
 import pers.shawxingkwok.ksputil.*
 
 internal fun buildServerPhone() {
-    val hasWebSocket = MyProcessor.phones.any { ksclass ->
-        ksclass.getNeededFunctions().any {
-            it.isAnnotationPresent(Phone.WebSocket::class)
-        }
-    }
-
     createFile(
         phones = MyProcessor.phones,
         packageName = Args.ServerPackageName,
@@ -29,7 +23,7 @@ internal fun buildServerPhone() {
         ),
     ){
         """
-        ${insertIf(hasWebSocket){
+        ${insertIf(MyProcessor.hasWebSocket){
             """
             typealias WebSocketConnector = suspend ${Types().DefaultWebSocketServerSession}.() -> Unit
             typealias WebSocketRawConnector = suspend ${Types().WebSocketServerSession}.() -> Unit
@@ -60,7 +54,7 @@ internal fun buildServerPhone() {
             
             ${getCoderFunctions()}
             
-            ${insertIf(hasWebSocket){
+            ${insertIf(MyProcessor.hasWebSocket){
                 """
                 private suspend fun WebSocketServerSession.unacceptedClose(text: String){
                     val closeReason = CloseReason(CloseReason.Codes.CANNOT_ACCEPT, text)
@@ -205,8 +199,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             append("\n\n")
         }
 
-        append(")\n")
-        append(".invoke(this)\n\n")
+        append(")()\n\n")
 
         when {
             isWebSocket -> {}
