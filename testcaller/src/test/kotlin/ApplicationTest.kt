@@ -175,4 +175,18 @@ class ApplicationTest {
             "$list $decoded"
         }
     }
+
+    @Test
+    fun emptyBody() = testApplication {
+        application {
+            routing {
+                post("/X"){
+
+                }
+            }
+        }
+
+        val resp = client.post("X")
+        resp.bodyAsText().length.let(::println)
+    }
 }

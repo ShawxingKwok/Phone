@@ -18,11 +18,13 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
 import io.ktor.server.websocket.WebSockets
+import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
+import pers.shawxingkwok.ktutil.allDo
 import pers.shawxingkwok.test.server.*
 import java.time.Duration
 import java.util.*
@@ -286,5 +288,37 @@ class PhoneTest {
             .let { (size, _) ->
                 assert(size == null)
             }
+    }
+
+    @Test
+    fun ws() = start(
+        configureServer = {
+            Phone.route(routing {  }, WebSocketApiImpl)
+        }
+    ){
+        allDo(
+            it,
+            pers.shawxingkwok.test.client.Phone(
+                client = it.client,
+                host = "localhost",
+                port = 80,
+                usesHttps = false,
+                usesWss = true,
+            )
+        ){ phone ->
+            phone.WebSocketApi()
+                .getSignals(1)
+                .getOrThrow()
+                .run {
+                    assert((incoming.receive() as Frame.Text).readText() == "1")
+                }
+
+            phone.WebSocketApi()
+                .getChats("1")
+                .getOrThrow()
+                .run {
+                    assert((incoming.receive() as Frame.Text).readText() == "1")
+                }
+        }
     }
 }

@@ -9,7 +9,4 @@ interface WebSocketApi {
 
     @Phone.WebSocket(true)
     suspend fun getChats(id: String?): Any?
-
-    @Phone.Common<String>
-    suspend fun foo(): Any?
 }

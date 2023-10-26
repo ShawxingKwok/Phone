@@ -27,7 +27,7 @@ object AuthApi {
 
     @Phone.Api
     interface Multi{
-        // is this allowed?
+        // TODO(is this allowed?)
         @Phone.Common<Int>
         @Phone.Auth(["auth-basic"], Phone.Auth.Strategy.Required)
         suspend fun get(): Any?

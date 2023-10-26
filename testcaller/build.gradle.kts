@@ -20,6 +20,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-auth-jwt:${libs.versions.ktor.get()}")
+    implementation("io.github.shawxingkwok:kt-util:1.0.2")
     // implementation("ch.qos.logback:logback-classic:1.4.11")
 
     testImplementation ("io.ktor:ktor-server-tests-jvm:${libs.versions.ktor.get()}")

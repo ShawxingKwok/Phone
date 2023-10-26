@@ -134,7 +134,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
 
             fileArgType != null
             && fileArgType != resolver.builtIns.unitType ->
-                append("val (headInfo, act) = ")
+                append("val (tag, act) = ")
         }
 
         append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
@@ -242,11 +242,11 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             fileArgType != null ->
                 if (fileArgType != resolver.builtIns.unitType) {
                     if (fileArgType.isMarkedNullable)
-                        append("if (headInfo != null) {\n")
+                        append("if (tag != null) {\n")
 
                     append("""
-                        val text = encode(headInfo, ${fileArgType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
-                        call.response.header("Phone-Info", text)
+                        val text = encode(tag, ${fileArgType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                        call.response.header("Phone-FileTag", text)
                         call.response.status(HttpStatusCode.OK)
                     """.trimStart())
 
