@@ -118,8 +118,8 @@ internal fun KSClassDeclaration.getBody(): String =
         ~: ${qualifiedName()}!~ 
     {                    
         ${getNeededFunctions().joinToString("\n\n"){ ksFun ->
-            val commonArgType = ksFun.commonArgType
-            val fileArgType = ksFun.fileArgType
+            val commonArgType = ksFun.commonReturnType
+            val fileArgType = ksFun.fileTrgType
             val webSocketAnnot = ksFun.getAnnotationByType(Phone.WebSocket::class)
         
             val withToken = getAnnotationByType(Phone.Auth::class)?.withToken

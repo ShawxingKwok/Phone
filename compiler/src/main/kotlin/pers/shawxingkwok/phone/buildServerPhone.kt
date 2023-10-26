@@ -5,7 +5,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSTypeParameter
 import pers.shawxingkwok.ksputil.*
-import java.rmi.server.RMIServerSocketFactory
 
 internal fun buildServerPhone() {
     createFile(
@@ -43,8 +42,8 @@ internal fun buildServerPhone() {
                         val webSocketAnnot = ksfun.getAnnotationByType(Phone.WebSocket::class)
                     
                         val returnedText = when {
-                            ksfun.commonArgType != null -> "CommonConnector<${ksfun.commonArgType!!.text}>" 
-                            ksfun.fileArgType != null -> "FileConnector<${ksfun.fileArgType}>" 
+                            ksfun.commonReturnType != null -> "CommonConnector<${ksfun.commonReturnType!!.text}>" 
+                            ksfun.fileTrgType != null -> "FileConnector<${ksfun.fileTrgType}>" 
                             webSocketAnnot == null -> TODO("other features")
                             webSocketAnnot.isRaw -> "WebSocketRawConnector"
                             else -> "WebSocketConnector"
@@ -102,8 +101,8 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
     buildString {
         val isWebSocket = isAnnotationPresent(Phone.WebSocket::class)
         val isWebSocketRaw = getAnnotationByType(Phone.WebSocket::class)?.isRaw == true
-        val fileArgType = fileArgType
-        val commonArgType = commonArgType
+        val fileArgType = fileTrgType
+        val commonArgType = commonReturnType
 
         val methodText = when {
             !isWebSocket -> getOrPost(ksclass)

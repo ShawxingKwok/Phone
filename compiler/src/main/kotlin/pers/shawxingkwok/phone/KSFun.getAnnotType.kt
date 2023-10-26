@@ -19,12 +19,12 @@ private fun <T: Annotation> KSFunctionDeclaration.getAnnotationType(kclass: KCla
         .resolve()
     }
 
-internal val KSFunctionDeclaration.commonArgType: KSType? get() {
+internal val KSFunctionDeclaration.commonReturnType: KSType? get() {
     val commonType = getAnnotationType(Phone.Common::class) ?: return null
     return commonType.arguments.first().type!!.resolve()
 }
 
-internal val KSFunctionDeclaration.fileArgType: KSType? get() {
+internal val KSFunctionDeclaration.fileTrgType: KSType? get() {
     val commonType = getAnnotationType(Phone.File::class) ?: return null
     return commonType.arguments.first().type!!.resolve()
 }
