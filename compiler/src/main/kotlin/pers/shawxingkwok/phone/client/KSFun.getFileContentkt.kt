@@ -13,7 +13,7 @@ import pers.shawxingkwok.phone.insertIf
 import pers.shawxingkwok.phone.pathEnd
 
 context (CodeFormatter)
-internal fun KSFunctionDeclaration.getFileBody(
+internal fun KSFunctionDeclaration.getFileContent(
     ksclass: KSClassDeclaration,
     fileArgType: KSType,
     withToken: Boolean,

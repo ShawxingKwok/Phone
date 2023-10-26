@@ -76,10 +76,7 @@ internal fun buildServerPhone() {
             
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
-                fun route(
-                    route: Route, 
-                    ${ksclass.apiPropNameInPhone}: ${ksclass.apiNameInPhone},
-                ){
+                fun route(route: Route, ${ksclass.apiPropNameInPhone}: ${ksclass.apiNameInPhone}){
                     route.route("/${ksclass.apiNameInPhone}"){
                         ${ksclass.apiPropNameInPhone}.run { doOtherTasks() }
                         

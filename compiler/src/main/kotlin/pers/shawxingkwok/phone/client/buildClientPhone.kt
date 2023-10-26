@@ -127,9 +127,9 @@ internal fun KSClassDeclaration.getBody(): String =
                 ?: false
 
             when {
-                commonArgType != null -> ksFun.getCommonBody(this, commonArgType, withToken)
-                fileArgType != null -> ksFun.getFileBody(this, fileArgType, withToken)
-                webSocketAnnot != null -> ksFun.getWebSocketBody(this, webSocketAnnot, withToken)
+                commonArgType != null -> ksFun.getCommonContent(this, commonArgType, withToken)
+                fileArgType != null -> ksFun.getFileContent(this, fileArgType, withToken)
+                webSocketAnnot != null -> ksFun.getWebSocketContent(this, webSocketAnnot, withToken)
                 else -> TODO()
             }
         }}

@@ -7,7 +7,7 @@ import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.phone.*
 
 context (CodeFormatter)
-internal fun KSFunctionDeclaration.getCommonBody(
+internal fun KSFunctionDeclaration.getCommonContent(
     ksclass: KSClassDeclaration,
     commonType: KSType,
     withToken: Boolean,

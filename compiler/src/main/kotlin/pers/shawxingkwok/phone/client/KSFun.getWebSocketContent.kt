@@ -9,7 +9,7 @@ import pers.shawxingkwok.phone.getHeader
 import pers.shawxingkwok.phone.insertIf
 
 context (CodeFormatter)
-internal fun KSFunctionDeclaration.getWebSocketBody(
+internal fun KSFunctionDeclaration.getWebSocketContent(
     ksclass: KSClassDeclaration,
     webSocketAnnot: Phone.WebSocket,
     withToken: Boolean,
