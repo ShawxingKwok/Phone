@@ -18,4 +18,7 @@ interface TestApi {
 
     @Phone.File<Int?>
     suspend fun getFile(id: String): Any
+
+    @Phone.File<Int?>(true)
+    suspend fun getPartialFile(id: String): Any
 }

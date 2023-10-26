@@ -33,7 +33,7 @@ public annotation class Phone{
      */
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.FUNCTION)
-    public annotation class File<T>
+    public annotation class File<T>(val allowsPartial: Boolean = false)
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.FUNCTION)

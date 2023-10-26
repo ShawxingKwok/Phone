@@ -30,5 +30,7 @@ dependencies {
 }
 
 dependencies {
+    implementation("io.ktor:ktor-server-auto-head-response-jvm:2.3.5")
+    implementation("io.ktor:ktor-server-partial-content-jvm:2.3.5")
     implementation(project(":runtime"))
 }

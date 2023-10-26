@@ -145,22 +145,20 @@ class ApplicationTest {
     @Test
     fun partialContent() = testApplication {
         // partial
-        run {
-            val length = client.head("download").headers[HttpHeaders.ContentLength]?.toLong() as Long
-            val lastByte = length - 1
-            val outFile = File("downloads")
-            var start = outFile.length()
-            val output = FileOutputStream(outFile, true)
+        val length = client.head("download").headers[HttpHeaders.ContentLength]?.toLong() as Long
+        val lastByte = length - 1
+        val outFile = File("downloads")
+        var start = outFile.length()
+        val output = FileOutputStream(outFile, true)
 
-            while (true) {
-                val end = min(start + 1024 - 1, lastByte)
-                val data = client.get("download") {
-                    header("Range", "bytes=${start}-${end}")
-                }.body<ByteArray>()
-                output.write(data)
-                if (end >= lastByte) break
-                start += 1024
-            }
+        while (true) {
+            val end = min(start + 1024 - 1, lastByte)
+            val data = client.get("download") {
+                header("Range", "bytes=${start}-${end}")
+            }.body<ByteArray>()
+            output.write(data)
+            if (end >= lastByte) break
+            start += 1024
         }
     }
 
@@ -201,7 +199,6 @@ class ApplicationTest {
                 }
             }
         }
-
         val resp = client.post("X")
         println(resp.status)
     }

@@ -1,15 +1,19 @@
 package expect
 
-import io.ktor.client.plugins.websocket.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.autohead.*
+import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.util.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.delay
 import pers.shawxingkwok.expect.server.*
+import java.io.File
 
-object TestApiImpl : Phone.TestApi{
+object TestApiImpl : Phone.TestApi {
+    override fun Route.doOtherTasks() {}
+
     override suspend fun get(i: Int): WebSocketConnector = {
         send("$i")
     }
@@ -31,5 +35,11 @@ object TestApiImpl : Phone.TestApi{
             val bytes = call.receiveChannel().toByteArray()
             call.respondBytes(bytes)
         }
+    }
+
+    override suspend fun getPartialFile(id: String): CommonConnector<Pair<Int?, File>> =
+    {
+        val file = File(id)
+        file.readBytes().size to file
     }
 }
