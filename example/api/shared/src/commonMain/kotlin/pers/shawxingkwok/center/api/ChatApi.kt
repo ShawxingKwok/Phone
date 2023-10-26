@@ -4,5 +4,6 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface ChatApi {
-    suspend fun getChats(): List<String>
+    @Phone.WebSocket
+    suspend fun getChats(): Any?
 }

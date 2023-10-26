@@ -14,6 +14,13 @@ public annotation class Phone{
     @Target(AnnotationTarget.FUNCTION)
     public annotation class Common<T>
 
+    /**
+     * [T] is the additional header info type. Use `Unit` if needless.
+     */
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.FUNCTION)
+    public annotation class File<T>
+
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.FUNCTION)
     public annotation class Polymorphic(val id: String)

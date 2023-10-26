@@ -3,6 +3,7 @@ package test
 import expect.TestApiImpl
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -14,11 +15,11 @@ import kotlin.test.Test
 
 class Test {
     @Test
-    fun websocket() = testApplication {
+    fun traditionalWebsocket() = testApplication {
         application {
             this@application.install(WebSockets)
 
-            // Phone.route(routing { }, TestApiImpl)
+            Phone.route(routing { }, TestApiImpl)
         }
 
         val client = createClient {
@@ -61,19 +62,37 @@ class Test {
 
         phone.TestApi()
             .get(1)
-            .onFailure {
-                println("fail")
-            }
-            .onReceivedSuccess {
+            .getOrThrow()
+            .run{
                 assert((incoming.receive() as Frame.Text).readText() == "1")
                 println("success")
             }
 
         phone.TestApi()
             .search("101")
-            .onFailure { println("fail") }
-            .onSuccess {
+            .getOrThrow()
+            .let {
                 assert(it?.id == "101")
+            }
+    }
+
+    @Test
+    fun file() = testApplication {
+        application {
+            this@application.install(WebSockets)
+            Phone.route(routing {  }, TestApiImpl)
+        }
+
+        val phone = pers.shawxingkwok.expect.test.client.Phone(client)
+
+        phone.TestApi{
+                setBody(byteArrayOf(1))
+            }
+            .getFile("Titanic")
+            .getOrThrow()
+            .let {
+                assert(it.first == "Titanic")
+                assert(it.second.readBytes().contentEquals(byteArrayOf(1)))
             }
     }
 }
