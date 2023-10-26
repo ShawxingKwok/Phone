@@ -91,7 +91,7 @@ class Test {
             .getFile("Titanic")
             .getOrThrow()
             .let {
-                assert(it.first == "Titanic")
+                assert(it.first == "Titanic".length)
                 assert(it.second.readBytes().contentEquals(byteArrayOf(1)))
             }
     }

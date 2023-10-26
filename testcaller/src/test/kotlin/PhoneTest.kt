@@ -258,4 +258,33 @@ class PhoneTest {
         val ab = phone.CustomSerializerApi().sumTime(a, b).getOrThrow()
         assert(ab == Time(5, 7, 9))
     }
+
+    @Test
+    fun file() = start(
+        configureServer = {
+            Phone.route(routing {  }, FileApiImpl)
+        }
+    ){phone ->
+        phone.FileApi{
+            setBody(byteArrayOf(1))
+        }
+        .exchange("122")
+        .getOrThrow()
+        .let { (headInfo, response) ->
+            assert(headInfo == listOf("122")){
+                headInfo
+            }
+            val bytes = response.readBytes()
+            assert(bytes.contentEquals(byteArrayOf(1))){
+                bytes.joinToString()
+            }
+        }
+
+        phone.FileApi()
+            .get("2")
+            .getOrThrow()
+            .let { (size, _) ->
+                assert(size == null)
+            }
+    }
 }

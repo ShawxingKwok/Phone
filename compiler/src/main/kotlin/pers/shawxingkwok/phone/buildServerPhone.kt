@@ -5,6 +5,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSTypeParameter
 import pers.shawxingkwok.ksputil.*
+import java.rmi.server.RMIServerSocketFactory
 
 internal fun buildServerPhone() {
     createFile(
@@ -30,6 +31,7 @@ internal fun buildServerPhone() {
             """
         }}
         typealias CommonConnector<T> = suspend ${Decls().PipelineContextUnitCall}.() -> T
+        typealias FileConnector<T> = Pair<T, CommonConnector<Unit>>
 
         object Phone{
             ${MyProcessor.phones.joinToString("\n\n"){ ksclass ->
@@ -42,6 +44,7 @@ internal fun buildServerPhone() {
                     
                         val returnedText = when {
                             ksfun.commonArgType != null -> "CommonConnector<${ksfun.commonArgType!!.text}>" 
+                            ksfun.fileArgType != null -> "FileConnector<${ksfun.fileArgType}>" 
                             webSocketAnnot == null -> TODO("other features")
                             webSocketAnnot.isRaw -> "WebSocketRawConnector"
                             else -> "WebSocketConnector"
@@ -99,6 +102,8 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
     buildString {
         val isWebSocket = isAnnotationPresent(Phone.WebSocket::class)
         val isWebSocketRaw = getAnnotationByType(Phone.WebSocket::class)?.isRaw == true
+        val fileArgType = fileArgType
+        val commonArgType = commonArgType
 
         val methodText = when {
             !isWebSocket -> getOrPost(ksclass)
@@ -111,14 +116,26 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             """.trimStart()
         )
 
-        if (parameters.any())
-            when(methodText){
-                "post" -> append("val params = call.${Decls().receiveParameters}()\n\n")
-                else -> append("val params = call.request.queryParameters\n\n")
-            }
+        when{
+            parameters.none() -> {}
 
-        if (commonArgType != null && commonArgType != resolver.builtIns.unitType)
-            append("val ret = ")
+            isWebSocket
+            || fileArgType != null
+            || methodText == "get" ->
+                append("val params = call.request.queryParameters\n\n")
+
+            else -> append("val params = call.${Decls().receiveParameters}()\n\n")
+        }
+
+        when{
+            commonArgType != null
+            && commonArgType != resolver.builtIns.unitType ->
+                append("val ret = ")
+
+            fileArgType != null
+            && fileArgType != resolver.builtIns.unitType ->
+                append("val (headInfo, act) = ")
+        }
 
         append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
 
@@ -197,28 +214,49 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
             append("\n\n")
         }
 
-        append(")()\n\n")
+        when{
+            commonArgType != null || isWebSocket -> append(")()\n\n")
+            fileArgType != null -> append(")\n\n")
+            else -> TODO()
+        }
 
         when {
             isWebSocket -> {}
 
-            commonArgType == resolver.builtIns.unitType ->
-                append("call.response.status(HttpStatusCode.OK)\n")
+            commonArgType != null ->
+                if (commonArgType != resolver.builtIns.unitType)
+                    """
+                    ${insertIf(commonArgType.isMarkedNullable){
+                        """
+                        if(ret == null)
+                            ~call.response.status(HttpStatusCode.NotFound)!~
+                        else{
+                        """
+                    }}    
+                        val text = encode(ret, ${commonArgType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                        call.respondText(text, status = HttpStatusCode.OK)
+                    ${insertIf(commonArgType.isMarkedNullable){ "}" }}
+                    """.trimStart()
+                        .let(::append)
 
-            else ->
-                """
-                ${insertIf(commonArgType!!.isMarkedNullable){
-                    """
-                    if(ret == null)
-                        ~call.response.status(HttpStatusCode.NotFound)!~
-                    else{
-                    """
-                }}    
-                    val text = encode(ret, ${commonArgType!!.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
-                    call.respondText(text, status = HttpStatusCode.OK)
-                ${insertIf(commonArgType!!.isMarkedNullable){ "}" }}
-                """.trimStart()
-                    .let(::append)
+            fileArgType != null ->
+                if (fileArgType != resolver.builtIns.unitType) {
+                    if (fileArgType.isMarkedNullable)
+                        append("if (headInfo != null) {\n")
+
+                    append("""
+                        val text = encode(headInfo, ${fileArgType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                        call.response.header("Phone-Info", text)
+                        call.response.status(HttpStatusCode.OK)
+                    """.trimStart())
+
+                    if (fileArgType.isMarkedNullable)
+                        append("}\n")
+
+                    append("\nact()\n")
+                }
+
+            else -> TODO("other future features")
         }
 
         append("}")

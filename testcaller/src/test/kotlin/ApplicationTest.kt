@@ -16,6 +16,9 @@ import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
 import junit.framework.TestCase.assertEquals
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Test
 import java.io.File
 import java.io.FileOutputStream
@@ -158,6 +161,18 @@ class ApplicationTest {
                 if (end >= lastByte) break
                 start += 1024
             }
+        }
+    }
+
+    @Test
+    fun json(){
+        val list = listOf("122")
+
+        val encoded = Json.encodeToString(list)
+        val decoded = Json.decodeFromString<List<String>>(encoded)
+
+        assert(list == decoded){
+            "$list $decoded"
         }
     }
 }

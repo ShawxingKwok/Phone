@@ -40,8 +40,8 @@ internal fun KSFunctionDeclaration.getFileContent(
                 else {
                     val serializerText = fileArgType.getSerializerText()
                     """
-                    val headInfo = response.headers["Phone-Info"]
-                        ?.let{ decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)}) }
+                    val headInfo: ${fileArgType.text} = response.headers["Phone-Info"]
+                        ~?.let{ decode(it, $serializerText, ${getCipherTextForReturn(ksclass)}) }!~
                         ${insertIf(!fileArgType.isMarkedNullable){
                             "~?: error(\"Missed the head info of which the type is ${fileArgType.text}.\") !~"        
                         }}                        
