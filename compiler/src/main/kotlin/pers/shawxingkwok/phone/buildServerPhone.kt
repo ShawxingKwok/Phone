@@ -41,7 +41,7 @@ internal fun buildServerPhone() {
                         val webSocketAnnot = ksfun.getAnnotationByType(Phone.WebSocket::class)
                     
                         val returnedText = when {
-                            ksfun.commonType != null -> "CommonConnector<${ksfun.commonType!!.text}>" 
+                            ksfun.commonArgType != null -> "CommonConnector<${ksfun.commonArgType!!.text}>" 
                             webSocketAnnot == null -> TODO("other features")
                             webSocketAnnot.isRaw -> "WebSocketRawConnector"
                             else -> "WebSocketConnector"
@@ -110,7 +110,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         }
 
         append("""
-            $methodText("/${simpleName()}$mayPolymorphicId"){
+            $methodText("/$pathEnd"){
             """.trimStart()
         )
 
@@ -120,7 +120,7 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
                 else -> append("val params = call.request.queryParameters\n\n")
             }
 
-        if (commonType != null && commonType != resolver.builtIns.unitType)
+        if (commonArgType != null && commonArgType != resolver.builtIns.unitType)
             append("val ret = ")
 
         append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
@@ -205,21 +205,21 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) = mayEmbr
         when {
             isWebSocket -> {}
 
-            commonType == resolver.builtIns.unitType ->
+            commonArgType == resolver.builtIns.unitType ->
                 append("call.response.status(HttpStatusCode.OK)\n")
 
             else ->
                 """
-                ${insertIf(commonType!!.isMarkedNullable){
+                ${insertIf(commonArgType!!.isMarkedNullable){
                     """
                     if(ret == null)
                         ~call.response.status(HttpStatusCode.NotFound)!~
                     else{
                     """
                 }}    
-                    val text = encode(ret, ${commonType!!.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                    val text = encode(ret, ${commonArgType!!.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
                     call.respondText(text, status = HttpStatusCode.OK)
-                ${insertIf(commonType!!.isMarkedNullable){ "}" }}
+                ${insertIf(commonArgType!!.isMarkedNullable){ "}" }}
                 """.trimStart()
                     .let(::append)
         }

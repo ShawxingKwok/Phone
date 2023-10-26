@@ -26,8 +26,8 @@ object TestApiImpl : Phone.TestApi{
 
     }
 
-    override suspend fun getFile(id: String): FileConnector<String> {
-        return id to {
+    override suspend fun getFile(id: String): FileConnector<Int?> {
+        return id.length to {
             val bytes = call.receiveChannel().toByteArray()
             call.respondBytes(bytes)
         }

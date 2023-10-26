@@ -84,11 +84,11 @@ internal fun buildClientPhone() {
             }
         
             private inline fun <reified T> addParamWithJson(
-                add: (String, String) -> Unit,
                 key: String,
                 value: T,
                 serializer: KSerializer<T & Any>?,
                 cipher: Phone.Cipher?,
+                add: (String, String) -> Unit,
             ){
                 if (value == null) return
                 val newV = encode(value, serializer, cipher)
@@ -97,7 +97,7 @@ internal fun buildClientPhone() {
         
             private suspend fun HttpResponse.checkIsOK() {
                 check(status == HttpStatusCode.OK){
-                    bodyAsText()
+                    "${'$'}status ${'$'}{bodyAsText()}"
                 }
             }
             
@@ -118,17 +118,19 @@ internal fun KSClassDeclaration.getBody(): String =
         ~: ${qualifiedName()}!~ 
     {                    
         ${getNeededFunctions().joinToString("\n\n"){ ksFun ->
-            val commonType = ksFun.commonType
+            val commonArgType = ksFun.commonArgType
+            val fileArgType = ksFun.fileArgType
             val webSocketAnnot = ksFun.getAnnotationByType(Phone.WebSocket::class)
-
+        
             val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
                 ?: getAnnotationByType(Phone.Auth::class)?.withToken
                 ?: false
 
             when {
-                commonType != null -> ksFun.getCommonBody(this, commonType, withToken)
-                webSocketAnnot == null -> TODO()
-                else -> ksFun.getWebSocketBody(this, webSocketAnnot, withToken)
+                commonArgType != null -> ksFun.getCommonBody(this, commonArgType, withToken)
+                fileArgType != null -> ksFun.getFileBody(this, fileArgType, withToken)
+                webSocketAnnot != null -> ksFun.getWebSocketBody(this, webSocketAnnot, withToken)
+                else -> TODO()
             }
         }}
     }

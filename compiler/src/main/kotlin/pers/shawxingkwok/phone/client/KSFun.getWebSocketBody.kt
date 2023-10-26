@@ -3,7 +3,6 @@ package pers.shawxingkwok.phone.client
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
-import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.apiNameInPhone
 import pers.shawxingkwok.phone.getHeader
@@ -34,15 +33,15 @@ internal fun KSFunctionDeclaration.getWebSocketBody(
             ~runCatching{
                 client.$sessionFunText(
                     host = host, port = port,
-                    path = "${ksclass.apiNameInPhone}/${simpleName()}",
+                    path = "${ksclass.apiNameInPhone}/$pathEnd",
                     block = {
                         onEachRequest(this@${ksclass.apiNameInPhone}::class)
                         extendRequest?.invoke(this)
                         
-                        ${getParametersBody(ksclass, "parameter")}
-                        
                         ${insertIf(withToken){ "addToken()" }}
-
+                        
+                        ${getParametersBody(ksclass, ", ::parameter)")}
+                        
                         enableWssIfNeeded(${webSocketAnnot.isRaw})
                     },
                 )

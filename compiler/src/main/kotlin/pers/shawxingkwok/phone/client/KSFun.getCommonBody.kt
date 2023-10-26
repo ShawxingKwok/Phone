@@ -18,9 +18,9 @@ internal fun KSFunctionDeclaration.getCommonBody(
     ${getHeader("Result<${commonType.text}>")} =
         ~runCatching{
             val response = client.submitForm(
-                url = "${'$'}basicUrl/${ksclass.apiNameInPhone}/${simpleName()}${mayPolymorphicId}",
+                url = "${'$'}basicUrl/${ksclass.apiNameInPhone}/$pathEnd",
                 formParameters = parameters {
-                    ${getParametersBody(ksclass, "append")}
+                    ${getParametersBody(ksclass, ", ::append)")}
                 },
                 encodeInQuery = ${getOrPost(ksclass) == "get"},
             ){

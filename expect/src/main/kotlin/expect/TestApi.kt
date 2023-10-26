@@ -16,6 +16,6 @@ interface TestApi {
     @Phone.WebSocket(true)
     suspend fun obtain(i: Int): Any
 
-    @Phone.File<Int>
+    @Phone.File<Int?>
     suspend fun getFile(id: String): Any
 }

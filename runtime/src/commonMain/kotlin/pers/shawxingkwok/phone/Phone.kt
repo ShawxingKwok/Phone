@@ -8,7 +8,21 @@ public annotation class Phone{
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-    public annotation class WebSocket(val isRaw: Boolean = false)
+    public annotation class WebSocket(val isRaw: Boolean = false){
+        @Retention(AnnotationRetention.SOURCE)
+        @Target(AnnotationTarget.FUNCTION)
+        public annotation class Header<T>
+
+        @Retention(AnnotationRetention.SOURCE)
+        @Target(AnnotationTarget.FUNCTION)
+        @Repeatable
+        public annotation class S2C<T>
+
+        @Retention(AnnotationRetention.SOURCE)
+        @Target(AnnotationTarget.FUNCTION)
+        @Repeatable
+        public annotation class C2S<T>
+    }
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.FUNCTION)
