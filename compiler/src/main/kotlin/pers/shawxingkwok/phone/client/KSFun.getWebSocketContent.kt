@@ -1,5 +1,6 @@
 package pers.shawxingkwok.phone.client
 
+import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
@@ -32,6 +33,7 @@ internal fun KSFunctionDeclaration.getWebSocketContent(
         ${getHeader("Result<$sessionTypeText>")} =
             ~runCatching{
                 client.$sessionFunText(
+                    ${insertIf(isAnnotationPresent(Phone.Post::class)){ "method = HttpMethod.Post," }}
                     host = host, port = port,
                     path = "${ksclass.apiNameInPhone}/$pathEnd",
                     block = {

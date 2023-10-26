@@ -7,6 +7,7 @@ interface WebSocketApi {
     @Phone.WebSocket
     suspend fun getSignals(i: Int): Any?
 
+    @Phone.Post
     @Phone.WebSocket(true)
     suspend fun getChats(id: String?): Any?
 }

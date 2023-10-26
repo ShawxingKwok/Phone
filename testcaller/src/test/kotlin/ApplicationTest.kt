@@ -177,7 +177,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun emptyBody() = testApplication {
+    fun emptyResponse() = testApplication {
         application {
             routing {
                 post("/X"){
@@ -188,5 +188,21 @@ class ApplicationTest {
 
         val resp = client.post("X")
         resp.bodyAsText().length.let(::println)
+        resp.status.let(::println)
+    }
+
+    @Test
+    fun resetStatus() = testApplication {
+        application {
+            routing {
+                post("/X"){
+                    call.response.status(HttpStatusCode.BadRequest)
+                    call.response.status(HttpStatusCode.OK)
+                }
+            }
+        }
+
+        val resp = client.post("X")
+        println(resp.status)
     }
 }
