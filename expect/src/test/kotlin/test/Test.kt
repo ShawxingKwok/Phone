@@ -7,6 +7,7 @@ import io.ktor.client.statement.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.WebSockets
@@ -137,5 +138,19 @@ class Test {
 
                 assert(bytes.contentEquals(file.readBytes()))
             }
+    }
+
+    @Test
+    fun repeatRespond() = testApplication {
+        application {
+            routing {
+                post("/X"){
+                    call.respond(byteArrayOf(1))
+                    call.respond(byteArrayOf(2))
+                }
+            }
+        }
+
+        val resp = client.post("X")
     }
 }
