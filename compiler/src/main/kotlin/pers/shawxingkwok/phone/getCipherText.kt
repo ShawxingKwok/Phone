@@ -9,23 +9,23 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.Log
 
 context (CodeFormatter)
-internal fun KSFunctionDeclaration.getCipherTextForReturn(srcKSClass: KSClassDeclaration): String? {
+internal fun KSFunctionDeclaration.getCipherTextForReturn(ksclass: KSClassDeclaration): String? {
     val isCrypto =
-        returnType!!.isAnnotationPresent(Phone.Crypto::class)
-        || isAnnotationPresent(Phone.Crypto::class)
+        returnType!!.isAnnotationPresent(Phone.Feature.Crypto::class)
+        || isAnnotationPresent(Phone.Feature.Crypto::class)
         // parent function may be from a super class
-        || srcKSClass.isAnnotationPresent(Phone.Crypto::class)
+        || ksclass.isAnnotationPresent(Phone.Feature.Crypto::class)
 
     return getCipherText(this, isCrypto)
 }
 
 context (CodeFormatter)
-internal fun KSValueParameter.getCipherText(srcKSClass: KSClassDeclaration): String? {
+internal fun KSValueParameter.getCipherText(ksclass: KSClassDeclaration): String? {
     val isCrypto =
-        isAnnotationPresent(Phone.Crypto::class)
-        || this.type.isAnnotationPresent(Phone.Crypto::class)
-        || (parent as KSFunctionDeclaration).isAnnotationPresent(Phone.Crypto::class)
-        || srcKSClass.isAnnotationPresent(Phone.Crypto::class)
+        isAnnotationPresent(Phone.Feature.Crypto::class)
+        || this.type.isAnnotationPresent(Phone.Feature.Crypto::class)
+        || (parent as KSFunctionDeclaration).isAnnotationPresent(Phone.Feature.Crypto::class)
+        || ksclass.isAnnotationPresent(Phone.Feature.Crypto::class)
 
     return getCipherText(this, isCrypto)
 }

@@ -18,19 +18,19 @@ public annotation class Phone{
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Post
+        public annotation class Post(val withForm: Boolean = true)
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Put
+        public annotation class Put(val withForm: Boolean = true)
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Delete
+        public annotation class Delete(val withForm: Boolean = true)
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Patch
+        public annotation class Patch(val withForm: Boolean = true)
     }
 
     @Target
@@ -39,14 +39,26 @@ public annotation class Phone{
         @Target(AnnotationTarget.FUNCTION)
         public annotation class Common<T>
 
+        /**
+         * Commonly used with file transmission.
+         * Note that when you upload files, annotate the function with the method `Post` or `Put`,
+         * and set `withForm` to false.
+         */
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
         public annotation class Manual<T>
 
+        /**
+         * Method is `Get` by default unless you annotate the function with another method.
+         * Parameter positions are limited to `URL` rather than `form`.
+         */
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
         public annotation class WebSocket(val isRaw: Boolean = false)
 
+        /**
+         * Method is limited `Get`, and parameter positions are limited to `URL`.
+         */
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
         public annotation class PartialContent<T>
@@ -54,6 +66,16 @@ public annotation class Phone{
 
     @Target
     public annotation class Feature {
+        public annotation class ParametersPosition {
+            @Retention(AnnotationRetention.SOURCE)
+            @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+            public annotation class Url
+
+            @Retention(AnnotationRetention.SOURCE)
+            @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+            public annotation class Form
+        }
+
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
         public annotation class Polymorphic(val id: String)

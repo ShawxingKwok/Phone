@@ -8,7 +8,7 @@ internal val KSFunctionDeclaration.pathEnd: String get() =
     buildString {
         append(simpleName())
 
-        val polymorphicAnnot = getAnnotationByType(Phone.Polymorphic::class)
+        val polymorphicAnnot = getAnnotationByType(Phone.Feature.Polymorphic::class)
             ?: return@buildString
 
         append("/${polymorphicAnnot.id}")

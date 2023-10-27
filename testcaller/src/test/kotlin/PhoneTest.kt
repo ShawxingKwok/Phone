@@ -5,13 +5,11 @@ import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -302,8 +300,8 @@ class PhoneTest {
                 client = it.client,
                 host = "localhost",
                 port = 80,
-                usesHttps = false,
-                usesWss = true,
+                withHttps = false,
+                withWss = true,
             )
         ){ phone ->
             phone.WebSocketApi()

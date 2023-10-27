@@ -4,9 +4,11 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface FileApi {
-    @Phone.File<List<String>>
+    @Phone.Kind.Manual<List<String>>
     suspend fun exchange(id: String): Any
 
-    @Phone.File<Int?>
+    @Phone.Kind.Common<Int?>
     suspend fun get(id: String): Any
+
+    // PartialContent
 }

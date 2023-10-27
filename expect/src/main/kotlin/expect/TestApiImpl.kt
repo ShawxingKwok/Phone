@@ -1,8 +1,6 @@
 package expect
 
 import io.ktor.server.application.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -30,7 +28,7 @@ object TestApiImpl : Phone.TestApi {
 
     }
 
-    override suspend fun getFile(id: String): FileConnector<Int?> {
+    override suspend fun getFile(id: String): ManualConnector<Int?> {
         return id.length to {
             val bytes = call.receiveChannel().toByteArray()
             call.respondBytes(bytes)

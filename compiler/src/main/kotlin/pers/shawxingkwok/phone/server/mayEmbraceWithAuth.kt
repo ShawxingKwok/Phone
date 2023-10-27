@@ -1,15 +1,17 @@
-package pers.shawxingkwok.phone
+package pers.shawxingkwok.phone.server
 
 import com.google.devtools.ksp.symbol.KSDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.getAnnotationByType
+import pers.shawxingkwok.phone.Decls
+import pers.shawxingkwok.phone.Phone
 
 internal inline fun CodeFormatter.mayEmbraceWithAuth(
     decl: KSDeclaration,
     getBody: () -> String,
 ): String =
     buildString {
-        val auth = decl.getAnnotationByType(Phone.Auth::class)
+        val auth = decl.getAnnotationByType(Phone.Feature.Auth::class)
 
         if (auth != null) {
             append("${Decls().authenticate}(\n")

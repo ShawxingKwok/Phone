@@ -21,11 +21,11 @@ object PhoneValidator : KSDefaultValidator() {
             MyProcessor.round > 0 -> {}
 
             ksclass.isAnnotationPresent(Phone.Api::class)
-            && ksclass.isAnnotationPresent(Phone.WebSocket::class) ->
+            && ksclass.isAnnotationPresent(Phone.Kind.WebSocket::class) ->
                 Log.e(ksclass, "`Phone.Api` is needless when you set web sockets.")
 
             ksclass.isAnnotationPresent(Phone.Api::class)
-            || ksclass.isAnnotationPresent(Phone.WebSocket::class) ->
+            || ksclass.isAnnotationPresent(Phone.Kind.WebSocket::class) ->
             {
                 Log.check(ksclass, ksclass.classKind == ClassKind.INTERFACE){
                     "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
@@ -62,7 +62,7 @@ object PhoneValidator : KSDefaultValidator() {
 
                 Log.check(
                     symbols = polymorphic,
-                    condition = polymorphic.filterNot { it.isAnnotationPresent(Phone.Polymorphic::class) }.size <= 1
+                    condition = polymorphic.filterNot { it.isAnnotationPresent(Phone.Feature.Polymorphic::class) }.size <= 1
                 ){
                     "Polymorphic functions in `Phone` interfaces should be annotated with `Phone.Polymorphic`. " +
                     "Note that if you make a common function polymorphic in later versions, the first common function " +
@@ -72,8 +72,8 @@ object PhoneValidator : KSDefaultValidator() {
                 ksclass.getNeededFunctions().plus(ksclass).forEach {
                     Log.check(
                         symbol = it,
-                        condition = !(it.isAnnotationPresent(Phone.Get::class)
-                            && it.isAnnotationPresent(Phone.Post::class))
+                        condition = !(it.isAnnotationPresent(Phone.Method.Get::class)
+                            && it.isAnnotationPresent(Phone.Method.Post::class))
                     ){
                         "The annotations `Phone.Get` and `Phone.Post` can't be used together."
                     }
@@ -95,7 +95,7 @@ object PhoneValidator : KSDefaultValidator() {
                 }
             }
 
-            ksclass.isAnnotationPresent(Phone.WebSocket::class) -> {
+            ksclass.isAnnotationPresent(Phone.Kind.WebSocket::class) -> {
                 Log.check(
                     symbol = ksclass,
                     condition = ksclass.getNeededFunctions().all {

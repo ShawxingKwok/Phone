@@ -3,10 +3,13 @@ package test
 import expect.TestApiImpl
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -37,7 +40,7 @@ class Test {
         ){
             println("33")
         }
-
+        client.submitForm()
         pers.shawxingkwok.expect.test.client.Phone(client)
             .TestApi()
             .get(1)
@@ -131,7 +134,7 @@ class Test {
                 var bytes = byteArrayOf()
 
                 while (start < max){
-                    bytes += getPartialBody(start..< start + 2).readBytes()
+                    bytes += get(start..< start + 2).readBytes()
                     println(bytes.toList())
                     start += 2
                 }
@@ -152,5 +155,40 @@ class Test {
         }
 
         val resp = client.post("X")
+    }
+
+    @Test
+    fun putWithForm() = testApplication {
+        application {
+            routing {
+                put("/X"){
+                    call.receiveParameters().get("A").let(::println)
+                }
+            }
+        }
+
+        suspend fun request(method: HttpMethod, url: String, withForm: Boolean, parameters: Parameters){
+            client.request(url){
+                this.method = method
+                if (withForm) {
+                    val form = FormDataContent(parameters)
+                    setBody(form)
+                }else
+                    this.url.parameters.appendAll(parameters)
+            }
+        }
+
+        client.submitForm()
+
+        client.request("url") {
+            method = HttpMethod.Get
+            url.parameters.appendAll(formParameters)
+        }
+
+        client.put("/X"){
+            setBody(FormDataContent(parameters {
+                append("A", "a")
+            }))
+        }
     }
 }

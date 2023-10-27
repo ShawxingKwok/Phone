@@ -3,10 +3,10 @@ package pers.shawxingkwok.phone
 import pers.shawxingkwok.ksputil.Environment
 
 internal object Args {
-    val defaultGetOrPost = when(Environment.options["phone.default-method"]){
-        "get" -> "get"
-        "post" -> "post"
-        else -> error("Set phone.default-method with `get` or `post` in build.gradle(.kts).")
+    val defaultMethodName = when(val v = Environment.options["phone.default-method"]){
+        "get", "post", "put", "delete", "patch" -> v.replaceFirstChar { it.uppercase() }
+        "Get", "Post", "Put", "Delete", "Patch" -> v
+        else -> error("Set phone.default-method with `get`, `post`, `put`, `delete`, or `patch` in build.gradle(.kts).")
     }
 
     val ServerPackagePath = Environment.options["phone.server-package-path"]
