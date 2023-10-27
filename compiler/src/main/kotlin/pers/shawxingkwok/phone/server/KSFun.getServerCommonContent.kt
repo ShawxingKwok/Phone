@@ -39,6 +39,7 @@ internal fun KSFunctionDeclaration.getServerCommonContent(
 
         when{
             returnType == resolver.builtIns.unitType -> invokeText
+
             returnType.isMarkedNullable ->
                 """
                 val ret = $invokeText
@@ -50,6 +51,7 @@ internal fun KSFunctionDeclaration.getServerCommonContent(
                     call.respondText(text, status = HttpStatusCode.OK)                            
                 }
                 """.trim()
+
             else -> {
                 """
                 val ret = $invokeText
