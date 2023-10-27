@@ -56,7 +56,7 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
                 }
             }!~
             ${insertIf(!type.isMarkedNullable) {
-                "~?: return@$start ${onError("Not found `${paramName}` in received parameters.")}"
+                "~?: return@$start ${onError("Not found `${paramName}` in received parameters.")}!~"
             }} 
         """.trim()
         .let(::append)

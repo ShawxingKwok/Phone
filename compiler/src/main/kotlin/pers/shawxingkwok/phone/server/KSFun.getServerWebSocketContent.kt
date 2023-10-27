@@ -21,7 +21,7 @@ internal fun KSFunctionDeclaration.getServerWebSocketContent(
         else
             Decls().serverWebSocket
 
-    val paramsContent = getServerParametersPart(ksclass, start){ "unacceptedClose($it)" }
+    val paramsContent = getServerParametersPart(ksclass, start){ "unacceptedClose(\"$it\")" }
 
     return buildString {
         """

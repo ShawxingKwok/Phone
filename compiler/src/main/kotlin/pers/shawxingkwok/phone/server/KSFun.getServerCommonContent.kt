@@ -31,27 +31,36 @@ internal fun KSFunctionDeclaration.getServerCommonContent(
             else -> append("val params = call.request.queryParameters\n\n")
         }
 
-        if (returnType == resolver.builtIns.unitType)
-            append("val ret = ")
+        val invokeText = buildString {
+            append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
+            append(getServerParametersPart(ksclass, start))
+            append(")()")
+        }
 
-        append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
-        append(getServerParametersPart(ksclass, start))
-        append(")()\n")
-
-        if (returnType.isMarkedNullable)
-            """
-            if(ret == null)
-                ~call.response.status(HttpStatusCode.NotFound)!~
-            else{
-            """.trim().let(::append)
-
-        """
-        val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
-        call.respondText(text, status = HttpStatusCode.OK)            
-        """.trim()
+        when{
+            returnType == resolver.builtIns.unitType -> invokeText
+            returnType.isMarkedNullable ->
+                """
+                val ret = $invokeText
+                
+                if(ret == null)
+                    ~call.response.status(HttpStatusCode.NotFound)!~
+                else{
+                    val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                    call.respondText(text, status = HttpStatusCode.OK)                            
+                }
+                """.trim()
+            else -> {
+                """
+                val ret = $invokeText
+                    
+                val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
+                call.respondText(text, status = HttpStatusCode.OK)                            
+                """.trim()
+            }
+        }
         .let(::append)
 
-        if (returnType.isMarkedNullable)
-            append("}\n")
+        append("\n}")
     }
 }
