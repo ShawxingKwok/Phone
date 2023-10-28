@@ -30,6 +30,7 @@ import java.io.File
 import java.time.Duration
 import java.util.*
 import kotlin.test.Test
+import kotlin.test.assertNull
 
 class PhoneTest {
     object JwtConfig {
@@ -265,12 +266,41 @@ class PhoneTest {
     @Test
     fun manual() = start(
         configureServer = {
-            Phone.route(routing { }, FileApiImpl)
+            Phone.route(routing { }, ManualApiImpl)
         }
     ) { phone ->
-        phone.FileApi {
-            setBody(byteArrayOf(1))
-        }
+        phone.ManualApi()
+            .getIdLength("2")
+            .getOrThrow()
+            .let { (size, _) ->
+                assert(size == 1)
+            }
+
+        println("...")
+
+        phone.ManualApi()
+            .getIdLength(null)
+            .getOrThrow()
+            .let { (size, _) ->
+                assertNull(size)
+            }
+        println("...")
+
+        phone.ManualApi()
+            .directGet()
+            .getOrThrow()
+            .let {
+                assert(it.first == 1L)
+            }
+        println("...")
+
+        phone.ManualApi()
+            .getUnit("S")
+        println("...")
+
+        phone.ManualApi {
+                setBody(byteArrayOf(1))
+            }
             .exchange("122")
             .getOrThrow()
             .let { (headInfo, response) ->
@@ -282,19 +312,13 @@ class PhoneTest {
                     bytes.joinToString()
                 }
             }
-
-        phone.FileApi()
-            .get("2")
-            .getOrThrow()
-            .let { (size, _) ->
-                assert(size == null)
-            }
+        println("...")
     }
 
     @Test
     fun partialContent() = start(
         configureServer = {
-            Phone.route(routing { }, FileApiImpl)
+            Phone.route(routing { }, PartialContentApiImpl)
             install(PartialContent) {
                 maxRangeCount = 10
             }
@@ -302,13 +326,13 @@ class PhoneTest {
         }
     ) { phone ->
         val path = ".gitignore"
+        val file = File(path)
+        val expectedBytes = file.readBytes()
 
-        phone.FileApi()
+        phone.PartialContentApi()
             .partialGet(path)
             .getOrThrow()
             .let {
-                val file = File(path)
-                val expectedBytes = file.readBytes()
                 assert(it.tag.first == path)
                 assert(it.tag.second == expectedBytes.size.toLong())
                 assert(it.get().readBytes().contentEquals(expectedBytes))
@@ -317,6 +341,13 @@ class PhoneTest {
                 assert(partialBytes.contentEquals(expectedBytes.take(3).toByteArray())){
                     partialBytes.toList()
                 }
+            }
+
+        phone.PartialContentApi()
+            .partialGetUnit("@")
+            .getOrThrow()
+            .let {
+                assert(it.get().readBytes().contentEquals(expectedBytes))
             }
     }
 

@@ -3,12 +3,14 @@ package pers.shawxingkwok.phone.server
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
+import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.Args
 import pers.shawxingkwok.phone.MyProcessor
 import pers.shawxingkwok.phone.createFile
 import pers.shawxingkwok.phone.getCoderFunctions
 import pers.shawxingkwok.phone.insertIf
+import pers.shawxingkwok.phone.server.parts.getServerParametersPart
 import pers.shawxingkwok.phone.server.parts.mayEmbraceWithAuth
 
 internal fun buildServerPhone() {
@@ -29,7 +31,6 @@ internal fun buildServerPhone() {
     ){
         """
         typealias CommonConnector<T> = suspend ${Decls().PipelineContextUnitCall}.() -> T
-        typealias ManualConnector<T> = Pair<T, CommonConnector<Unit>>
         ${insertIf(MyProcessor.hasWebSocket){
             """
             typealias WebSocketConnector = suspend ${Decls().DefaultWebSocketServerSession}.() -> Unit
@@ -49,7 +50,7 @@ internal fun buildServerPhone() {
                     ${ksclass.getNeededFunctions().joinToString("\n\n"){ ksfun ->
                         val returnedText = when(val kind = ksfun.kind) {
                             is Kind.Common -> "CommonConnector<${kind.returnType.text}>"
-                            is Kind.Manual -> "ManualConnector<${kind.tagType}>"
+                            is Kind.Manual -> "CommonConnector<${kind.tagType}>"
                             is Kind.PartialContent -> "PartialContentConnector<${kind.tagType}>"
                             is Kind.WebSocket -> 
                                 if (kind.isRaw)
@@ -92,8 +93,10 @@ internal fun buildServerPhone() {
                         ${ksclass.apiPropNameInPhone}.run { doOtherTasks() }
                         
                         ${mayEmbraceWithAuth(ksclass) {
-                            ksclass.getNeededFunctions().joinToString("\n\n") {
-                                it.getBody(ksclass)
+                            ksclass.getNeededFunctions().joinToString("\n\n") { ksfun ->
+                                mayEmbraceWithAuth(ksfun) {
+                                    ksfun.getServerRouteContent(ksclass)
+                                }
                             }
                         }}
                     }
@@ -104,14 +107,3 @@ internal fun buildServerPhone() {
         """
     }
 }
-
-context (CodeFormatter)
-private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) =
-    mayEmbraceWithAuth(this) {
-        when(val kind = kind){
-            is Kind.Common -> getServerCommonContent(ksclass, kind)
-            is Kind.WebSocket -> getServerWebSocketContent(ksclass, kind)
-            is Kind.Manual -> ""
-            is Kind.PartialContent -> getServerPartialContent(ksclass, kind)
-        }
-    }
