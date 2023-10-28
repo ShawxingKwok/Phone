@@ -167,24 +167,6 @@ class Test {
             }
         }
 
-        suspend fun request(method: HttpMethod, url: String, withForm: Boolean, parameters: Parameters){
-            client.request(url){
-                this.method = method
-                if (withForm) {
-                    val form = FormDataContent(parameters)
-                    setBody(form)
-                }else
-                    this.url.parameters.appendAll(parameters)
-            }
-        }
-
-        client.submitForm()
-
-        client.request("url") {
-            method = HttpMethod.Get
-            url.parameters.appendAll(formParameters)
-        }
-
         client.put("/X"){
             setBody(FormDataContent(parameters {
                 append("A", "a")

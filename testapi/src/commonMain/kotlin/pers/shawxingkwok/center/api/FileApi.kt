@@ -7,7 +7,7 @@ interface FileApi {
     @Phone.Kind.Manual<List<String>>
     suspend fun exchange(id: String): Any
 
-    @Phone.Kind.Common<Int?>
+    @Phone.Kind.Manual<Int?>
     suspend fun get(id: String): Any
 
     // PartialContent

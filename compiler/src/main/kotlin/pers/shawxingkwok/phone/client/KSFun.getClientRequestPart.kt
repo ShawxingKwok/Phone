@@ -2,6 +2,7 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSValueParameter
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.getSerializerText
@@ -14,36 +15,40 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
 ): String {
     val (methodName, withForm) = methodInfo
 
-    return buildString {
-        append("""
-            method = HttpMethod.$methodName
+    return """
+    method = HttpMethod.$methodName
+               
+    onEachRequest()
+    extendRequest?.invoke(this)            
+    
+    ${insertIf(withToken){ "addToken()" }}
+    
+    ${when{
+        parameters.none() -> ""
         
-            onEachRequest()
-            extendRequest?.invoke(this)            
-        """.trimStart())
+        withForm -> """
+            val parameters = parameters{
+                ${parameters.getText(ksclass, "::append")}
+            }
+            val form = FormDataContent(parameters)
+            setBody(form)     
+        """.trim()
+        
+        else -> parameters.getText(ksclass, "::parameter")
+    }}
+    """.trim()
+}
 
-        if (withToken) append("addToken()")
-
-        if (parameters.none()) return@buildString
-
-        append("val parameters = parameters{\n")
-
-        parameters.forEach { param ->
+context (CodeFormatter)
+private fun List<KSValueParameter>.getText(ksclass: KSClassDeclaration, funText: String) =
+    buildString {
+        this@getText.forEach { param ->
             append("appendWithJson(")
             append("\"${param.name!!.asString()}\", ")
             append("${param.name!!.asString()}, ")
             append("${param.getSerializerText()}, ")
-            append("${param.getCipherText(ksclass)})\n")
+            append("${param.getCipherText(ksclass)}, ")
+            append("$funText)\n")
         }
-
-        append("\n}\n")
-
-        if (withForm) {
-            """
-            val form = FormDataContent(parameters)
-            setBody(form)                            
-            """.trimStart().let(::append)
-        } else
-            append("url.parameters.appendAll(parameters)\n")
+        removeSuffix("\n")
     }
-}

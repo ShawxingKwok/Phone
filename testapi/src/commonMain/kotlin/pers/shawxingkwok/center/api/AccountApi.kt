@@ -12,6 +12,7 @@ interface AccountApi {
     @Phone.Kind.Common<Unit>
     suspend fun delete(id: Long): Any?
 
+    @Phone.Method.Get
     @Phone.Kind.Common<User?>
     suspend fun search(id: Long): Any?
 }

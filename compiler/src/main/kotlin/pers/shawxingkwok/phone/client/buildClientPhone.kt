@@ -83,15 +83,16 @@ internal fun buildClientPhone() {
                 header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
             }
         
-            private inline fun <reified T> ParametersBuilder.appendWithJson(
+            private inline fun <reified T> appendWithJson(
                 key: String,
                 value: T,
                 serializer: KSerializer<T & Any>?,
                 cipher: Phone.Feature.Crypto.Cipher?,
+                add: (String, String) -> Unit,
             ){
                 if (value == null) return
                 val newV = encode(value, serializer, cipher)
-                append(key, newV)
+                add(key, newV)
             }
         
             private suspend fun HttpResponse.checkIsOK() {
