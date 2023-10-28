@@ -12,15 +12,15 @@ internal fun KSFunctionDeclaration.getMethodInfo(ksclass: KSClassDeclaration): M
         is Kind.PartialContent -> "Get" to false
 
         is Kind.Common, is Kind.Manual ->
-            getMethodInfo()
-            ?: ksclass.getMethodInfo()
+            getSelfMethodInfo()
+            ?: ksclass.getSelfMethodInfo()
             ?: (Args.defaultMethodName to (Args.defaultMethodName != "Get"))
 
-        is Kind.WebSocket -> getMethodInfo() ?: ("Get" to false)
+        is Kind.WebSocket -> getSelfMethodInfo() ?: ("Get" to false)
     }
     .let { MethodInfo(it.first, it.second) }
 
-private fun KSDeclaration.getMethodInfo(): Pair<String, Boolean>? {
+private fun KSDeclaration.getSelfMethodInfo(): Pair<String, Boolean>? {
     getAnnotationByType(Phone.Method.Get::class)?.let { return "Get" to false }
     getAnnotationByType(Phone.Method.Post::class)?.let { return "Post" to it.withForm }
     getAnnotationByType(Phone.Method.Put::class)?.let { return "Put" to it.withForm }

@@ -17,10 +17,7 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
 
     return """
     method = HttpMethod.$methodName
-               
-    onEachRequest()
-    extendRequest?.invoke(this)            
-    
+
     ${insertIf(withToken){ "addToken()" }}
     
     ${when{
@@ -36,6 +33,9 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
         
         else -> parameters.getText(ksclass, "::parameter")
     }}
+                   
+    extendRequest?.invoke(this)            
+    onEachRequest()
     """.trim()
 }
 

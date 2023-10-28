@@ -33,11 +33,10 @@ internal fun KSFunctionDeclaration.getClientWebSocketContent(
             client.$sessionFunText(
                 host = host, port = port,
                 path = "${ksclass.apiNameInPhone}/$pathEnd",
-                block = {
-                    ${getClientRequestPart(ksclass, withToken)}
-                    enableWssIfNeeded(${kind.isRaw})
-                },
-            )
+            ){
+                enableWssIfNeeded(${kind.isRaw})
+                ${getClientRequestPart(ksclass, withToken)}
+            }
         }!~
     """.trim()
 }
