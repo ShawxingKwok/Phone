@@ -5,7 +5,8 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.apiNameInPhone
-import pers.shawxingkwok.phone.getHeader
+import pers.shawxingkwok.phone.client.parts.getClientHeader
+import pers.shawxingkwok.phone.client.parts.getClientRequestPart
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientWebSocketContent(
@@ -15,12 +16,6 @@ internal fun KSFunctionDeclaration.getClientWebSocketContent(
 )
     : String
 {
-    val sessionTypeText =
-        if (kind.isRaw)
-            Decls().ClientWebSocketSession
-        else
-            Decls().DefaultClientWebSocketSession
-
     val sessionFunText =
         if (kind.isRaw)
             Decls().clientWebSocketRawSession
@@ -28,8 +23,8 @@ internal fun KSFunctionDeclaration.getClientWebSocketContent(
             Decls().clientWebSocketSession
 
     return """
-    ${getHeader("Result<$sessionTypeText>")} =
-        ~runCatching{
+    ${getClientHeader(ksclass)} =
+        ~runCatching {
             client.$sessionFunText(
                 host = host, port = port,
                 path = "${ksclass.apiNameInPhone}/$pathEnd",

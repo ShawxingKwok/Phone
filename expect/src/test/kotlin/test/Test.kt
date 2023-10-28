@@ -146,15 +146,8 @@ class Test {
     @Test
     fun repeatRespond() = testApplication {
         application {
-            routing {
-                post("/X"){
-                    call.respond(byteArrayOf(1))
-                    call.respond(byteArrayOf(2))
-                }
-            }
         }
-
-        val resp = client.post("X")
+        client.post("X").status.let(::println)
     }
 
     @Test

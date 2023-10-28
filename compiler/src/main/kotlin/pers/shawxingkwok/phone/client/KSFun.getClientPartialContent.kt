@@ -7,7 +7,9 @@ import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.Kind
 import pers.shawxingkwok.phone.apiNameInPhone
-import pers.shawxingkwok.phone.getHeader
+import pers.shawxingkwok.phone.client.parts.getClientHeader
+import pers.shawxingkwok.phone.client.parts.getClientRequestPart
+import pers.shawxingkwok.phone.client.parts.getClientTagStatement
 import pers.shawxingkwok.phone.pathEnd
 
 context (CodeFormatter)
@@ -21,8 +23,8 @@ internal fun KSFunctionDeclaration.getClientPartialContent(
     val path = "\$basicUrl/${ksclass.apiNameInPhone}/$pathEnd"
 
     return """
-    ${getHeader("Result<PartialContentHandler<${kind.tagType.text}>>")} =
-        ~runCatching{
+    ${getClientHeader(ksclass)} =
+        ~runCatching {
             val response = client.request("$path") {
                 ${getClientRequestPart(ksclass, withToken, MethodInfo("head", false))}
             }

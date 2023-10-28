@@ -7,6 +7,7 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.ksputil.qualifiedName
 import pers.shawxingkwok.phone.*
+import pers.shawxingkwok.phone.client.parts.getClientHeader
 
 internal fun buildClientPhone() {
     createFile(
@@ -23,7 +24,6 @@ internal fun buildClientPhone() {
                 "kotlinx.serialization.json.Json",
                 "kotlinx.serialization.KSerializer",
                 "kotlinx.serialization.builtins.ByteArraySerializer",
-                "kotlin.reflect.KClass",
                 "pers.shawxingkwok.phone.Phone",
             )
     ) {
@@ -59,7 +59,15 @@ internal fun buildClientPhone() {
                     tokenScheme = tokenScheme,
                     token = token
                 )!~
-        
+            
+            ${MyProcessor.phones.joinToString("\n\n"){ ksclass ->
+                """
+                interface ${ksclass.apiNameInPhone} : ${ksclass.qualifiedName()}{
+                    ${ksclass.getNeededFunctions().joinToString("\n\n"){ it.getClientHeader(ksclass) }}
+                }
+                """.trim()
+            }}
+            
             private val basicUrl: String =
                 ~buildString {
                     append("http")
@@ -67,7 +75,7 @@ internal fun buildClientPhone() {
                     append("://${'$'}host:${'$'}port")
                 }!~
             
-            protected open fun HttpRequestBuilder.onEachRequest() {}
+            protected suspend fun HttpRequestBuilder.onEachRequest() {}
                 
             private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
                 if(!withWss) return
@@ -112,18 +120,14 @@ internal fun buildClientPhone() {
 context (CodeFormatter)
 internal fun KSClassDeclaration.getBody(): String =
     """
-    inner class $apiNameInPhone(
-        private val extendRequest: (HttpRequestBuilder.() -> Unit)? = null
-    )
-        ~: ${qualifiedName()}!~ 
-    {                    
+    open fun $apiNameInPhone(extendRequest: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
         ${getNeededFunctions().joinToString("\n\n"){ ksFun ->
             val withToken = getAnnotationByType(Phone.Feature.Auth::class)?.withToken
                 ?: getAnnotationByType(Phone.Feature.Auth::class)?.withToken
                 ?: false
-
+    
             when(val kind = ksFun.kind) {
-                is Kind.Common -> ksFun.getClientCommonContent(this, kind, withToken) 
+                is Kind.Common -> ksFun.getClientCommonContent(this, kind, withToken)
                 is Kind.Manual -> ksFun.getClientManualContent(this, kind, withToken)
                 is Kind.PartialContent -> ksFun.getClientPartialContent(this, kind, withToken)
                 is Kind.WebSocket -> ksFun.getClientWebSocketContent(this, kind, withToken)

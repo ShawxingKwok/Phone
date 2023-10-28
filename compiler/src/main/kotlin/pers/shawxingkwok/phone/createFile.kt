@@ -33,7 +33,7 @@ internal fun createFile(
             |@file:Suppress(
             |    "LocalVariableName", "SameParameterValue", "unused", "PropertyName", "HttpUrlsUsage",
             |    "ClassName", "KotlinRedundantDiagnosticSuppress", "DuplicatedCode", 
-            |    "MemberVisibilityCanBePrivate"            
+            |    "MemberVisibilityCanBePrivate", "TestFunctionName"            
             |)
             """.trimMargin(),
         extensionName = "",

@@ -318,5 +318,12 @@ class PhoneTest {
                     assert((incoming.receive() as Frame.Text).readText() == "1")
                 }
         }
+
+        val phone = object : pers.shawxingkwok.test.client.Phone(client){
+            override suspend fun HttpRequestBuilder.onEachRequest() {
+                TODO("Not yet implemented")
+            }
+        }
+        phone.AccountApi()
     }
 }

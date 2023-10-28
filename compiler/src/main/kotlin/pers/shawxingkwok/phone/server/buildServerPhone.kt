@@ -71,8 +71,7 @@ internal fun buildServerPhone() {
                     ${Decls().close}(closeReason)
                 }
                 """                
-            }
-        }
+            }}
     
             fun routeAll(
                 route: Route,

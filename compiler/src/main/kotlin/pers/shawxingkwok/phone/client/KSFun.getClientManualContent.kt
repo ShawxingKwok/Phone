@@ -6,7 +6,9 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.apiNameInPhone
-import pers.shawxingkwok.phone.getHeader
+import pers.shawxingkwok.phone.client.parts.getClientHeader
+import pers.shawxingkwok.phone.client.parts.getClientRequestPart
+import pers.shawxingkwok.phone.client.parts.getClientTagStatement
 import pers.shawxingkwok.phone.pathEnd
 
 context (CodeFormatter)
@@ -16,16 +18,10 @@ internal fun KSFunctionDeclaration.getClientManualContent(
     withToken: Boolean,
 )
     : String
-{
-    val returnedText =
-        if (kind.tagType == resolver.builtIns.unitType)
-            "HttpResponse"
-        else
-            "Result<Pair<${kind.tagType.text}, HttpResponse>>"
-
-    return """
-    ${getHeader(returnedText)} =
-        ~runCatching{
+=
+    """
+    ${getClientHeader(ksclass)} =
+        ~runCatching {
             val response = client.request("${'$'}basicUrl/${ksclass.apiNameInPhone}/$pathEnd") {
                 ${getClientRequestPart(ksclass, withToken)}
             }
@@ -43,4 +39,3 @@ internal fun KSFunctionDeclaration.getClientManualContent(
            }}
     }!~
     """.trim()
-}
