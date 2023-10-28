@@ -1,4 +1,4 @@
-package pers.shawxingkwok.phone.server
+package pers.shawxingkwok.phone.server.parts
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration

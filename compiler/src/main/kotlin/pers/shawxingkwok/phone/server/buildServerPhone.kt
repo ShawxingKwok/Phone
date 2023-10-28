@@ -9,6 +9,7 @@ import pers.shawxingkwok.phone.MyProcessor
 import pers.shawxingkwok.phone.createFile
 import pers.shawxingkwok.phone.getCoderFunctions
 import pers.shawxingkwok.phone.insertIf
+import pers.shawxingkwok.phone.server.parts.mayEmbraceWithAuth
 
 internal fun buildServerPhone() {
     createFile(

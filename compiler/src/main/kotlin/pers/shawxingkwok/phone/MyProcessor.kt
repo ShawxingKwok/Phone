@@ -168,7 +168,7 @@ internal object MyProcessor : KSProcessor{
                         .previousGeneratedFiles
                         .first { it.path.endsWith(expectedEnd) }
 
-                    // copy files if not in the test files round
+                    // stop if in the test files round
                     if (file.path.endsWith("/test/resources/$expectedEnd"))
                         return emptyList()
 

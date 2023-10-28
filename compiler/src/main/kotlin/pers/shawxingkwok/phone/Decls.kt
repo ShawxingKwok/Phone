@@ -6,20 +6,6 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 
 context (CodeFormatter)
 class Decls {
-    val clientWebSocket get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.client.plugins.websocket.webSocket",
-            innerName = null,
-            isTopLevelAndExtensional = true
-        )
-
-    val clientWebSocketRaw get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.client.plugins.websocket.cio.webSocketRaw",
-            innerName = null,
-            isTopLevelAndExtensional = true
-        )
-
     val serverWebSocket get() =
         getDeclText(
             outermostDeclPath = "io.ktor.server.websocket.webSocket",
