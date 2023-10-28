@@ -29,7 +29,7 @@ internal fun KSFunctionDeclaration.getClientPartialContent(
                 ${getClientRequestPart(ksclass, withToken, MethodInfo("head", false))}
             }
             
-            response.checkIsOK()
+            response.check()
             
             ${if (kind.tagType == resolver.builtIns.unitType)    
                 "val tag = Unit"

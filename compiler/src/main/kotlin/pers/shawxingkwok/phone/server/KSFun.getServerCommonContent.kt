@@ -45,7 +45,7 @@ internal fun KSFunctionDeclaration.getServerCommonContent(
                 val ret = $invokeText
                 
                 if(ret == null)
-                    ~call.response.status(HttpStatusCode.NotFound)!~
+                    ~call.response.status(HttpStatusCode.NoContent)!~
                 else{
                     val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
                     call.respondText(text, status = HttpStatusCode.OK)                            

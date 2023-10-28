@@ -26,7 +26,7 @@ internal fun KSFunctionDeclaration.getClientManualContent(
                 ${getClientRequestPart(ksclass, withToken)}
             }
 
-            response.checkIsOK()
+            response.check()
 
             ${if (kind.tagType == resolver.builtIns.unitType)
                 "response"

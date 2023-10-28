@@ -21,15 +21,16 @@ internal fun KSFunctionDeclaration.getClientCommonContent(
             val response = client.request("${'$'}basicUrl/${ksclass.apiNameInPhone}/$pathEnd"){
                 ${getClientRequestPart(ksclass, withToken)}
             }
+                
+            response.check()
+                
             ${insertIf(kind.returnType.isMarkedNullable) {
                 """
-                if(response.status == HttpStatusCode.NotFound)
+                if(response.status == HttpStatusCode.NoContent)
                     ~return@runCatching null!~
                 """.trim()
             }}
-                
-            response.checkIsOK()
-                
+
             ${insertIf(kind.returnType != resolver.builtIns.unitType) {
                 val serializerText = kind.returnType.getSerializerText()
                 "decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"

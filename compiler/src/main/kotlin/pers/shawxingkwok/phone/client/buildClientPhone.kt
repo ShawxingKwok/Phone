@@ -103,8 +103,8 @@ internal fun buildClientPhone() {
                 add(key, newV)
             }
         
-            private suspend fun HttpResponse.checkIsOK() {
-                check(status == HttpStatusCode.OK){
+            private suspend fun HttpResponse.check() {
+                check(status == HttpStatusCode.OK || status == HttpStatusCode.NoContent){
                     "${'$'}status ${'$'}{bodyAsText()}"
                 }
             }
