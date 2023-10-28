@@ -4,15 +4,19 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 import pers.shawxingkwok.ksputil.CodeFormatter
+import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.getSerializerText
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientRequestPart(
     ksclass: KSClassDeclaration,
-    withToken: Boolean,
     methodInfo: MethodInfo = getMethodInfo(ksclass),
 ): String {
+    val withToken = getAnnotationByType(Phone.Feature.Auth::class)?.withToken
+        ?: getAnnotationByType(Phone.Feature.Auth::class)?.withToken
+        ?: false
+
     val (methodName, withForm) = methodInfo
 
     return """

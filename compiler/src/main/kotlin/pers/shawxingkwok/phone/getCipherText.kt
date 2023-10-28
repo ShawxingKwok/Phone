@@ -7,14 +7,20 @@ import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.symbol.KSValueParameter
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.Log
+import pers.shawxingkwok.ksputil.getAnnotationByType
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getCipherTextForReturn(ksclass: KSClassDeclaration): String? {
     val isCrypto =
-        returnType!!.isAnnotationPresent(Phone.Feature.Crypto::class)
-        || isAnnotationPresent(Phone.Feature.Crypto::class)
+        isAnnotationPresent(Phone.Feature.Crypto::class)
         // parent function may be from a super class
         || ksclass.isAnnotationPresent(Phone.Feature.Crypto::class)
+        || when(val kind = kind){
+            is Kind.Common -> kind.typeRef.isAnnotationPresent(Phone.Feature.Crypto::class)
+            is Kind.PartialContent -> kind.typeRef.isAnnotationPresent(Phone.Feature.Crypto::class)
+            is Kind.Manual -> kind.typeRef.isAnnotationPresent(Phone.Feature.Crypto::class)
+            else -> return null
+        }
 
     return getCipherText(this, isCrypto)
 }

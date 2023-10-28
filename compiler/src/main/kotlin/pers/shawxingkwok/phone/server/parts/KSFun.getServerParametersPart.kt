@@ -45,8 +45,13 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
             else
                 type.text
 
-        """
-        $paramName = params["$paramName"]
+        val isString = type == resolver.builtIns.stringType
+                || type == resolver.builtIns.stringType.makeNullable()
+
+        append("$paramName = params[\"$paramName\"]\n")
+
+        if (!isString)
+            """
             ~?.let{
                 try{
                     decode<${paramTypeText.removeSuffix("?")}>(it, ${param.getSerializerText()}, ${param.getCipherText(ksclass)})
@@ -55,13 +60,17 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
                     return@$start
                 }
             }!~
-            ${insertIf(!type.isMarkedNullable) {
-                "~?: return@$start ${onError("Not found `${paramName}` in received parameters.")}!~"
-            }} 
-        """.trim()
-        .let(::append)
+            """.trim().plus("\n").let(::append)
 
-        insert(length - 2, ",")
+        if (!type.isMarkedNullable)
+            append("~?: return@$start ${onError("Not found `${paramName}` in received parameters.")}!~\n")
+
+        when(get(lastIndex - 1)){
+            '~' -> insert(lastIndex - 2, ",")
+            ']' -> insert(lastIndex, ",")
+            else -> error("")
+        }
+
         append("\n\n")
     }
 }

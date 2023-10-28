@@ -6,6 +6,11 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 
 context (CodeFormatter)
 class Decls {
+    val File = getDeclText(
+        outermostDeclPath = "java.io.File",
+        innerName = null,
+        isTopLevelAndExtensional = false
+    )
     val serverWebSocket get() =
         getDeclText(
             outermostDeclPath = "io.ktor.server.websocket.webSocket",

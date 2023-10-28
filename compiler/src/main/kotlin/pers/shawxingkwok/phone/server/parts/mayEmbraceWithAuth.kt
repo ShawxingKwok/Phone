@@ -18,7 +18,6 @@ internal inline fun CodeFormatter.mayEmbraceWithAuth(
 
             if (auth.configurations.any())
                 auth.configurations.joinToString(
-                    separator = ", ",
                     prefix = "configurations = arrayOf(",
                     postfix = "),\n"
                 ){

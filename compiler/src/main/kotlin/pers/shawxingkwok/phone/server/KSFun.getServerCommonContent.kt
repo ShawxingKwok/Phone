@@ -32,18 +32,18 @@ internal fun KSFunctionDeclaration.getServerCommonContent(
             else -> append("val params = call.request.queryParameters\n\n")
         }
 
-        val invokeText = buildString {
+        val invokePart = buildString {
             append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
             append(getServerParametersPart(ksclass, start))
             append(")()")
         }
 
         when{
-            returnType == resolver.builtIns.unitType -> invokeText
+            returnType == resolver.builtIns.unitType -> invokePart
 
             returnType.isMarkedNullable ->
                 """
-                val ret = $invokeText
+                val ret = $invokePart
                 
                 if(ret == null)
                     ~call.response.status(HttpStatusCode.NoContent)!~
@@ -55,7 +55,7 @@ internal fun KSFunctionDeclaration.getServerCommonContent(
 
             else -> {
                 """
-                val ret = $invokeText
+                val ret = $invokePart
                     
                 val text = encode(ret, ${returnType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})
                 call.respondText(text, status = HttpStatusCode.OK)                            

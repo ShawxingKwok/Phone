@@ -10,6 +10,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.autohead.*
+import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -24,6 +26,7 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
 import pers.shawxingkwok.ktutil.allDo
 import pers.shawxingkwok.test.server.*
+import java.io.File
 import java.time.Duration
 import java.util.*
 import kotlin.test.Test
@@ -152,7 +155,7 @@ class PhoneTest {
     @Test
     fun commonAccount() = start(
         configureServer = {
-            Phone.route(routing {  }, AccountApiImpl)
+            Phone.route(routing { }, AccountApiImpl)
         }
     ) { phone ->
         assert(phone.AccountApi().login("101", "", emptyList()).getOrThrow() == LoginResult.NotSigned)
@@ -163,8 +166,8 @@ class PhoneTest {
     @Test
     fun crypto() = start(
         configureServer = {
-            Phone.route(routing {  }, CryptoApiImpl.Partial)
-            Phone.route(routing {  }, CryptoApiImpl.Whole)
+            Phone.route(routing { }, CryptoApiImpl.Partial)
+            Phone.route(routing { }, CryptoApiImpl.Whole)
         }
     ) { phone ->
         assert(phone.CryptoApi_Partial().getChats(1, "a", "b").getOrThrow() == listOf("1", "a", "b"))
@@ -174,7 +177,7 @@ class PhoneTest {
     @Test
     fun cipher() = start(
         configureServer = {
-            Phone.route(routing {  }, AccountApiImpl)
+            Phone.route(routing { }, AccountApiImpl)
         }
     ) { phone ->
         @Suppress("JsonStandardCompliance")
@@ -190,9 +193,9 @@ class PhoneTest {
     @Test
     fun commonAuth() = start(
         configureServer = {
-            Phone.route(routing {  }, AuthApiImpl.Partial)
-            Phone.route(routing {  }, AuthApiImpl.Whole)
-            Phone.route(routing {  }, AuthApiImpl.Multi)
+            Phone.route(routing { }, AuthApiImpl.Partial)
+            Phone.route(routing { }, AuthApiImpl.Whole)
+            Phone.route(routing { }, AuthApiImpl.Multi)
         }
     ) { phone ->
         assert(phone.AuthApi_Partial().search(1).getOrThrow()?.id == 1L)
@@ -211,7 +214,7 @@ class PhoneTest {
     @Test
     fun jwtAuth() = start(
         configureServer = {
-            Phone.route(routing {  }, AuthApiImpl.Jwt)
+            Phone.route(routing { }, AuthApiImpl.Jwt)
         }
     ) { phone ->
         phone.AuthApi_Jwt().delete("f").getOrThrow()
@@ -220,7 +223,7 @@ class PhoneTest {
     @Test
     fun polymorphic() = start(
         configureServer = {
-            Phone.route(routing {  }, PolymorphicApiImpl)
+            Phone.route(routing { }, PolymorphicApiImpl)
         }
     ) { phone ->
         assert(phone.PolymorphicApi().foo().getOrThrow() == "foo")
@@ -231,7 +234,7 @@ class PhoneTest {
     @Test
     fun `super`() = start(
         configureServer = {
-            Phone.route(routing {  }, SuperInterfaceApiImpl)
+            Phone.route(routing { }, SuperInterfaceApiImpl)
         }
     ) { phone ->
         assert(phone.SuperInterfaceApi().foo().getOrThrow() == 1)
@@ -239,9 +242,9 @@ class PhoneTest {
     }
 
     @Test
-    fun vararg() =  start(
+    fun vararg() = start(
         configureServer = {
-            Phone.route(routing {  }, VarargApiImpl)
+            Phone.route(routing { }, VarargApiImpl)
         }
     ) { phone ->
         assert(phone.VarargApi().sum(1, 2, 3).getOrThrow() == 6)
@@ -250,7 +253,7 @@ class PhoneTest {
     @Test
     fun customSerializer() = start(
         configureServer = {
-            Phone.route(routing{ }, CustomSerializerApiImpl)
+            Phone.route(routing { }, CustomSerializerApiImpl)
         }
     ) { phone ->
         val a = Time(1, 2, 3)
@@ -260,25 +263,25 @@ class PhoneTest {
     }
 
     @Test
-    fun file() = start(
+    fun manual() = start(
         configureServer = {
-            Phone.route(routing {  }, FileApiImpl)
+            Phone.route(routing { }, FileApiImpl)
         }
-    ){phone ->
-        phone.FileApi{
+    ) { phone ->
+        phone.FileApi {
             setBody(byteArrayOf(1))
         }
-        .exchange("122")
-        .getOrThrow()
-        .let { (headInfo, response) ->
-            assert(headInfo == listOf("122")){
-                headInfo
+            .exchange("122")
+            .getOrThrow()
+            .let { (headInfo, response) ->
+                assert(headInfo == listOf("122")) {
+                    headInfo
+                }
+                val bytes = response.readBytes()
+                assert(bytes.contentEquals(byteArrayOf(1))) {
+                    bytes.joinToString()
+                }
             }
-            val bytes = response.readBytes()
-            assert(bytes.contentEquals(byteArrayOf(1))){
-                bytes.joinToString()
-            }
-        }
 
         phone.FileApi()
             .get("2")
@@ -289,11 +292,40 @@ class PhoneTest {
     }
 
     @Test
+    fun partialContent() = start(
+        configureServer = {
+            Phone.route(routing { }, FileApiImpl)
+            install(PartialContent) {
+                maxRangeCount = 10
+            }
+            install(AutoHeadResponse)
+        }
+    ) { phone ->
+        val path = ".gitignore"
+
+        phone.FileApi()
+            .partialGet(path)
+            .getOrThrow()
+            .let {
+                val file = File(path)
+                val expectedBytes = file.readBytes()
+                assert(it.tag.first == path)
+                assert(it.tag.second == expectedBytes.size.toLong())
+                assert(it.get().readBytes().contentEquals(expectedBytes))
+                val partialBytes = it.get(0L..<2L, 2L..<3L).readBytes()
+
+                assert(partialBytes.contentEquals(expectedBytes.take(3).toByteArray())){
+                    partialBytes.toList()
+                }
+            }
+    }
+
+    @Test
     fun ws() = start(
         configureServer = {
-            Phone.route(routing {  }, WebSocketApiImpl)
+            Phone.route(routing { }, WebSocketApiImpl)
         }
-    ){
+    ) {
         allDo(
             it,
             pers.shawxingkwok.test.client.Phone(
@@ -303,7 +335,7 @@ class PhoneTest {
                 withHttps = false,
                 withWss = true,
             )
-        ){ phone ->
+        ) { phone ->
             phone.WebSocketApi()
                 .getSignals(1)
                 .getOrThrow()

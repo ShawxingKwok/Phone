@@ -27,7 +27,7 @@ internal fun KSFunctionDeclaration.getClientHeader(ksclass: KSClassDeclaration):
                 Decls().DefaultClientWebSocketSession
 
         is Kind.PartialContent ->
-            "PartialContentHandler<${kind.tagType.text}>>"
+            "PartialContentHandler<${kind.tagType.text}>"
     }
 
     return getHeader("Result<$innerText>")

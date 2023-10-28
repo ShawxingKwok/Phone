@@ -33,8 +33,19 @@ internal fun buildClientPhone() {
             inline fun <T: ${Decls().ClientWebSocketSession}> Result<T>.onReceivedSuccess(act: T.() -> Unit){
                 onSuccess{ it.act() }
             }
-            """.trim()
+            """
         }}    
+        
+        ${insertIf(MyProcessor.hasPartialContent){
+            """
+            class PartialContentHandler<T>(
+                val tag: T, 
+                private val get: suspend (Array<out LongRange>) -> HttpResponse,
+            ){
+                suspend fun get(vararg ranges: LongRange): HttpResponse = get(ranges)
+            }
+            """
+        }}
         
         open class Phone(
             val client: HttpClient,
@@ -105,7 +116,10 @@ internal fun buildClientPhone() {
         
             private suspend fun HttpResponse.check() {
                 check(status == HttpStatusCode.OK || status == HttpStatusCode.NoContent){
-                    "${'$'}status ${'$'}{bodyAsText()}"
+                    if (status != HttpStatusCode.NotFound)
+                        ~"404 Not found the route."!~
+                    else
+                        ~"${'$'}status ${'$'}{bodyAsText()}"!~
                 }
             }
             
@@ -118,20 +132,9 @@ internal fun buildClientPhone() {
 }
 
 context (CodeFormatter)
-internal fun KSClassDeclaration.getBody(): String =
+private fun KSClassDeclaration.getBody(): String =
     """
     open fun $apiNameInPhone(extendRequest: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
-        ${getNeededFunctions().joinToString("\n\n"){ ksFun ->
-            val withToken = getAnnotationByType(Phone.Feature.Auth::class)?.withToken
-                ?: getAnnotationByType(Phone.Feature.Auth::class)?.withToken
-                ?: false
-    
-            when(val kind = ksFun.kind) {
-                is Kind.Common -> ksFun.getClientCommonContent(this, kind, withToken)
-                is Kind.Manual -> ksFun.getClientManualContent(this, kind, withToken)
-                is Kind.PartialContent -> ksFun.getClientPartialContent(this, kind, withToken)
-                is Kind.WebSocket -> ksFun.getClientWebSocketContent(this, kind, withToken)
-            }
-        }}
+        ${getNeededFunctions().joinToString("\n\n"){ it.getClientFunctionContent(this) } }
     }
     """.trim()

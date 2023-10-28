@@ -10,5 +10,6 @@ interface FileApi {
     @Phone.Kind.Manual<Int?>
     suspend fun get(id: String): Any
 
-    // PartialContent
+    @Phone.Kind.PartialContent<Pair<String, Long>>
+    suspend fun partialGet(id: String): Any
 }

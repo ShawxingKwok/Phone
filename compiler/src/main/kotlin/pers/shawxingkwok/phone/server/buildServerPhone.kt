@@ -37,11 +37,11 @@ internal fun buildServerPhone() {
             """
         }}
         ${insertIf(MyProcessor.hasPartialContent){
-            "typealias PartialContentConnector<T> = CommonConnector<Pair<T, File>>"
+            "typealias PartialContentConnector<T> = CommonConnector<Pair<T, ${Decls().File}>>"
         }}
         
         object Phone{
-            ${MyProcessor.phones.joinToString("\n\n"){ ksclass ->
+            ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
                 interface ${ksclass.apiNameInPhone} : ${ksclass.qualifiedName()}{
                     fun Route.doOtherTasks(){}
@@ -112,6 +112,6 @@ private fun KSFunctionDeclaration.getBody(ksclass: KSClassDeclaration) =
             is Kind.Common -> getServerCommonContent(ksclass, kind)
             is Kind.WebSocket -> getServerWebSocketContent(ksclass, kind)
             is Kind.Manual -> ""
-            is Kind.PartialContent -> ""
+            is Kind.PartialContent -> getServerPartialContent(ksclass, kind)
         }
     }
