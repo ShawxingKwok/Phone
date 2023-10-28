@@ -6,7 +6,6 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.phone.getCipherText
 import pers.shawxingkwok.phone.getSerializerText
-import pers.shawxingkwok.phone.insertIf
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getServerParametersPart(
@@ -45,12 +44,13 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
             else
                 type.text
 
-        val isString = type == resolver.builtIns.stringType
-                || type == resolver.builtIns.stringType.makeNullable()
+        val needsDecoded =
+            param.getCipherText(ksclass) != null
+            || (type != resolver.builtIns.stringType && type != resolver.builtIns.stringType.makeNullable())
 
         append("$paramName = params[\"$paramName\"]\n")
 
-        if (!isString)
+        if (needsDecoded)
             """
             ~?.let{
                 try{
