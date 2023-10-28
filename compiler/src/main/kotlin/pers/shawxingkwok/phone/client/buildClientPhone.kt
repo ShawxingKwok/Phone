@@ -75,7 +75,7 @@ internal fun buildClientPhone() {
                     append("://${'$'}host:${'$'}port")
                 }!~
             
-            protected suspend fun HttpRequestBuilder.onEachRequest() {}
+            protected open fun HttpRequestBuilder.onEachRequest() {}
                 
             private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
                 if(!withWss) return
