@@ -16,7 +16,7 @@ internal fun KSFunctionDeclaration.getMethodInfo(ksclass: KSClassDeclaration): M
             ?: ksclass.getSelfMethodInfo()
             ?: (Args.defaultMethodName to (Args.defaultMethodName != "Get"))
 
-        is Kind.WebSocket -> getSelfMethodInfo() ?: ("Get" to false)
+        is Kind.WebSocket -> (getSelfMethodInfo()?.first ?: "Get") to false
     }
     .let { MethodInfo(it.first, it.second) }
 

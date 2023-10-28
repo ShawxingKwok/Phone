@@ -276,15 +276,12 @@ class PhoneTest {
                 assert(size == 1)
             }
 
-        println("...")
-
         phone.ManualApi()
             .getIdLength(null)
             .getOrThrow()
             .let { (size, _) ->
                 assertNull(size)
             }
-        println("...")
 
         phone.ManualApi()
             .directGet()
@@ -292,11 +289,9 @@ class PhoneTest {
             .let {
                 assert(it.first == 1L)
             }
-        println("...")
 
         phone.ManualApi()
             .getUnit("S")
-        println("...")
 
         phone.ManualApi {
                 setBody(byteArrayOf(1))
@@ -312,7 +307,6 @@ class PhoneTest {
                     bytes.joinToString()
                 }
             }
-        println("...")
     }
 
     @Test
@@ -356,29 +350,35 @@ class PhoneTest {
         configureServer = {
             Phone.route(routing { }, WebSocketApiImpl)
         }
-    ) {
-        allDo(
-            it,
+    ) {_phone ->
+        val wssPhone =
             pers.shawxingkwok.test.client.Phone(
-                client = it.client,
+                client = _phone.client,
                 host = "localhost",
                 port = 80,
                 withHttps = false,
                 withWss = true,
             )
-        ) { phone ->
+
+        allDo(_phone, wssPhone) { phone ->
             phone.WebSocketApi()
                 .getSignals(1)
                 .getOrThrow()
                 .run {
-                    assert((incoming.receive() as Frame.Text).readText() == "1")
+                    val text = (incoming.receive() as Frame.Text).readText()
+                    assert(text == "1"){
+                        "isWss: ${phone == wssPhone} $text"
+                    }
                 }
 
             phone.WebSocketApi()
                 .getChats("1")
                 .getOrThrow()
                 .run {
-                    assert((incoming.receive() as Frame.Text).readText() == "1")
+                    val text = (incoming.receive() as Frame.Text).readText()
+                    assert(text == "1"){
+                        "isWss: ${phone == wssPhone} $text"
+                    }
                 }
         }
     }
