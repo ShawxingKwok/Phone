@@ -6,93 +6,45 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 
 context (CodeFormatter)
 class Decls {
-    val EmptyContent = getDeclText(
-        outermostDeclPath = "io.ktor.client.utils.EmptyContent",
-        innerName = null,
-        isTopLevelAndExtensional = false
-    )
+    val EmptyContent get() = getDeclText(outermostDeclPath = "io.ktor.client.utils.EmptyContent")
 
-    val File = getDeclText(
-        outermostDeclPath = "java.io.File",
-        innerName = null,
-        isTopLevelAndExtensional = false
-    )
     val serverWebSocket get() =
         getDeclText(
             outermostDeclPath = "io.ktor.server.websocket.webSocket",
-            innerName = null,
             isTopLevelAndExtensional = true
         )
 
     val serverWebSocketRaw get() =
         getDeclText(
             outermostDeclPath = "io.ktor.server.websocket.webSocketRaw",
-            innerName = null,
             isTopLevelAndExtensional = true
         )
 
-    val ApplicationCall get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.server.application.ApplicationCall",
-            innerName = null,
-            isTopLevelAndExtensional = false,
-        )
+    val ApplicationCall get() = getDeclText(outermostDeclPath = "io.ktor.server.application.ApplicationCall")
 
-    val PipelineContextUnitCall get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.util.pipeline.PipelineContext",
-            innerName = null,
-            isTopLevelAndExtensional = false,
-        )
-        .plus("<Unit, $ApplicationCall>")
+    val PipelineContextUnitCall get() = getDeclText(outermostDeclPath = "io.ktor.util.pipeline.PipelineContext")
+            .plus("<Unit, $ApplicationCall>")
 
-    val DefaultWebSocketServerSession get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.server.websocket.DefaultWebSocketServerSession",
-            innerName = null,
-            isTopLevelAndExtensional = false,
-        )
+    val DefaultWebSocketServerSession get() = getDeclText(outermostDeclPath = "io.ktor.server.websocket.DefaultWebSocketServerSession")
 
-    val WebSocketServerSession get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.server.websocket.WebSocketServerSession",
-            innerName = null,
-            isTopLevelAndExtensional = false,
-        )
+    val WebSocketServerSession get() = getDeclText(outermostDeclPath = "io.ktor.server.websocket.WebSocketServerSession")
 
-    val DefaultClientWebSocketSession get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.client.plugins.websocket.DefaultClientWebSocketSession",
-            innerName = null,
-            isTopLevelAndExtensional = false,
-        )
+    val DefaultClientWebSocketSession get() = getDeclText(outermostDeclPath = "io.ktor.client.plugins.websocket.DefaultClientWebSocketSession")
 
-    val ClientWebSocketSession get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.client.plugins.websocket.ClientWebSocketSession",
-            innerName = null,
-            isTopLevelAndExtensional = false,
-        )
+    val ClientWebSocketSession get() = getDeclText(outermostDeclPath = "io.ktor.client.plugins.websocket.ClientWebSocketSession")
 
     val authenticate get() =
         getDeclText(
             outermostDeclPath = "io.ktor.server.auth.authenticate",
-            innerName = null,
             isTopLevelAndExtensional = true
         )
 
-    val AuthenticationStrategy get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.server.auth.AuthenticationStrategy",
-            innerName = null,
-            isTopLevelAndExtensional = false
-        )
+    val AuthenticationStrategy get() = getDeclText(outermostDeclPath = "io.ktor.server.auth.AuthenticationStrategy")
 
     @get:JvmName("fun clientWebSocketSession")
     val clientWebSocketSession get() =
         getDeclText(
             outermostDeclPath = "io.ktor.client.plugins.websocket.webSocketSession",
-            innerName = null,
             isTopLevelAndExtensional = true,
         )
 
@@ -100,28 +52,20 @@ class Decls {
     val clientWebSocketRawSession get() =
         getDeclText(
             outermostDeclPath = "io.ktor.client.plugins.websocket.cio.webSocketRawSession",
-            innerName = null,
             isTopLevelAndExtensional = true,
         )
 
     val receiveParameters get() =
         getDeclText(
             outermostDeclPath = "io.ktor.server.request.receiveParameters",
-            innerName = null,
             isTopLevelAndExtensional = true
         )
 
-    val CloseReason get() =
-        getDeclText(
-            outermostDeclPath = "io.ktor.websocket.CloseReason",
-            innerName = null,
-            isTopLevelAndExtensional = false
-        )
+    val CloseReason get() = getDeclText(outermostDeclPath = "io.ktor.websocket.CloseReason")
 
     val close get() =
         getDeclText(
             outermostDeclPath = "io.ktor.websocket.close",
-            innerName = null,
             isTopLevelAndExtensional = true
         )
 }

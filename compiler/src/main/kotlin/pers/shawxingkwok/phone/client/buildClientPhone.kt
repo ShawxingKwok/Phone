@@ -98,7 +98,7 @@ internal fun buildClientPhone() {
                     method == HttpMethod.Head 
                     || method == HttpMethod.Get 
                     || isWebSocket 
-                    || body !== EmptyContent
+                    || body !== ${Decls().EmptyContent}
                 )
                     ~url.parameters.appendAll(parameters)!~
                 else {
