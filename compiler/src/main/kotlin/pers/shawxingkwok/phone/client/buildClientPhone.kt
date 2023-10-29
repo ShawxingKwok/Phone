@@ -133,8 +133,8 @@ internal fun buildClientPhone() {
             }
         
             private suspend fun HttpResponse.check() {
-                check(status === HttpStatusCode.OK || status === HttpStatusCode.NoContent){
-                    if (status === HttpStatusCode.NotFound)
+                check(status == HttpStatusCode.OK || status == HttpStatusCode.NoContent){
+                    if (status == HttpStatusCode.NotFound)
                         ~"404 Not found the route."!~
                     else
                         ~"${'$'}status ${'$'}{bodyAsText()}"!~

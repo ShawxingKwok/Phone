@@ -38,37 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             // val tv = requireViewById<TextView>(R.id.tv)
-            client.get("$basicUrl/X")
-                .bodyAsText()
-                .let { Log.d("phone", "$it ${it.length}") }
 
-            client.webSocket(
-                path = "echo",
-                host = "192.168.0.105", port = 80,
-            ){
-            // }
-            // client.webSocket("$basicUrl/echo") {
-                try {
-                    val greetingText = (incoming.receive() as? Frame.Text)?.readText() ?: ""
-                    assert("Please enter your name" == greetingText)
-                    Log.d("phone", greetingText)
-                    send(Frame.Text("JetBrains"))
-                    val responseText = (incoming.receive() as Frame.Text).readText()
-                    Log.d("phone", responseText)
-                    assert("Hi, JetBrains!" == responseText)
-                    send(Frame.Text("bye"))
-                    val reason = (incoming.receive() as Frame.Close).readReason()
-                    Log.d("phone", "$reason")
-                } catch (e: ClosedReceiveChannelException) {
-                    Log.d("phone", closeReason.await().toString())
-                }
-            }
-
-            // runCatching {
-            //     phone.chatApi.getChats()
-            // }
-            // .onFailure { tv.text = "failed getting chats" }
-            // .onSuccess { tv.text = it.joinToString("\n") }
         }
     }
 }

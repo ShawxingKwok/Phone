@@ -28,7 +28,7 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
                 
             ${insertIf(call.returnType.isMarkedNullable) {
                 """
-                if(response.status === HttpStatusCode.NoContent)
+                if(response.status == HttpStatusCode.NoContent)
                     ~return@runCatching null!~
                 """.trim()
                 }}

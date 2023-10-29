@@ -6,12 +6,12 @@ import pers.shawxingkwok.center.model.User
 
 @Phone.Api
 interface AccountApi {
-    @Phone.Common<LoginResult>
-    suspend fun login(id: Long, password: String): Any?
+    @Phone.Call.Common<LoginResult>
+    suspend fun login(id: Long, password: String): Any
 
-    @Phone.Common<Unit>
-    suspend fun delete(id: Long): Any?
+    @Phone.Call.Common<Unit>
+    suspend fun delete(id: Long): Any
 
-    @Phone.Common<User?>
+    @Phone.Call.Common<User?>
     suspend fun search(id: Long): Any?
 }

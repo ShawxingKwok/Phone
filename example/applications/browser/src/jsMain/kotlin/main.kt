@@ -1,7 +1,7 @@
-/*
 import csstype.HtmlAttributes
 import io.ktor.client.*
 import io.ktor.client.engine.js.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -12,12 +12,18 @@ import kotlinx.browser.document
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.js.Proxy
 import org.w3c.dom.HTMLDivElement
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.client.phone.Phone
 
 val scope = MainScope()
-val client = HttpClient(Js)
+
+val client = HttpClient(Js){
+    // engine{
+    //     proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress("192.168.0.105", 80))
+    // }
+}
 val phone = Phone(client)
 
 fun main() {
@@ -26,19 +32,14 @@ fun main() {
     container.style.fontSize = "100px"
 
     scope.launch {
-        // runCatching { phone.accountApi.search(101) }
-        // .onFailure { container.textContent = "failed connection" }
-        // .onSuccess {
-        //     container.textContent = when(it){
-        //         null -> "not found the user"
-        //         else -> "found ${it.name} in search"
-        //     }
-        // }
-        // client.submitForm(
-        //     url = "/X",
-        //     parameters {
-        //         append("x", "1")
-        //     }
-        // )
+        phone.AccountApi()
+            .search(101)
+            .onFailure { container.textContent = "failed connection $it" }
+            .onSuccess {
+                container.textContent = when(it){
+                    null -> "not found the user"
+                    else -> "found ${it.name} in search"
+                }
+            }
     }
-}*/
+}
