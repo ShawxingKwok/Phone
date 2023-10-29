@@ -5,19 +5,19 @@ import pers.shawxingkwok.phone.Phone
 object CryptoApi {
     @Phone.Api
     interface Partial {
-        @Phone.Kind.Common<List<String>>
+        @Phone.Call.Common<List<String>>
         suspend fun getChats(
-            @Phone.Feature.Crypto id: Long,
-            name: @Phone.Feature.Crypto String,
+            @Phone.Crypto id: Long,
+            name: @Phone.Crypto String,
             password: String,
         )
-        : @Phone.Feature.Crypto Any?
+        : @Phone.Crypto Any?
     }
 
     @Phone.Api
-    @Phone.Feature.Crypto
+    @Phone.Crypto
     interface Whole {
-        @Phone.Kind.Common<List<String>>
+        @Phone.Call.Common<List<String>>
         suspend fun getChats(id: Long, name: String): Any?
     }
 }

@@ -4,21 +4,21 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface TestApi {
-    @Phone.Kind.Common<User?>
+    @Phone.Call.Common<User?>
     suspend fun search(id: String): Any?
 
-    @Phone.Kind.Common<Unit>
+    @Phone.Call.Common<Unit>
     suspend fun delete(id: String): Any
 
-    @Phone.Kind.WebSocket
+    @Phone.Call.WebSocket
     suspend fun get(i: Int = 1): Any
 
-    @Phone.Kind.WebSocket(true)
+    @Phone.Call.WebSocket(true)
     suspend fun obtain(i: Int): Any
 
-    @Phone.Kind.Manual<Int?>
+    @Phone.Call.Manual<Int?>
     suspend fun getFile(id: String): Any
 
-    @Phone.Kind.PartialContent<Int?>
+    @Phone.Call.PartialContent<Int?>
     suspend fun getPartialFile(id: String): Any
 }

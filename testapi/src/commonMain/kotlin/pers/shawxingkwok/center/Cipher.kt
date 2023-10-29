@@ -2,8 +2,8 @@ package pers.shawxingkwok.center
 
 import pers.shawxingkwok.phone.Phone
 
-@Phone.Feature.Crypto
-object Cipher : Phone.Feature.Crypto.Cipher{
+@Phone.Crypto
+object Cipher : Phone.Cipher{
     override fun encrypt(bytes: ByteArray): ByteArray {
         return bytes + 1
     }

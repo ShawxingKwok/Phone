@@ -24,7 +24,7 @@ internal object MyProcessor : KSProcessor{
 
     private val phoneInterfacePaths = resolver
         .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-        .plus(resolver.getAnnotatedSymbols<Phone.Kind.WebSocket, KSClassDeclaration>())
+        .plus(resolver.getAnnotatedSymbols<Phone.Call.WebSocket, KSClassDeclaration>())
         .also { ksclasses ->
             val cognominal= ksclasses
                 .groupBy { it.apiNameInPhone }
@@ -50,14 +50,14 @@ internal object MyProcessor : KSProcessor{
     val hasWebSocket by fastLazy {
         check(Status.value != Status.UNSTARTED)
         phones.any { ksclass ->
-            ksclass.getNeededFunctions().any { it.kind is Kind.WebSocket }
+            ksclass.getNeededFunctions().any { it.getCall(ksclass) is Call.WebSocket }
         }
     }
 
     val hasPartialContent by fastLazy {
         check(Status.value != Status.UNSTARTED)
         phones.any { ksclass ->
-            ksclass.getNeededFunctions().any { it.kind is Kind.PartialContent }
+            ksclass.getNeededFunctions().any { it.getCall(ksclass) is Call.PartialContent }
         }
     }
 
@@ -65,7 +65,7 @@ internal object MyProcessor : KSProcessor{
         check(Status.value != Status.UNSTARTED)
         phones.any { ksclass ->
             ksclass.getNeededFunctions().any {
-                !it.isAnnotationPresent(Phone.Kind.WebSocket::class)
+                !it.isAnnotationPresent(Phone.Call.WebSocket::class)
             }
         }
     }
@@ -94,7 +94,7 @@ internal object MyProcessor : KSProcessor{
     }
 
     val cipherKSObj: KSClassDeclaration? by fastLazy {
-        val ksclasses = resolver.getAnnotatedSymbols<Phone.Feature.Crypto, KSClassDeclaration>()
+        val ksclasses = resolver.getAnnotatedSymbols<Phone.Crypto, KSClassDeclaration>()
             .filterNot { it.classKind == ClassKind.INTERFACE }
 
         Log.check(
@@ -108,7 +108,7 @@ internal object MyProcessor : KSProcessor{
         val ksclass = ksclasses.firstOrNull() ?: return@fastLazy null
 
         val superCipherType = resolver
-            .getClassDeclarationByName(Phone.Feature.Crypto.Cipher::class.qualifiedName!!)!!
+            .getClassDeclarationByName(Phone.Cipher::class.qualifiedName!!)!!
             .asStarProjectedType()
 
         Log.check(
@@ -132,7 +132,7 @@ internal object MyProcessor : KSProcessor{
 
         val invalid = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-            .plus(resolver.getAnnotatedSymbols<Phone.Kind.WebSocket, KSClassDeclaration>())
+            .plus(resolver.getAnnotatedSymbols<Phone.Call.WebSocket, KSClassDeclaration>())
             .filterNot { it.accept(PhoneValidator, Unit) }
             .toMutableList()
 

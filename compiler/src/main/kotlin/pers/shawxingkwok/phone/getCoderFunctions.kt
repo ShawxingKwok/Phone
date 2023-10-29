@@ -5,7 +5,7 @@ internal fun getCoderFunctions(): String =
     private inline fun <reified T: Any> encode(
         value: T,
         serializer: KSerializer<T>?,
-        cipher: Phone.Feature.Crypto.Cipher?,
+        cipher: Phone.Cipher?,
     ): String =
         ~when(value){
             is String -> value
@@ -32,7 +32,7 @@ internal fun getCoderFunctions(): String =
     private inline fun <reified T: Any> decode(
         text: String,
         serializer: KSerializer<T>?,
-        cipher: Phone.Feature.Crypto.Cipher?,
+        cipher: Phone.Cipher?,
     ): T {
         var newText = text
         if (cipher != null) {

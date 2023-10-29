@@ -4,16 +4,15 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface ManualApi {
-    @Phone.Kind.Manual<Long>
+    @Phone.Call.Manual<Long>
     suspend fun directGet(): Any
 
-    @Phone.Method.Post
-    @Phone.Kind.Manual<List<String>>
+    @Phone.Call.Manual<List<String>>(method = Phone.Method.Post)
     suspend fun exchange(id: String): Any
 
-    @Phone.Kind.Manual<Int?>
+    @Phone.Call.Manual<Int?>
     suspend fun getIdLength(id: String?): Any
 
-    @Phone.Kind.Manual<Unit>
+    @Phone.Call.Manual<Unit>
     suspend fun getUnit(id: String): Any
 }

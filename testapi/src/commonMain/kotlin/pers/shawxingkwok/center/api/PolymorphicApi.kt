@@ -4,14 +4,12 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface PolymorphicApi {
-    @Phone.Kind.Common<String>
+    @Phone.Call.Common<String>
     suspend fun foo(): Any?
 
-    @Phone.Kind.Common<Long>
-    @Phone.Feature.Polymorphic("Long")
+    @Phone.Call.Common<Long>(polymorphicId = "Long")
     suspend fun foo(i: Long): Any?
 
-    @Phone.Kind.Common<Int>
-    @Phone.Feature.Polymorphic("Int")
+    @Phone.Call.Common<Int>(polymorphicId = "Int")
     suspend fun foo(j: Int): Any?
 }

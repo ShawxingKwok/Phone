@@ -1,49 +1,48 @@
 package pers.shawxingkwok.center.api
 
-import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.phone.Phone
 
 object AuthApi {
     @Phone.Api
-    @Phone.Feature.Auth
+    @Phone.Auth
     interface Partial{
-        @Phone.Kind.Common<Unit>
+        @Phone.Call.Common<Unit>
         suspend fun delete(id: Long): Any?
 
-        @Phone.Kind.Common<User?>
+        @Phone.Call.Common<User?>
         suspend fun search(id: Long): Any?
     }
 
     @Phone.Api
     interface Whole{
-        @Phone.Kind.Common<Unit>
-        @Phone.Feature.Auth(["auth-basic"])
+        @Phone.Call.Common<Unit>
+        @Phone.Auth(["auth-basic"])
         suspend fun delete(id: Long): Any?
 
-        @Phone.Kind.Common<User?>
+        @Phone.Call.Common<User?>
         suspend fun search(id: Long): Any?
     }
 
     @Phone.Api
     interface Multi{
         // TODO(is this allowed?)
-        @Phone.Kind.Common<Int>
-        @Phone.Feature.Auth(["auth-basic"], Phone.Feature.Auth.Strategy.Required)
+        @Phone.Call.Common<Int>
+        @Phone.Auth(["auth-basic"], Phone.Auth.Strategy.Required)
         suspend fun get(): Any?
 
-        @Phone.Kind.Common<Unit>
+        @Phone.Call.Common<Unit>
         suspend fun delete(id: Long): Any?
 
-        @Phone.Kind.Common<User?>
+        @Phone.Call.Common<User?>
         suspend fun search(id: Long): Any?
     }
 
     @Phone.Api
-    @Phone.Feature.Auth(["auth-basic"])
+    @Phone.Auth(["auth-basic"])
     interface Jwt{
-        @Phone.Feature.Auth(["auth-jwt"], withToken = true)
-        @Phone.Kind.Common<Boolean>
+        @Phone.Auth(["auth-jwt"], withToken = true)
+        @Phone.Call.Common<Boolean>
         suspend fun delete(id: String): Any?
     }
 }

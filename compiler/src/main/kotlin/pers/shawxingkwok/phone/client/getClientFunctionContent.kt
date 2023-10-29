@@ -4,44 +4,42 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.resolver
-import pers.shawxingkwok.phone.Kind
+import pers.shawxingkwok.phone.Call
 import pers.shawxingkwok.phone.apiNameInPhone
 import pers.shawxingkwok.phone.client.parts.getClientHeader
 import pers.shawxingkwok.phone.client.parts.getClientRequestPart
 import pers.shawxingkwok.phone.client.parts.getClientTagStatement
-import pers.shawxingkwok.phone.pathEnd
+import pers.shawxingkwok.phone.getPathEnd
 import pers.shawxingkwok.phone.*
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDeclaration): String {
-    val pathWithoutBasicUrl = "${ksclass.apiNameInPhone}/$pathEnd"
+    val pathWithoutBasicUrl = "${ksclass.apiNameInPhone}/${getPathEnd(ksclass)}"
     val fullPath = "\$basicUrl/$pathWithoutBasicUrl"
 
-    val requestPart = getClientRequestPart(ksclass)
-
-    val core = when(val kind = kind) {
-        is Kind.Common ->
+    val core = when(val call = getCall(ksclass)) {
+        is Call.Common ->
             """
             val response = client.request("$fullPath"){
-                $requestPart
+                ${getClientRequestPart(ksclass)}
             }
                 
             response.check()
                 
-            ${insertIf(kind.returnType.isMarkedNullable) {
+            ${insertIf(call.returnType.isMarkedNullable) {
                 """
                 if(response.status === HttpStatusCode.NoContent)
                     ~return@runCatching null!~
                 """.trim()
                 }}
 
-            ${insertIf(kind.returnType != resolver.builtIns.unitType) {
-                val serializerText = kind.returnType.getSerializerText()
+            ${insertIf(call.returnType != resolver.builtIns.unitType) {
+                val serializerText = call.returnType.getSerializerText()
                 "decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"
             }}
             """
 
-        is Kind.Manual ->
+        is Call.Manual ->
             """
             val response = client.request("$fullPath") {
                 ${getClientRequestPart(ksclass)}
@@ -49,17 +47,17 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
 
             response.check()
 
-            ${if (kind.tagType == resolver.builtIns.unitType)
+            ${if (call.tagType == resolver.builtIns.unitType)
                 "response"
             else
                 """
-                ${getClientTagStatement(ksclass, kind.tagType)}
+                ${getClientTagStatement(ksclass, call.tagType)}
                 tag to response                        
                 """.trim()
             }
             """
 
-        is Kind.PartialContent ->
+        is Call.PartialContent ->
             """
             val response = client.request("$fullPath") {
                 ${getClientRequestPart(ksclass, "Head")}
@@ -67,10 +65,10 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
             
             response.check()
             
-            ${if (kind.tagType == resolver.builtIns.unitType)
+            ${if (call.tagType == resolver.builtIns.unitType)
                 "val tag = Unit"
             else
-                getClientTagStatement(ksclass, kind.tagType)
+                getClientTagStatement(ksclass, call.tagType)
             }            
             
             PartialContentHandler(tag) { ranges ->
@@ -87,9 +85,9 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
             }
             """
 
-        is Kind.WebSocket ->{
+        is Call.WebSocket ->{
             val sessionFunText =
-                if (kind.isRaw)
+                if (call.isRaw)
                     Decls().clientWebSocketRawSession
                 else
                     Decls().clientWebSocketSession
@@ -99,7 +97,7 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
                 host = host, port = port,
                 path = "$pathWithoutBasicUrl",
             ){
-                enableWssIfNeeded(${kind.isRaw})
+                enableWssIfNeeded(${call.isRaw})
                 ${getClientRequestPart(ksclass)}
             }
             """

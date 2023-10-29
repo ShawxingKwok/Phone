@@ -125,7 +125,7 @@ internal fun buildClientPhone() {
                 key: String,
                 value: T,
                 serializer: KSerializer<T & Any>?,
-                cipher: Phone.Feature.Crypto.Cipher?,
+                cipher: Phone.Cipher?,
             ){
                 if (value == null) return
                 val newV = encode(value, serializer, cipher)

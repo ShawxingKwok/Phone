@@ -11,7 +11,7 @@ internal inline fun CodeFormatter.mayEmbraceWithAuth(
     getBody: () -> String,
 ): String =
     buildString {
-        val auth = decl.getAnnotationByType(Phone.Feature.Auth::class)
+        val auth = decl.getAnnotationByType(Phone.Auth::class)
 
         if (auth != null) {
             append("${Decls().authenticate}(\n")

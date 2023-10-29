@@ -11,10 +11,10 @@ import pers.shawxingkwok.phone.getSerializerText
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientRequestPart(
     ksclass: KSClassDeclaration,
-    methodName: String = getMethodName(ksclass)
+    methodName: String = getCall(ksclass).method.name, // may be `Head`
 ): String {
-    val withToken = getAnnotationByType(Phone.Feature.Auth::class)?.withToken
-        ?: getAnnotationByType(Phone.Feature.Auth::class)?.withToken
+    val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
+        ?: getAnnotationByType(Phone.Auth::class)?.withToken
         ?: false
 
     return """
@@ -26,7 +26,7 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
     
     ${insertIf(parameters.any()) {
         """
-        addParameters(${kind is Kind.WebSocket}){
+        addParameters(${getCall(ksclass) is Call.WebSocket}){
             ${parameters.getText(ksclass)}
         }
         """.trim()

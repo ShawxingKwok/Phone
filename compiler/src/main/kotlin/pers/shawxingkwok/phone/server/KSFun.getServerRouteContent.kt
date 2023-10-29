@@ -7,42 +7,38 @@ import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.phone.*
-import pers.shawxingkwok.phone.Kind
-import pers.shawxingkwok.phone.kind
-import pers.shawxingkwok.phone.pathEnd
+import pers.shawxingkwok.phone.Call
+import pers.shawxingkwok.phone.getCall
+import pers.shawxingkwok.phone.getPathEnd
 import pers.shawxingkwok.phone.server.parts.getServerParametersPart
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclaration): String {
-    val retType = when(val kind = kind){
-        is Kind.WebSocket -> return getServerWebSocketContent(ksclass, kind)
-        is Kind.Manual -> kind.tagType
-        is Kind.Common -> kind.returnType
-        is Kind.PartialContent -> kind.tagType
+    val call = getCall(ksclass)
+
+    val retType = when(call){
+        is Call.WebSocket -> return getServerWebSocketContent(ksclass, call)
+        is Call.Manual -> call.tagType
+        is Call.Common -> call.returnType
+        is Call.PartialContent -> call.tagType
     }
 
-    val methodName = getMethodName(ksclass)
-    val start = methodName.replaceFirstChar { it.lowercase() }
+    val start = call.method.routeName
 
     return buildString {
         """
-        $start("/$pathEnd"){
+        $start("/${getPathEnd(ksclass)}"){
         """.trimStart()
             .let(::append)
 
-        when{
-            parameters.none() -> {}
-
-            kind is Kind.WebSocket -> append("val params = call.request.queryParameters\n\n")
-
-            else -> """
-                val params = call.request.queryParameters
-                    ~.takeUnless { it.isEmpty() } 
-                    ?: call.${Decls().receiveParameters}()!~                 
-                """.trimStart()
-                .plus("\n")
-                .let(::append)
-        }
+        if (parameters.any())
+             """
+             val params = call.request.queryParameters
+                ~.takeUnless { it.isEmpty() } 
+                ?: call.${Decls().receiveParameters}()!~                 
+                
+             """.trimStart()
+            .let(::append)
 
         val invokePart = buildString {
             append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
@@ -57,7 +53,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
 
         val isUnit = retType == resolver.builtIns.unitType
 
-        if (kind is Kind.Common)
+        if (call is Call.Common)
             when{
                 isUnit ->
                     """
@@ -90,7 +86,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
             .trimStart().let(::append)
         else {
             when{
-                kind is Kind.PartialContent -> append("val (ret, file) = $invokePart\n\n")
+                call is Call.PartialContent -> append("val (ret, file) = $invokePart\n\n")
                 // Manual
                 isUnit -> append("$invokePart\n\n")
                 else -> append("val ret = $invokePart\n\n")
@@ -117,7 +113,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
                         .let(::append)
                 }
 
-            if (kind is Kind.PartialContent) {
+            if (call is Call.PartialContent) {
                 append("call.response.status(HttpStatusCode.OK)\n")
                 append("call.respondFile(file)\n")
             }else

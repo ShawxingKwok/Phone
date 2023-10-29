@@ -7,18 +7,17 @@ import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.symbol.KSValueParameter
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.Log
-import pers.shawxingkwok.ksputil.getAnnotationByType
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getCipherTextForReturn(ksclass: KSClassDeclaration): String? {
     val isCrypto =
-        isAnnotationPresent(Phone.Feature.Crypto::class)
+        isAnnotationPresent(Phone.Crypto::class)
         // parent function may be from a super class
-        || ksclass.isAnnotationPresent(Phone.Feature.Crypto::class)
-        || when(val kind = kind){
-            is Kind.Common -> kind.typeRef.isAnnotationPresent(Phone.Feature.Crypto::class)
-            is Kind.PartialContent -> kind.typeRef.isAnnotationPresent(Phone.Feature.Crypto::class)
-            is Kind.Manual -> kind.typeRef.isAnnotationPresent(Phone.Feature.Crypto::class)
+        || ksclass.isAnnotationPresent(Phone.Crypto::class)
+        || when(val call = getCall(ksclass)){
+            is Call.Common -> call.typeRef.isAnnotationPresent(Phone.Crypto::class)
+            is Call.PartialContent -> call.typeRef.isAnnotationPresent(Phone.Crypto::class)
+            is Call.Manual -> call.typeRef.isAnnotationPresent(Phone.Crypto::class)
             else -> return null
         }
 
@@ -28,10 +27,10 @@ internal fun KSFunctionDeclaration.getCipherTextForReturn(ksclass: KSClassDeclar
 context (CodeFormatter)
 internal fun KSValueParameter.getCipherText(ksclass: KSClassDeclaration): String? {
     val isCrypto =
-        isAnnotationPresent(Phone.Feature.Crypto::class)
-        || this.type.isAnnotationPresent(Phone.Feature.Crypto::class)
-        || (parent as KSFunctionDeclaration).isAnnotationPresent(Phone.Feature.Crypto::class)
-        || ksclass.isAnnotationPresent(Phone.Feature.Crypto::class)
+        isAnnotationPresent(Phone.Crypto::class)
+        || this.type.isAnnotationPresent(Phone.Crypto::class)
+        || (parent as KSFunctionDeclaration).isAnnotationPresent(Phone.Crypto::class)
+        || ksclass.isAnnotationPresent(Phone.Crypto::class)
 
     return getCipherText(this, isCrypto)
 }

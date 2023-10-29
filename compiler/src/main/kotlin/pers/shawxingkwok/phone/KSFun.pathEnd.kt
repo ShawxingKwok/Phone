@@ -1,15 +1,12 @@
 package pers.shawxingkwok.phone
 
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.ksputil.simpleName
 
-internal val KSFunctionDeclaration.pathEnd: String get() =
+internal fun KSFunctionDeclaration.getPathEnd(ksclass: KSClassDeclaration): String =
     buildString {
         append(simpleName())
-
-        val polymorphicAnnot = getAnnotationByType(Phone.Feature.Polymorphic::class)
-            ?: return@buildString
-
-        append("/${polymorphicAnnot.id}")
+        val polymorphicId = getCall(ksclass).polymorphicId ?: return@buildString
+        append("/$polymorphicId")
     }

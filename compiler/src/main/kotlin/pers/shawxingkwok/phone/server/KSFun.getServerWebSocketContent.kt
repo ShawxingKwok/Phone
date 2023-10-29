@@ -5,19 +5,19 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.phone.*
-import pers.shawxingkwok.phone.Kind
-import pers.shawxingkwok.phone.pathEnd
+import pers.shawxingkwok.phone.Call
+import pers.shawxingkwok.phone.getPathEnd
 import pers.shawxingkwok.phone.server.parts.getServerParametersPart
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getServerWebSocketContent(
     ksclass: KSClassDeclaration,
-    kind: Kind.WebSocket,
+    call: Call.WebSocket,
 )
     : String
 {
     val start =
-        if (kind.isRaw)
+        if (call.isRaw)
             Decls().serverWebSocketRaw
         else
             Decls().serverWebSocket
@@ -26,7 +26,7 @@ internal fun KSFunctionDeclaration.getServerWebSocketContent(
 
     return buildString {
         """
-        $start("/$pathEnd"){
+        $start("/${getPathEnd(ksclass)}"){
         """.trimStart()
             .let(::append)
 

@@ -4,9 +4,9 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface PartialContentApi {
-    @Phone.Kind.PartialContent<Pair<String, Long>>
+    @Phone.Call.PartialContent<Pair<String, Long>>
     suspend fun partialGet(id: String): Any
 
-    @Phone.Kind.PartialContent<Unit>
+    @Phone.Call.PartialContent<Unit>
     suspend fun partialGetUnit(id: String): Any
 }

@@ -1,16 +1,12 @@
 package pers.shawxingkwok.phone.server
 
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.*
-import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.Args
 import pers.shawxingkwok.phone.MyProcessor
 import pers.shawxingkwok.phone.createFile
 import pers.shawxingkwok.phone.getCoderFunctions
 import pers.shawxingkwok.phone.insertIf
-import pers.shawxingkwok.phone.server.parts.getServerParametersPart
 import pers.shawxingkwok.phone.server.parts.mayEmbraceWithAuth
 
 internal fun buildServerPhone() {
@@ -48,11 +44,11 @@ internal fun buildServerPhone() {
                     fun Route.doOtherTasks(){}
                     
                     ${ksclass.getNeededFunctions().joinToString("\n\n"){ ksfun ->
-                        val returnedText = when(val kind = ksfun.kind) {
-                            is Kind.Common -> "CommonConnector<${kind.returnType.text}>"
-                            is Kind.Manual -> "CommonConnector<${kind.tagType}>"
-                            is Kind.PartialContent -> "PartialContentConnector<${kind.tagType}>"
-                            is Kind.WebSocket -> 
+                        val returnedText = when(val kind = ksfun.getCall(ksclass)) {
+                            is Call.Common -> "CommonConnector<${kind.returnType.text}>"
+                            is Call.Manual -> "CommonConnector<${kind.tagType}>"
+                            is Call.PartialContent -> "PartialContentConnector<${kind.tagType}>"
+                            is Call.WebSocket -> 
                                 if (kind.isRaw)
                                     "WebSocketRawConnector"
                                 else

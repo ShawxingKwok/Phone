@@ -4,6 +4,6 @@ import pers.shawxingkwok.phone.Phone
 
 @Phone.Api
 interface VarargApi {
-    @Phone.Kind.Common<Int>
+    @Phone.Call.Common<Int>
     suspend fun sum(vararg ints: Int): Any?
 }

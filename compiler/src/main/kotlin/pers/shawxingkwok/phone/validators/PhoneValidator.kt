@@ -11,6 +11,7 @@ import com.google.devtools.ksp.symbol.Modifier
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.phone.MyProcessor
 import pers.shawxingkwok.phone.Phone
+import pers.shawxingkwok.phone.getCall
 import pers.shawxingkwok.phone.getNeededFunctions
 
 object PhoneValidator : KSDefaultValidator() {
@@ -21,11 +22,11 @@ object PhoneValidator : KSDefaultValidator() {
             MyProcessor.round > 0 -> {}
 
             ksclass.isAnnotationPresent(Phone.Api::class)
-            && ksclass.isAnnotationPresent(Phone.Kind.WebSocket::class) ->
+            && ksclass.isAnnotationPresent(Phone.Call.WebSocket::class) ->
                 Log.e(ksclass, "`Phone.Api` is needless when you set web sockets.")
 
             ksclass.isAnnotationPresent(Phone.Api::class)
-            || ksclass.isAnnotationPresent(Phone.Kind.WebSocket::class) ->
+            || ksclass.isAnnotationPresent(Phone.Call.WebSocket::class) ->
             {
                 Log.check(ksclass, ksclass.classKind == ClassKind.INTERFACE){
                     "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
@@ -54,30 +55,20 @@ object PhoneValidator : KSDefaultValidator() {
                     }
                 }
 
-                val polymorphic = ksclass.getNeededFunctions()
-                    .groupBy { it.simpleName() }
-                    .values
-                    .filter { it.size >= 2 }
-                    .flatten()
-
-                Log.check(
-                    symbols = polymorphic,
-                    condition = polymorphic.filterNot { it.isAnnotationPresent(Phone.Feature.Polymorphic::class) }.size <= 1
-                ){
-                    "Polymorphic functions in `Phone` interfaces should be annotated with `Phone.Polymorphic`. " +
-                    "Note that if you make a common function polymorphic in later versions, the first common function " +
-                    "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
-                }
-
-                ksclass.getNeededFunctions().plus(ksclass).forEach {
-                    Log.check(
-                        symbol = it,
-                        condition = !(it.isAnnotationPresent(Phone.Method.Get::class)
-                            && it.isAnnotationPresent(Phone.Method.Post::class))
-                    ){
-                        "The annotations `Phone.Get` and `Phone.Post` can't be used together."
-                    }
-                }
+                // val polymorphic = ksclass.getNeededFunctions()
+                //     .groupBy { it.simpleName() }
+                //     .values
+                //     .filter { it.size >= 2 }
+                //     .flatten()
+                //
+                // Log.check(
+                //     symbols = polymorphic,
+                //     condition = polymorphic.filter { it.getCall(ksclass).polymorphicId == null }.size <= 1
+                // ){
+                //     "Polymorphic functions in `Phone` interfaces should be annotated with `Phone.Polymorphic`. " +
+                //     "Note that if you make a common function polymorphic in later versions, the first common function " +
+                //     "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
+                // }
             }
 
             ksclass.isAnnotationPresent(Phone.Api::class) -> {
@@ -95,7 +86,7 @@ object PhoneValidator : KSDefaultValidator() {
                 }
             }
 
-            ksclass.isAnnotationPresent(Phone.Kind.WebSocket::class) -> {
+            ksclass.isAnnotationPresent(Phone.Call.WebSocket::class) -> {
                 Log.check(
                     symbol = ksclass,
                     condition = ksclass.getNeededFunctions().all {

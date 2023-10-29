@@ -5,28 +5,28 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
 import pers.shawxingkwok.ksputil.resolver
 import pers.shawxingkwok.phone.Decls
-import pers.shawxingkwok.phone.Kind
+import pers.shawxingkwok.phone.Call
 import pers.shawxingkwok.phone.getHeader
-import pers.shawxingkwok.phone.kind
+import pers.shawxingkwok.phone.getCall
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientHeader(ksclass: KSClassDeclaration): String{
-    val innerText = when(val kind = kind){
-        is Kind.Common -> kind.returnType.text
+    val innerText = when(val kind = getCall(ksclass)){
+        is Call.Common -> kind.returnType.text
 
-        is Kind.Manual ->
+        is Call.Manual ->
             if (kind.tagType == resolver.builtIns.unitType)
                 "HttpResponse"
             else
                 "Pair<${kind.tagType.text}, HttpResponse>"
 
-        is Kind.WebSocket ->
+        is Call.WebSocket ->
             if (kind.isRaw)
                 Decls().ClientWebSocketSession
             else
                 Decls().DefaultClientWebSocketSession
 
-        is Kind.PartialContent ->
+        is Call.PartialContent ->
             "PartialContentHandler<${kind.tagType.text}>"
     }
 
