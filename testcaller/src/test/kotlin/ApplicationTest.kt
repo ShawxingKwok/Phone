@@ -1,20 +1,34 @@
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
+import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.server.application.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.response.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.routing.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
+import io.ktor.server.websocket.*
+import io.ktor.server.websocket.*
+import io.ktor.server.websocket.*
+import io.ktor.util.*
 import io.ktor.util.cio.*
+import io.ktor.util.cio.toByteArray
 import io.ktor.utils.io.*
 import io.ktor.utils.io.streams.*
+import io.ktor.websocket.*
+import io.ktor.websocket.*
 import junit.framework.TestCase.assertEquals
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -22,13 +36,15 @@ import kotlinx.serialization.json.Json
 import org.junit.Test
 import java.io.File
 import java.io.FileOutputStream
+import java.time.Duration
 import kotlin.math.min
 
 class ApplicationTest {
     val file = File("ktor_logo.png")
     val fileSize = file.readBytes().size
+
     @Test
-    fun clientSendsMultipartData() = testApplication{
+    fun clientSendsMultipartData() = testApplication {
         application {
             routing {
                 post("/upload") {
@@ -54,27 +70,28 @@ class ApplicationTest {
                 })
             }
         )
-        .bodyAsText()
-        .let(::println)
+            .bodyAsText()
+            .let(::println)
 
         client.post("upload") {
-            setBody(MultiPartFormDataContent(
-                formData {
-                    append("description", "Ktor logo")
-                    append("image", File("ktor_logo.png").readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "image/png")
-                        append(HttpHeaders.ContentDisposition, "filename=\"ktor_logo.png\"")
-                    })
-                },
-                boundary = "WebAppBoundary"
-            )
+            setBody(
+                MultiPartFormDataContent(
+                    formData {
+                        append("description", "Ktor logo")
+                        append("image", File("ktor_logo.png").readBytes(), Headers.build {
+                            append(HttpHeaders.ContentType, "image/png")
+                            append(HttpHeaders.ContentDisposition, "filename=\"ktor_logo.png\"")
+                        })
+                    },
+                    boundary = "WebAppBoundary"
+                )
             )
             onUpload { bytesSentTotal, contentLength ->
                 println("Sent $bytesSentTotal bytes from $contentLength")
             }
         }
-        .bodyAsText()
-        .let(::println)
+            .bodyAsText()
+            .let(::println)
     }
 
     @Test
@@ -119,10 +136,13 @@ class ApplicationTest {
                 get("/download") {
                     call.response.header(
                         HttpHeaders.ContentDisposition,
-                        ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, "ktor_logo.png")
+                        ContentDisposition.Attachment.withParameter(
+                            ContentDisposition.Parameters.FileName,
+                            "ktor_logo.png"
+                        )
                             .toString()
                     )
-                    call.respondFile(file){
+                    call.respondFile(file) {
                     }
                 }
             }
@@ -163,13 +183,13 @@ class ApplicationTest {
     }
 
     @Test
-    fun json(){
+    fun json() {
         val list = listOf("122")
 
         val encoded = Json.encodeToString(list)
         val decoded = Json.decodeFromString<List<String>>(encoded)
 
-        assert(list == decoded){
+        assert(list == decoded) {
             "$list $decoded"
         }
     }
@@ -178,7 +198,7 @@ class ApplicationTest {
     fun emptyResponse() = testApplication {
         application {
             routing {
-                post("/X"){
+                post("/X") {
 
                 }
             }
@@ -193,13 +213,39 @@ class ApplicationTest {
     fun resetStatus() = testApplication {
         application {
             routing {
-                post("/X"){
+                post("/X") {
                     call.response.status(HttpStatusCode.BadRequest)
                     call.response.status(HttpStatusCode.OK)
+
                 }
             }
         }
-        val resp = client.post("X")
-        println(resp.status)
+    }
+
+    @Test
+    fun ws() = testApplication {
+        application {
+            install(io.ktor.server.websocket.WebSockets) {
+                pingPeriod = Duration.ofSeconds(15)
+                timeout = Duration.ofSeconds(15)
+                maxFrameSize = Long.MAX_VALUE
+                masking = false
+            }
+
+            routing {
+                webSocket("/X") {
+                    println(1)
+                    val params = call.request.queryParameters
+                    println(params)
+                }
+            }
+        }
+        val client = createClient {
+            install(io.ktor.client.plugins.websocket.WebSockets)
+        }
+        client.webSocket("X") {
+            send("S")
+        }
+        EmptyContent
     }
 }

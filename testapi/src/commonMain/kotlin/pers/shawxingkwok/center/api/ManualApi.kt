@@ -7,7 +7,7 @@ interface ManualApi {
     @Phone.Kind.Manual<Long>
     suspend fun directGet(): Any
 
-    @Phone.Method.Post(false)
+    @Phone.Method.Post
     @Phone.Kind.Manual<List<String>>
     suspend fun exchange(id: String): Any
 

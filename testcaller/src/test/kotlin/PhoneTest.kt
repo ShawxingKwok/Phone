@@ -113,7 +113,6 @@ class PhoneTest {
                     post("/login") {
                         val username = call.receiveText()
                         // Check username and password
-                        // ...
                         val token = JWT.create()
                             .withAudience(JwtConfig.AUDIENCE)
                             .withIssuer(JwtConfig.ISSUER)
@@ -201,11 +200,9 @@ class PhoneTest {
     ) { phone ->
         assert(phone.AuthApi_Partial().search(1).getOrThrow()?.id == 1L)
         phone.AuthApi_Partial().delete(1)
-        println(".".repeat(10))
 
         assert(phone.AuthApi_Whole().search(1).getOrThrow()?.id == 1L)
         phone.AuthApi_Whole().delete(1)
-        println(".".repeat(10))
 
         // assert(phone.authApi_Multi.get() == 1)
         assert(phone.AuthApi_Multi().search(1).getOrThrow()?.id == 1L)

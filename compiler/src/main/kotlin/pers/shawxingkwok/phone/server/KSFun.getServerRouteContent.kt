@@ -8,7 +8,6 @@ import pers.shawxingkwok.ksputil.simpleName
 import pers.shawxingkwok.ktutil.fastLazy
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.Kind
-import pers.shawxingkwok.phone.getMethodInfo
 import pers.shawxingkwok.phone.kind
 import pers.shawxingkwok.phone.pathEnd
 import pers.shawxingkwok.phone.server.parts.getServerParametersPart
@@ -22,7 +21,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
         is Kind.PartialContent -> kind.tagType
     }
 
-    val (methodName, withForm) = getMethodInfo(ksclass)
+    val methodName = getMethodName(ksclass)
     val start = methodName.replaceFirstChar { it.lowercase() }
 
     return buildString {
@@ -33,8 +32,16 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
 
         when{
             parameters.none() -> {}
-            withForm -> append("val params = call.${Decls().receiveParameters}()\n\n")
-            else -> append("val params = call.request.queryParameters\n\n")
+
+            kind is Kind.WebSocket -> append("val params = call.request.queryParameters\n\n")
+
+            else -> """
+                val params = call.request.queryParameters
+                    ~.takeUnless { it.isEmpty() } 
+                    ?: call.${Decls().receiveParameters}()!~                 
+                """.trimStart()
+                .plus("\n")
+                .let(::append)
         }
 
         val invokePart = buildString {

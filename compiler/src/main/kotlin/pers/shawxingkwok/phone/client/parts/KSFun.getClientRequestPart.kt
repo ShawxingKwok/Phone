@@ -11,35 +11,40 @@ import pers.shawxingkwok.phone.getSerializerText
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientRequestPart(
     ksclass: KSClassDeclaration,
-    methodInfo: MethodInfo = getMethodInfo(ksclass),
+    methodName: String = getMethodName(ksclass)
 ): String {
     val withToken = getAnnotationByType(Phone.Feature.Auth::class)?.withToken
         ?: getAnnotationByType(Phone.Feature.Auth::class)?.withToken
         ?: false
 
-    val (methodName, withForm) = methodInfo
-
     return """
+    extendRequest?.invoke(this)            
+
     method = HttpMethod.$methodName
 
     ${insertIf(withToken){ "addToken()" }}
     
     ${when{
         parameters.none() -> ""
+
+        methodName == "Get" 
+        || methodName == "Head" 
+        || kind is Kind.WebSocket -> parameters.getText(ksclass, "::parameter")
         
-        withForm -> """
-            val parameters = parameters{
-                ${parameters.getText(ksclass, "::append")}
+        else -> """
+            if (body !== ${Decls().EmptyContent}) {
+                ${parameters.getText(ksclass, "::parameter")}
+            } else {
+                val parameters = parameters{
+                    ${parameters.getText(ksclass, "::append")}
+                }
+                val form = FormDataContent(parameters)
+                setBody(form)     
             }
-            val form = FormDataContent(parameters)
-            setBody(form)     
         """.trim()
-        
-        else -> parameters.getText(ksclass, "::parameter")
     }}
-                   
-    extendRequest?.invoke(this)            
-    onEachRequest()
+
+    onEachRequestEnd()
     """.trim()
 }
 

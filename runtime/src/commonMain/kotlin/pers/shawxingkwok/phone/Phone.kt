@@ -18,19 +18,19 @@ public annotation class Phone{
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Post(val withForm: Boolean = true)
+        public annotation class Post
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Put(val withForm: Boolean = true)
+        public annotation class Put
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Delete(val withForm: Boolean = true)
+        public annotation class Delete
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-        public annotation class Patch(val withForm: Boolean = true)
+        public annotation class Patch
     }
 
     @Target
@@ -66,16 +66,6 @@ public annotation class Phone{
 
     @Target
     public annotation class Feature {
-        public annotation class ParametersPosition {
-            @Retention(AnnotationRetention.SOURCE)
-            @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-            public annotation class Url
-
-            @Retention(AnnotationRetention.SOURCE)
-            @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-            public annotation class Form
-        }
-
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
         public annotation class Polymorphic(val id: String)

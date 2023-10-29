@@ -6,6 +6,12 @@ import pers.shawxingkwok.ksputil.CodeFormatter
 
 context (CodeFormatter)
 class Decls {
+    val EmptyContent = getDeclText(
+        outermostDeclPath = "io.ktor.client.utils.EmptyContent",
+        innerName = null,
+        isTopLevelAndExtensional = false
+    )
+
     val File = getDeclText(
         outermostDeclPath = "java.io.File",
         innerName = null,

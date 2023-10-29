@@ -86,7 +86,7 @@ internal fun buildClientPhone() {
                     append("://${'$'}host:${'$'}port")
                 }!~
             
-            protected open fun HttpRequestBuilder.onEachRequest() {}
+            protected open fun HttpRequestBuilder.onEachRequestEnd() {}
                 
             private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
                 if(!withWss) return
@@ -115,8 +115,8 @@ internal fun buildClientPhone() {
             }
         
             private suspend fun HttpResponse.check() {
-                check(status == HttpStatusCode.OK || status == HttpStatusCode.NoContent){
-                    if (status == HttpStatusCode.NotFound)
+                check(status === HttpStatusCode.OK || status === HttpStatusCode.NoContent){
+                    if (status === HttpStatusCode.NotFound)
                         ~"404 Not found the route."!~
                     else
                         ~"${'$'}status ${'$'}{bodyAsText()}"!~
