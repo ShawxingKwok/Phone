@@ -2,14 +2,9 @@
 
 package pers.shawxingkwok.phone.validators
 
-import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.isAnnotationPresent
-import com.google.devtools.ksp.symbol.ClassKind
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSDeclarationContainer
-import com.google.devtools.ksp.symbol.Modifier
+import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
-import pers.shawxingkwok.phone.MyProcessor
 import pers.shawxingkwok.phone.Phone
 import pers.shawxingkwok.phone.getCall
 import pers.shawxingkwok.phone.getNeededFunctions
@@ -18,112 +13,68 @@ object PhoneValidator : KSDefaultValidator() {
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Boolean {
         val ksclass = classDeclaration
 
-        when{
-            MyProcessor.round > 0 -> {}
+        val isValid = !classDeclaration.asStarProjectedType().isError
+            && classDeclaration.superTypes.allAccept()
+            && visitDeclaration(classDeclaration, data)
+            && visitDeclarationContainer(classDeclaration, data)
+            && classDeclaration.superTypes.all {
+                val decl = it.resolve().declaration
+                decl.containingFile == null ||  decl.accept(this, data)
+            }
 
-            ksclass.isAnnotationPresent(Phone.Api::class)
-            && ksclass.isAnnotationPresent(Phone.Call.WebSocket::class) ->
-                Log.e(ksclass, "`Phone.Api` is needless when you set web sockets.")
+        if (ksclass.isAnnotationPresent(Phone.Api::class)) run{
+            Log.check(ksclass, ksclass.classKind == ClassKind.INTERFACE) {
+                "The annotations `Phone.Api` and could be annotated " +
+                "only on interfaces."
+            }
 
-            ksclass.isAnnotationPresent(Phone.Api::class)
-            || ksclass.isAnnotationPresent(Phone.Call.WebSocket::class) ->
-            {
-                Log.check(ksclass, ksclass.classKind == ClassKind.INTERFACE){
-                    "The annotations `Phone.Api` and `Phone.WebSockets` could be annotated " +
-                    "only on interfaces."
-                }
+            Log.check(ksclass, ksclass.packageName().any()) {
+                "Each `Phone` interface should have a package name."
+            }
 
-                Log.check(ksclass, ksclass.packageName().any()){
-                    "Each `Phone` interface should have a package name."
-                }
+            if (!isValid) return@run
 
-                Log.check(ksclass, ksclass.getNeededFunctions().any()){
-                    "Each `Phone` interface should contain at least one function. " +
-                    "Note that functions in super classes also count."
-                }
-
-                ksclass.getNeededFunctions().forEach { ksfun ->
-                    Log.check(
-                        symbol = ksfun,
-                        condition = ksfun.isAbstract
+            ksclass.getNeededFunctions().forEach { ksfun ->
+                Log.check(
+                    symbol = ksfun,
+                    condition = ksfun.isAbstract
                             && Modifier.SUSPEND in ksfun.modifiers
                             && ksfun.typeParameters.none()
                             && ksfun.extensionReceiver == null
-                    ) {
-                        "In each `Phone` interface, all functions must be abstract, suspend, " +
-                        "and without extensional receivers and type parameters."
-                    }
-                }
-
-                // val polymorphic = ksclass.getNeededFunctions()
-                //     .groupBy { it.simpleName() }
-                //     .values
-                //     .filter { it.size >= 2 }
-                //     .flatten()
-                //
-                // Log.check(
-                //     symbols = polymorphic,
-                //     condition = polymorphic.filter { it.getCall(ksclass).polymorphicId == null }.size <= 1
-                // ){
-                //     "Polymorphic functions in `Phone` interfaces should be annotated with `Phone.Polymorphic`. " +
-                //     "Note that if you make a common function polymorphic in later versions, the first common function " +
-                //     "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
-                // }
-            }
-
-            ksclass.isAnnotationPresent(Phone.Api::class) -> {
-                ksclass.getNeededFunctions().forEach { ksfun ->
-                    Log.check(
-                        ksfun,
-                        !(ksfun.simpleName() == "handle"
-                            && ksfun.typeParameters.none()
-                            && ksfun.parameters.none()
-                        )
-                    ){
-                        "There would be an additional function named `handle` for interception, " +
-                        "Therefore, rename this function or add parameters."
-                    }
+                ) {
+                    "In each `Phone` interface, all functions, including those from super classes, " +
+                    "must be abstract, suspend, and without extensional receivers and type parameters."
                 }
             }
 
-            ksclass.isAnnotationPresent(Phone.Call.WebSocket::class) -> {
-                Log.check(
-                    symbol = ksclass,
-                    condition = ksclass.getNeededFunctions().all {
-                        it.returnType!!.resolve() == resolver.builtIns.unitType
-                    },
-                ){
-                    "Each function used by interfaces annotated with `Phone.WebSocket` " +
-                        "can't have a return type.(Only `Unit` is allowed in other words.)"
-                }
+            val polymorphic = ksclass.getNeededFunctions()
+                .groupBy { it.simpleName() }
+                .values
+                .filter { it.size >= 2 }
+                .flatten()
+
+            Log.check(
+                symbols = polymorphic,
+                condition = polymorphic.filter { it.getCall(ksclass).polymorphicId == null }.size <= 1
+            ){
+                "Polymorphic functions in `Phone` interfaces should be annotated with `Phone.Polymorphic`. " +
+                "Note that if you make a common function polymorphic in later versions, the first common function " +
+                "shouldn't be annotated with `Phone.Polymorphic`, which means being backward compatible."
             }
         }
 
-        return ksclass.getAllSuperTypes()
-            .map { it.declaration }
-            .plus(ksclass)
-            .filterNot { it.containingFile == null }
-            .all { it.accept(NestClassSkippedValidator, Unit) }
-    }
-}
-
-private val verifiedDeclPaths = mutableSetOf<String>()
-
-private object NestClassSkippedValidator : KSDefaultValidator() {
-    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): Boolean {
-        if (classDeclaration.qualifiedName()!! in verifiedDeclPaths)
-            return true
-
-        val isVerified = super.visitClassDeclaration(classDeclaration, data)
-
-        if (isVerified) verifiedDeclPaths += classDeclaration.qualifiedName()!!
-
-        return isVerified
+        return isValid
     }
 
-    override fun visitDeclarationContainer(declarationContainer: KSDeclarationContainer, data: Unit): Boolean =
-        declarationContainer
-            .declarations
-            .filterNot { it is KSClassDeclaration }
-            .allAccept()
+    @Suppress("NonAsciiCharacters")
+    private val `Unit？` = resolver.builtIns.unitType.makeNullable()
+
+    override fun visitTypeReference(typeReference: KSTypeReference, data: Unit): Boolean {
+        val isValid =  super.visitTypeReference(typeReference, data)
+
+        if (isValid && typeReference.resolve() == `Unit？`)
+            Log.e(typeReference, "Use `Boolean` instead of `Unit?`.")
+
+        return isValid
+    }
 }
