@@ -18,13 +18,7 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.client.phone.Phone
 
 val scope = MainScope()
-
-val client = HttpClient(Js){
-    // engine{
-    //     proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress("192.168.0.105", 80))
-    // }
-}
-val phone = Phone(client)
+val phone = Phone(HttpClient(Js))
 
 fun main() {
     val container = document.createElement("div") as HTMLDivElement
