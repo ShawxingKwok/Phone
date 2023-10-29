@@ -38,12 +38,17 @@ object PhoneValidator : KSDefaultValidator() {
                 Log.check(
                     symbol = ksfun,
                     condition = ksfun.isAbstract
-                            && Modifier.SUSPEND in ksfun.modifiers
-                            && ksfun.typeParameters.none()
-                            && ksfun.extensionReceiver == null
+                        && Modifier.SUSPEND in ksfun.modifiers
+                        && ksfun.typeParameters.none()
+                        && ksfun.extensionReceiver == null
+                        && ksfun.annotations.filter {
+                                it.annotationType.resolve().declaration.qualifiedName()!!
+                                .startsWith(Phone.Call::class.qualifiedName!!)
+                            }.count() == 1
                 ) {
-                    "In each `Phone` interface, all functions, including those from super classes, " +
-                    "must be abstract, suspend, and without extensional receivers and type parameters."
+                    "In each `Phone` interface, all functions, including those from super classes but except overridden, " +
+                    "must be abstract, suspend, without extensional receivers and type parameters, " +
+                    "and carry an annotation in `Phone.Call`."
                 }
             }
 
