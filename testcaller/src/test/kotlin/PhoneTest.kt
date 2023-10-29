@@ -6,18 +6,11 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import io.ktor.server.websocket.*
-import io.ktor.server.websocket.WebSockets
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
@@ -27,105 +20,20 @@ import pers.shawxingkwok.center.model.Time
 import pers.shawxingkwok.ktutil.allDo
 import pers.shawxingkwok.test.server.*
 import java.io.File
-import java.time.Duration
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertNull
 
 class PhoneTest {
-    object JwtConfig {
-        const val AUDIENCE = "jwt-audience"
-        const val REALM = "ktor sample app"
-        const val SECRET = "secret"
-        const val ISSUER = "jwt issuer"
-    }
-
     private fun start(
         configureServer: Application.() -> Unit = {},
         configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
-        act: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit,
+        requestOnClient: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit,
     ) =
         testApplication {
-            application {
-                install(Authentication) {
-                    basic {
-                        realm = "Access to the '/' path"
-                        validate { credentials ->
-                            if (credentials.name == "jetbrains" && credentials.password == "foobar") {
-                                UserIdPrincipal(credentials.name)
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                    basic("auth-basic") {
-                        realm = "Access to the '/' path"
-                        validate { credentials ->
-                            if (credentials.name == "jetbrains" && credentials.password == "foobar") {
-                                UserIdPrincipal(credentials.name)
-                            } else {
-                                null
-                            }
-                        }
-                    }
-                    bearer("auth-bearer") {
-                        realm = "Access to the '/' path"
-                        authenticate { tokenCredential ->
-                            if (tokenCredential.token == "abc123") {
-                                UserIdPrincipal("jetbrains")
-                            } else {
-                                null
-                            }
-                        }
-                    }
-
-                    jwt("auth-jwt") {
-                        realm = JwtConfig.REALM
-
-                        JWT.require(Algorithm.HMAC256(JwtConfig.SECRET))
-                            .withAudience(JwtConfig.AUDIENCE)
-                            .withIssuer(JwtConfig.ISSUER)
-                            .build()
-                            .let(::verifier)
-
-                        validate { credential ->
-                            if (credential.payload.getClaim("username").asString() == "shawxing") {
-                                JWTPrincipal(credential.payload)
-                            } else {
-                                null
-                            }
-                        }
-                        challenge { defaultScheme, realm ->
-                            println("115: $defaultScheme $realm ${this.call.request.header(HttpHeaders.Authorization)}")
-                            call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
-                        }
-                    }
-                }
-
-                install(WebSockets) {
-                    pingPeriod = Duration.ofSeconds(15)
-                    timeout = Duration.ofSeconds(15)
-                    maxFrameSize = Long.MAX_VALUE
-                    masking = false
-                }
-
-                routing {
-                    post("/login") {
-                        val username = call.receiveText()
-                        // Check username and password
-                        val token = JWT.create()
-                            .withAudience(JwtConfig.AUDIENCE)
-                            .withIssuer(JwtConfig.ISSUER)
-                            .withClaim("username", username)
-                            .withExpiresAt(Date(System.currentTimeMillis() + 60000))
-                            .sign(Algorithm.HMAC256(JwtConfig.SECRET))
-
-                        call.respondText(token)
-                    }
-                }
-
+            application{
+                installPlugins()
                 configureServer()
-                // routePhone()
             }
 
             val client = createClient {
@@ -141,15 +49,16 @@ class PhoneTest {
                 }
             }
 
-            val phone = pers.shawxingkwok.test.client.Phone(client)
+            val token = JWT.create()
+                .withAudience(JwtConfig.AUDIENCE)
+                .withIssuer(JwtConfig.ISSUER)
+                .withClaim("username", "shawxing")
+                .withExpiresAt(Date(System.currentTimeMillis() + 60000))
+                .sign(Algorithm.HMAC256(JwtConfig.SECRET))
 
-            val token = phone.client
-                .post("login") { setBody("shawxing") }
-                .bodyAsText()
+            val phone = pers.shawxingkwok.test.client.Phone(client, token = token)
 
-            phone.token = token
-
-            act(phone)
+            requestOnClient(phone)
         }
 
     @Test

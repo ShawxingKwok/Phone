@@ -2,10 +2,15 @@ plugins {
     alias(libs.plugins.kt.jvm)
     alias(libs.plugins.ktor)
     alias(libs.plugins.serialization)
+    application
 }
 
 kotlin {
     jvmToolchain(8)
+}
+
+application{
+    mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
 dependencies {
