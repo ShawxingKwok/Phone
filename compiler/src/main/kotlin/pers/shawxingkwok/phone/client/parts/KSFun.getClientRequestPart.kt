@@ -18,29 +18,17 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
         ?: false
 
     return """
-    extendRequest?.invoke(this)            
+    onRequestStart?.invoke(this)            
 
     method = HttpMethod.$methodName
 
     ${insertIf(withToken){ "addToken()" }}
     
-    ${when{
-        parameters.none() -> ""
-
-        methodName == "Get" 
-        || methodName == "Head" 
-        || kind is Kind.WebSocket -> parameters.getText(ksclass, "::parameter")
-        
-        else -> """
-            if (body !== ${Decls().EmptyContent}) {
-                ${parameters.getText(ksclass, "::parameter")}
-            } else {
-                val parameters = parameters{
-                    ${parameters.getText(ksclass, "::append")}
-                }
-                val form = FormDataContent(parameters)
-                setBody(form)     
-            }
+    ${insertIf(parameters.any()) {
+        """
+        addParameters(${kind is Kind.WebSocket}){
+            ${parameters.getText(ksclass)}
+        }
         """.trim()
     }}
 
@@ -49,15 +37,14 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
 }
 
 context (CodeFormatter)
-private fun List<KSValueParameter>.getText(ksclass: KSClassDeclaration, funText: String) =
+private fun List<KSValueParameter>.getText(ksclass: KSClassDeclaration) =
     buildString {
         this@getText.forEach { param ->
             append("appendWithJson(")
             append("\"${param.name!!.asString()}\", ")
             append("${param.name!!.asString()}, ")
             append("${param.getSerializerText()}, ")
-            append("${param.getCipherText(ksclass)}, ")
-            append("$funText)\n")
+            append("${param.getCipherText(ksclass)})\n")
         }
         removeSuffix("\n")
     }

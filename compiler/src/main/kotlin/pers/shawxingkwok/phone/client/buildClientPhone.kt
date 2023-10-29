@@ -87,7 +87,26 @@ internal fun buildClientPhone() {
                 }!~
             
             protected open fun HttpRequestBuilder.onEachRequestEnd() {}
+            
+            private fun HttpRequestBuilder.addParameters(
+                isWebSocket: Boolean,
+                act: ParametersBuilder.() -> Unit
+            ){
+                val parameters = parameters(act)
                 
+                if (
+                    method == HttpMethod.Head 
+                    || method == HttpMethod.Get 
+                    || isWebSocket 
+                    || body !== EmptyContent
+                )
+                    ~url.parameters.appendAll(parameters)!~
+                else {
+                    val form = FormDataContent(parameters)
+                    setBody(form)
+                } 
+            }
+    
             private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
                 if(!withWss) return
 
@@ -102,16 +121,15 @@ internal fun buildClientPhone() {
                 header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
             }
         
-            private inline fun <reified T> appendWithJson(
+            private inline fun <reified T> ParametersBuilder.appendWithJson(
                 key: String,
                 value: T,
                 serializer: KSerializer<T & Any>?,
                 cipher: Phone.Feature.Crypto.Cipher?,
-                add: (String, String) -> Unit,
             ){
                 if (value == null) return
                 val newV = encode(value, serializer, cipher)
-                add(key, newV)
+                append(key, newV)
             }
         
             private suspend fun HttpResponse.check() {
@@ -134,7 +152,7 @@ internal fun buildClientPhone() {
 context (CodeFormatter)
 private fun KSClassDeclaration.getBody(): String =
     """
-    open fun $apiNameInPhone(extendRequest: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
+    open fun $apiNameInPhone(onRequestStart: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
         ${getNeededFunctions().joinToString("\n\n"){ it.getClientFunctionContent(this) } }
     }
     """.trim()
