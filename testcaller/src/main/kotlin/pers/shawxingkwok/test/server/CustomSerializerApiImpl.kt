@@ -6,7 +6,7 @@ import pers.shawxingkwok.center.api.CustomSerializerApi
 import pers.shawxingkwok.center.model.Time
 
 object CustomSerializerApiImpl : Phone.CustomSerializerApi {
-    override suspend fun sumTime(a: Time, b: Time): CommonConnector<Time> = {
+    override suspend fun sumTime(a: Time, b: Time): PipelineContextProvider<Time> = {
         Time(a.hour + b.hour, a.min + b.min, a.sec + b.sec)
     }
 }

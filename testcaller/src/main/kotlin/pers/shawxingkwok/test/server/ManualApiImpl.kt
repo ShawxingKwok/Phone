@@ -6,21 +6,21 @@ import io.ktor.server.response.*
 
 
 object ManualApiImpl :  Phone.ManualApi {
-    override suspend fun directGet(): CommonConnector<Long> = {
+    override suspend fun directGet(): PipelineContextProvider<Long> = {
         1
     }
 
-    override suspend fun exchange(id: String): CommonConnector<List<String>> = {
+    override suspend fun exchange(id: String): PipelineContextProvider<List<String>> = {
         val receivedBytes = call.receive<ByteArray>()
         call.respond(receivedBytes)
         listOf(id)
     }
 
-    override suspend fun getIdLength(id: String?): CommonConnector<Int?> = {
+    override suspend fun getIdLength(id: String?): PipelineContextProvider<Int?> = {
         id?.length
     }
 
-    override suspend fun getUnit(id: String): CommonConnector<Unit> = {
+    override suspend fun getUnit(id: String): PipelineContextProvider<Unit> = {
 
     }
 }

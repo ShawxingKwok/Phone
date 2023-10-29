@@ -51,76 +51,46 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
             "val text = encode(ret, ${retType.getSerializerText()}, ${getCipherTextForReturn(ksclass)})"
         }
 
-        val isUnit = retType == resolver.builtIns.unitType
+        when{
+            retType == resolver.builtIns.unitType -> "$invokePart\n"
 
-        if (call is Call.Common)
-            when{
-                isUnit ->
-                    """
-                    $invokePart
-                    call.response.status(HttpStatusCode.OK)
-                    """
-
-                retType.isMarkedNullable ->
-                    """
-                    val ret = $invokePart
-                    
-                    if (ret == null) 
-                        ~call.response.status(HttpStatusCode.NoContent)!~
-                    else{                    
-                        $`val text = encode~~`
-                        call.respondText(text)                            
-                        call.response.status(HttpStatusCode.OK)    
-                    }
-                    """
-
-                else ->
-                    """
-                    val ret = $invokePart
-    
+            call is Call.Common && retType.isMarkedNullable ->
+                """
+                val ret = $invokePart                
+                if (ret == null) 
+                    ~call.response.status(HttpStatusCode.NoContent)!~
+                else{                    
                     $`val text = encode~~`
-                    call.respondText(text)           
-                    call.response.status(HttpStatusCode.OK)    
-                    """
-            }
-            .trimStart().let(::append)
-        else {
-            when{
-                call is Call.PartialContent -> append("val (ret, file) = $invokePart\n\n")
-                // Manual
-                isUnit -> append("$invokePart\n\n")
-                else -> append("val ret = $invokePart\n\n")
-            }
-
-            when{
-                isUnit -> {}
-
-                retType.isMarkedNullable -> {
-                    """                        
-                    if (ret != null){
-                        $`val text = encode~~`
-                        call.response.header("Phone-Tag", text)                                            
-                    }
-                    """.trimStart()
-                        .let(::append)
+                    call.respondText(text)                            
                 }
+                """
 
-                else ->
-                    """
+            call is Call.Common ->
+                """
+                val ret = $invokePart                
+                $`val text = encode~~`
+                call.respondText(text)           
+                """
+
+            retType.isMarkedNullable ->
+                """
+                val ret = $invokePart                
+                if (ret != null){
                     $`val text = encode~~`
-                    call.response.header("Phone-Tag", text)                        
-                    """.trimStart()
-                        .let(::append)
-                }
+                    call.response.header("Phone-Tag", text)                                            
+                }    
+                """
 
-            if (call is Call.PartialContent) {
-                append("call.response.status(HttpStatusCode.OK)\n")
-                append("call.respondFile(file)\n")
-            }else
-                // Manual
-                append("call.response.status(HttpStatusCode.OK)\n")
+            else ->
+                """
+                val ret = $invokePart                
+                $`val text = encode~~`
+                call.response.header("Phone-Tag", text)          
+                """
         }
+        .trimStart().let(::append)
 
+        append("call.response.status(HttpStatusCode.OK)\n")
         append("}")
     }
 }

@@ -9,48 +9,48 @@ import pers.shawxingkwok.center.model.User
 
 object AuthApiImpl{
     object Partial : Phone.AuthApi_Partial{
-        override suspend fun delete(id: Long): CommonConnector<Unit> =
+        override suspend fun delete(id: Long): PipelineContextProvider<Unit> =
         {
 
         }
 
-        override suspend fun search(id: Long): CommonConnector<User?> =
+        override suspend fun search(id: Long): PipelineContextProvider<User?> =
         {
             User(id, "Shawxing", 25)
         }
     }
 
     object Whole : Phone.AuthApi_Whole{
-        override suspend fun delete(id: Long): CommonConnector<Unit> =
+        override suspend fun delete(id: Long): PipelineContextProvider<Unit> =
         {
 
         }
 
-        override suspend fun search(id: Long): CommonConnector<User?> =
+        override suspend fun search(id: Long): PipelineContextProvider<User?> =
         {
             User(id, "Shawxing", 25)
         }
     }
 
     object Multi : Phone.AuthApi_Multi{
-        override suspend fun get(): CommonConnector<Int> =
+        override suspend fun get(): PipelineContextProvider<Int> =
         {
             1
         }
 
-        override suspend fun delete(id: Long): CommonConnector<Unit> =
+        override suspend fun delete(id: Long): PipelineContextProvider<Unit> =
         {
 
         }
 
-        override suspend fun search(id: Long): CommonConnector<User?> =
+        override suspend fun search(id: Long): PipelineContextProvider<User?> =
         {
             User(id, "Shawxing", 25)
         }
     }
 
     object Jwt : Phone.AuthApi_Jwt{
-        override suspend fun delete(id: String): CommonConnector<Boolean> =
+        override suspend fun delete(id: String): PipelineContextProvider<Boolean> =
         {
             true
         }

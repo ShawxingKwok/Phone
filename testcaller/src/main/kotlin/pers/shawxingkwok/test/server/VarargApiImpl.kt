@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.util.pipeline.*
 
 object VarargApiImpl : Phone.VarargApi {
-    override suspend fun sum(vararg ints: Int): CommonConnector<Int> =
+    override suspend fun sum(vararg ints: Int): PipelineContextProvider<Int> =
     {
         ints.sum()
     }

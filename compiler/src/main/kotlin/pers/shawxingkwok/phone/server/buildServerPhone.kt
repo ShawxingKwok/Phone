@@ -26,15 +26,12 @@ internal fun buildServerPhone() {
         ),
     ){
         """
-        typealias CommonConnector<T> = suspend ${Decls().PipelineContextUnitCall}.() -> T
+        typealias PipelineContextProvider<T> = suspend ${Decls().PipelineContextUnitCall}.() -> T
         ${insertIf(MyProcessor.hasWebSocket){
             """
             typealias WebSocketConnector = suspend ${Decls().DefaultWebSocketServerSession}.() -> Unit
             typealias WebSocketRawConnector = suspend ${Decls().WebSocketServerSession}.() -> Unit
             """
-        }}
-        ${insertIf(MyProcessor.hasPartialContent){
-            "typealias PartialContentConnector<T> = CommonConnector<Pair<T, ${Decls().File}>>"
         }}
         
         object Phone{
@@ -45,9 +42,9 @@ internal fun buildServerPhone() {
                     
                     ${ksclass.getNeededFunctions().joinToString("\n\n"){ ksfun ->
                         val returnedText = when(val kind = ksfun.getCall(ksclass)) {
-                            is Call.Common -> "CommonConnector<${kind.returnType.text}>"
-                            is Call.Manual -> "CommonConnector<${kind.tagType}>"
-                            is Call.PartialContent -> "PartialContentConnector<${kind.tagType}>"
+                            is Call.Common -> "PipelineContextProvider<${kind.returnType.text}>"
+                            is Call.Manual -> "PipelineContextProvider<${kind.tagType}>"
+                            is Call.PartialContent -> "PipelineContextProvider<${kind.tagType}>"
                             is Call.WebSocket -> 
                                 if (kind.isRaw)
                                     "WebSocketRawConnector"
