@@ -38,7 +38,5 @@ private fun Application.configure() {
         allowHeader("MyCustomHeader")
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
-    routing {
-        Phone.routeAll(this, AccountApiImpl, ChatApiImpl)
-    }
+    Phone.routeAll(routing {  }, AccountApiImpl, ChatApiImpl)
 }
