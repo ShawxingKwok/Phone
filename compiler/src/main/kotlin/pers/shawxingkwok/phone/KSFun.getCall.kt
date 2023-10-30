@@ -47,7 +47,7 @@ internal fun KSFunctionDeclaration.getCall(ksclass: KSClassDeclaration): Call =
             cache.getOrPut(ksclass) {
                 ksclass.getAnnotationByType(Phone.Api::class)!!.method
                 .takeUnless { it == Phone.Method.Default }
-                ?: Args.defaultMethod
+                ?: Args.DefaultMethod
             } as Phone.Method
 
         val ksCallAnnot = annotations.first {

@@ -50,9 +50,7 @@ internal fun buildClientPhone() {
         open class Phone(
             private val client: HttpClient,
             private val baseUrl: String = "http://localhost:80",
-            private val enablesWss: Boolean,
-            private val tokenScheme: String = "Bearer",
-            var token: String? = null,
+            ${insertIf(MyProcessor.hasWebSocket){ "private val enablesWss: Boolean," }}
         ) {
             ${MyProcessor.phones.joinToString("\n\n"){ ksclass ->
                 """
@@ -61,6 +59,16 @@ internal fun buildClientPhone() {
                 }
                 """.trim()
             }}
+            
+            ${insertIf(Args.JwtAuthName != null){ 
+                """
+                private var jwtToken: String? = null
+
+                fun refreshJwtToken(token: String){
+                    jwtToken = token
+                }
+                """
+            }} 
             
             protected open fun HttpRequestBuilder.onEachRequestEnd() {}
             
@@ -88,11 +96,11 @@ internal fun buildClientPhone() {
                 url.port = if(isRaw) port else url.protocol.defaultPort
             }
                 
-            private fun HttpRequestBuilder.addToken() {
-                checkNotNull(token){
-                    "Set token before the request with authentication."
+            private fun HttpRequestBuilder.addToken(url: String) {
+                checkNotNull(jwtToken){
+                    "Set the jwt token in `Phone` before the request to ${'$'}url."
                 }
-                header(HttpHeaders.Authorization, "${'$'}tokenScheme ${'$'}token")
+                header(HttpHeaders.Authorization, "Bearer ${'$'}jwtToken")
             }
         
             private inline fun <reified T> ParametersBuilder.appendWithJson(

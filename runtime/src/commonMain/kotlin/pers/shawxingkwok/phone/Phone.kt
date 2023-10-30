@@ -69,9 +69,8 @@ public annotation class Phone {
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
     public annotation class Auth(
-        val configurations: Array<String> = [""],
+        vararg val configurations: String = [""],
         val strategy: Strategy = Strategy.FirstSuccessful,
-        val withToken: Boolean = false,
     ) {
         public enum class Strategy {
             Optional, FirstSuccessful, Required

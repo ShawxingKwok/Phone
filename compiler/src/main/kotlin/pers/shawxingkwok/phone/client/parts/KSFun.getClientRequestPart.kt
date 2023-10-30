@@ -13,16 +13,15 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
     ksclass: KSClassDeclaration,
     methodName: String = getCall(ksclass).method.name, // may be `Head`
 ): String {
-    val withToken = getAnnotationByType(Phone.Auth::class)?.withToken
-        ?: getAnnotationByType(Phone.Auth::class)?.withToken
-        ?: false
+    val withJwtToken = Args.JwtAuthName != null
+        && getAnnotationByType(Phone.Auth::class)?.configurations?.any { it == Args.JwtAuthName } == true
 
     return """
     onRequestStart?.invoke(this)            
 
     method = HttpMethod.$methodName
 
-    ${insertIf(withToken){ "addToken()" }}
+    ${insertIf(withJwtToken){ "addToken(url.buildString())" }}
     
     ${insertIf(parameters.any()) {
         """

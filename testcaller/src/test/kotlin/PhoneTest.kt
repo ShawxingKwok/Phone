@@ -4,11 +4,17 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.auth.providers.basic
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.websocket.*
@@ -26,12 +32,12 @@ import kotlin.test.assertNull
 class PhoneTest {
     private fun start(
         configureServer: Application.() -> Unit = {},
-        enables: Boolean = false,
+        enablesWss: Boolean = false,
         configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
         requestOnClient: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit,
     ) =
         testApplication {
-            application{
+            application {
                 installPlugins()
                 configureServer()
             }
@@ -56,7 +62,9 @@ class PhoneTest {
                 .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                 .sign(Algorithm.HMAC256(JwtConfig.SECRET))
 
-            val phone = pers.shawxingkwok.test.client.Phone(client, enablesWss = enables, token = token)
+            val phone = pers.shawxingkwok.test.client.Phone(client, enablesWss = enablesWss)
+
+            phone.refreshJwtToken(token)
 
             requestOnClient(phone)
         }
@@ -103,15 +111,9 @@ class PhoneTest {
             Phone.route(routing { }, AuthApiImpl.Multi)
         }
     ) { phone ->
-        assert(phone.AuthApi_Partial().search(1).getOrThrow()?.id == 1L)
-        phone.AuthApi_Partial().delete(1)
-
-        assert(phone.AuthApi_Whole().search(1).getOrThrow()?.id == 1L)
-        phone.AuthApi_Whole().delete(1)
-
-        // assert(phone.authApi_Multi.get() == 1)
-        assert(phone.AuthApi_Multi().search(1).getOrThrow()?.id == 1L)
-        phone.AuthApi_Multi().delete(1)
+        assert(phone.AuthApi_Partial().delete(1).getOrThrow() == 1)
+        assert(phone.AuthApi_Whole().delete(1).getOrThrow() == 1)
+        assert(phone.AuthApi_Multi().get(1).getOrThrow() == 1)
     }
 
     @Test
@@ -120,7 +122,57 @@ class PhoneTest {
             Phone.route(routing { }, AuthApiImpl.Jwt)
         }
     ) { phone ->
-        phone.AuthApi_Jwt().delete("f").getOrThrow()
+        assert(phone.AuthApi_Jwt().delete(1).getOrThrow() == 1)
+    }
+
+    @Test
+    fun commonJwt() = testApplication {
+        application {
+            authentication {
+                jwt("auth-jwt") {
+                    realm = JwtConfig.REALM
+
+                    JWT.require(Algorithm.HMAC256(JwtConfig.SECRET))
+                        .withAudience(JwtConfig.AUDIENCE)
+                        .withIssuer(JwtConfig.ISSUER)
+                        .build()
+                        .let(::verifier)
+
+                    validate { credential ->
+                        if (credential.payload.getClaim("username").asString() == "shawxing") {
+                            JWTPrincipal(credential.payload)
+                        } else {
+                            null
+                        }
+                    }
+
+                    challenge { defaultScheme, realm ->
+                        println("62: $defaultScheme $realm ${this.call.request.header(HttpHeaders.Authorization)}")
+                        call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
+                    }
+                }
+            }
+
+            routing {
+                authenticate("auth-jwt") {
+                    post("/X") {
+                        call.response.status(HttpStatusCode.OK)
+                    }
+                }
+            }
+        }
+
+        val token = JWT.create()
+            .withAudience(JwtConfig.AUDIENCE)
+            .withIssuer(JwtConfig.ISSUER)
+            .withClaim("username", "shawxing")
+            .withExpiresAt(Date(System.currentTimeMillis() + 60000))
+            .sign(Algorithm.HMAC256(JwtConfig.SECRET))
+
+        client.post("/X"){
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        .status.let(::println)
     }
 
     @Test
@@ -196,8 +248,8 @@ class PhoneTest {
             .getUnit("S")
 
         phone.ManualApi {
-                setBody(byteArrayOf(1))
-            }
+            setBody(byteArrayOf(1))
+        }
             .exchange("122")
             .getOrThrow()
             .let { (headInfo, response) ->
@@ -234,7 +286,7 @@ class PhoneTest {
                 assert(it.get().readBytes().contentEquals(expectedBytes))
                 val partialBytes = it.get(0L..<2L, 2L..<3L).readBytes()
 
-                assert(partialBytes.contentEquals(expectedBytes.take(3).toByteArray())){
+                assert(partialBytes.contentEquals(expectedBytes.take(3).toByteArray())) {
                     partialBytes.toList()
                 }
             }
@@ -251,7 +303,7 @@ class PhoneTest {
         configureServer = {
             Phone.route(routing { }, WebSocketApiImpl)
         },
-        enables = withWss,
+        enablesWss = withWss,
     ) { phone ->
         phone.WebSocketApi()
             .getSignals(1)
@@ -275,7 +327,7 @@ class PhoneTest {
     }
 
     @Test
-    fun ws(){
+    fun ws() {
         ws(false)
         ws(true)
     }

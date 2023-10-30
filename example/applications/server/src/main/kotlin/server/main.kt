@@ -31,7 +31,7 @@ private fun Application.configure() {
         allowMethod(HttpMethod.Post)
         allowHeader(HttpHeaders.Authorization)
         allowHeader("MyCustomHeader")
-        anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+        anyHost() // Don't do this in production if possible. Try to limit it.
     }
     Phone.routeAll(routing {  }, AccountApiImpl, ChatApiImpl)
     routing {

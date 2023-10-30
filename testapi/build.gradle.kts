@@ -30,6 +30,7 @@ ksp{
     arg("ksp-util.debug", "")
 
     arg("phone.default-method", "post")
+    arg("phone.jwt-auth-name", "auth-jwt")
 
     // set your own path
     arg("phone.server-package-path", "${projectDir.parent}/testcaller/src/main/kotlin")

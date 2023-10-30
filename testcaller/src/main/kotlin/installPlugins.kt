@@ -24,18 +24,8 @@ internal fun Application.installPlugins(){
         basic("auth-basic") {
             realm = "Access to the '/' path"
             validate { credentials ->
-                if (credentials.name == "jetbrains" && credentials.password == "foobar") {
+                if (credentials.name == "jetbrains" && credentials.password.endsWith("foobar")) {
                     UserIdPrincipal(credentials.name)
-                } else {
-                    null
-                }
-            }
-        }
-        bearer("auth-bearer") {
-            realm = "Access to the '/' path"
-            authenticate { tokenCredential ->
-                if (tokenCredential.token == "abc123") {
-                    UserIdPrincipal("jetbrains")
                 } else {
                     null
                 }
@@ -59,7 +49,7 @@ internal fun Application.installPlugins(){
                 }
             }
             challenge { defaultScheme, realm ->
-                println("115: $defaultScheme $realm ${this.call.request.header(HttpHeaders.Authorization)}")
+                println("62: $defaultScheme $realm ${this.call.request.header(HttpHeaders.Authorization)}")
                 call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
             }
         }
