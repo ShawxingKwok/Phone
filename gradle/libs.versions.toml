@@ -22,11 +22,13 @@ shawxing-kspUtil = { group = "io.github.shawxingkwok", name = "ksp-util", versio
 ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.7.3" }
 
+ktor-server-core-jvm = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor"}
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor"}
-ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor"}
+ktor-server-netty-jvm = { group = "io.ktor", name = "ktor-server-netty-jvm", version.ref = "ktor"}
+ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", version.ref = "ktor"}
+ktor-server-websockets-jvm = { group = "io.ktor", name = "ktor-server-websockets-jvm", version.ref = "ktor"}
 
+ktor-client-websockets = { group = "io.ktor", name = "ktor-client-websockets", version.ref = "ktor"}
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor"}
-ktor-client-core-js = { group = "io.ktor", name = "ktor-client-core-js", version.ref = "ktor"}
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-js = { group = "io.ktor", name = "ktor-client-js", version.ref = "ktor" }
-ktor-client-jsonJvm = { group = "io.ktor", name = "ktor-client-json-jvm", version.ref = "ktor" }

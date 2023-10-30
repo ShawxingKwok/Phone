@@ -3,16 +3,11 @@ package server
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
-import io.ktor.server.html.*
-import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import io.ktor.websocket.*
-import kotlinx.html.body
-import kotlinx.html.script
 import pers.shawxingkwok.server.phone.Phone
 import java.time.Duration
 
@@ -39,4 +34,9 @@ private fun Application.configure() {
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
     Phone.routeAll(routing {  }, AccountApiImpl, ChatApiImpl)
+    routing {
+        get("/"){
+            call.respondText("Successfully configured!")
+        }
+    }
 }
