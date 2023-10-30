@@ -19,7 +19,7 @@ import pers.shawxingkwok.client.phone.Phone
 
 val scope = MainScope()
 val client = HttpClient(Js)
-val phone = Phone(client, withWss = false)
+val phone = Phone(client, enablesWss = false)
 
 fun main() {
     val container = document.createElement("div") as HTMLDivElement

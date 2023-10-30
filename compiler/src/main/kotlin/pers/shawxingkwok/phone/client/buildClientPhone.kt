@@ -50,7 +50,7 @@ internal fun buildClientPhone() {
         open class Phone(
             private val client: HttpClient,
             private val baseUrl: String = "http://localhost:80",
-            private val withWss: Boolean,
+            private val enablesWss: Boolean,
             private val tokenScheme: String = "Bearer",
             var token: String? = null,
         ) {
@@ -83,8 +83,7 @@ internal fun buildClientPhone() {
             }
     
             private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
-                if(!withWss) return
-
+                if(!enablesWss) return
                 url.protocol = URLProtocol.WSS
                 url.port = if(isRaw) port else url.protocol.defaultPort
             }

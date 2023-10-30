@@ -6,7 +6,6 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
@@ -27,7 +26,7 @@ import kotlin.test.assertNull
 class PhoneTest {
     private fun start(
         configureServer: Application.() -> Unit = {},
-        withWss: Boolean = false,
+        enables: Boolean = false,
         configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
         requestOnClient: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit,
     ) =
@@ -57,7 +56,7 @@ class PhoneTest {
                 .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                 .sign(Algorithm.HMAC256(JwtConfig.SECRET))
 
-            val phone = pers.shawxingkwok.test.client.Phone(client, withWss = withWss, token = token)
+            val phone = pers.shawxingkwok.test.client.Phone(client, enablesWss = enables, token = token)
 
             requestOnClient(phone)
         }
@@ -256,7 +255,7 @@ class PhoneTest {
         configureServer = {
             Phone.route(routing { }, WebSocketApiImpl)
         },
-        withWss = withWss,
+        enables = withWss,
     ) { phone ->
         phone.WebSocketApi()
             .getSignals(1)
