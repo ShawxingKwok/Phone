@@ -14,19 +14,20 @@ internal fun buildServerPhone() {
         phones = MyProcessor.phones,
         packageName = Args.ServerPackageName,
         initialImports = setOf(
+            "pers.shawxingkwok.phone.Phone",
             "io.ktor.http.*",
             "io.ktor.server.application.*",
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
+            "io.ktor.util.pipeline.PipelineContext",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
             "kotlinx.serialization.builtins.ByteArraySerializer",
-            "pers.shawxingkwok.phone.Phone",
         ),
     ){
         """
-        typealias PipelineContextProvider<T> = suspend ${Decls().PipelineContextUnitCall}.() -> T
+        typealias PipelineContextProvider<T> = suspend PipelineContext<Unit, ApplicationCall>.() -> T
         ${insertIf(MyProcessor.hasWebSocket){
             """
             typealias WebSocketConnector = suspend ${Decls().DefaultWebSocketServerSession}.() -> Unit

@@ -20,11 +20,6 @@ class Decls {
             isTopLevelAndExtensional = true
         )
 
-    val ApplicationCall get() = getDeclText(outermostDeclPath = "io.ktor.server.application.ApplicationCall")
-
-    val PipelineContextUnitCall get() = getDeclText(outermostDeclPath = "io.ktor.util.pipeline.PipelineContext")
-            .plus("<Unit, $ApplicationCall>")
-
     val DefaultWebSocketServerSession get() = getDeclText(outermostDeclPath = "io.ktor.server.websocket.DefaultWebSocketServerSession")
 
     val WebSocketServerSession get() = getDeclText(outermostDeclPath = "io.ktor.server.websocket.WebSocketServerSession")

@@ -84,11 +84,7 @@ class PhoneTest {
     }
 
     @Test
-    fun cipher() = start(
-        configureServer = {
-            Phone.route(routing { }, AccountApiImpl)
-        }
-    ) { phone ->
+    fun cipher() {
         @Suppress("JsonStandardCompliance")
         var text = "hello"
         var bytes = Cipher.encrypt(text.encodeToByteArray())
