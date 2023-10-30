@@ -48,29 +48,12 @@ internal fun buildClientPhone() {
         }}
         
         open class Phone(
-            val client: HttpClient,
-            private val host: String,
-            private val port: Int,
-            private val withHttps: Boolean,
+            private val client: HttpClient,
+            private val baseUrl: String = "http://localhost:80",
             private val withWss: Boolean,
             private val tokenScheme: String = "Bearer",
             var token: String? = null,
         ) {
-            constructor(
-                client: HttpClient,
-                tokenScheme: String = "Bearer",
-                token: String? = null,
-            ) :
-                ~this(
-                    client = client,
-                    host = "localhost",
-                    port = 80,
-                    withHttps = false,
-                    withWss = false,
-                    tokenScheme = tokenScheme,
-                    token = token
-                )!~
-            
             ${MyProcessor.phones.joinToString("\n\n"){ ksclass ->
                 """
                 interface ${ksclass.apiNameInPhone} : ${ksclass.qualifiedName()}{
@@ -78,13 +61,6 @@ internal fun buildClientPhone() {
                 }
                 """.trim()
             }}
-            
-            private val basicUrl: String =
-                ~buildString {
-                    append("http")
-                    if (withHttps) append("s")
-                    append("://${'$'}host:${'$'}port")
-                }!~
             
             protected open fun HttpRequestBuilder.onEachRequestEnd() {}
             
@@ -94,9 +70,8 @@ internal fun buildClientPhone() {
             ){
                 val parameters = parameters(act)
                 
-                if (
-                    method == HttpMethod.Head 
-                    || method == HttpMethod.Get 
+                if (method == HttpMethod.Head 
+                    ~|| method == HttpMethod.Get 
                     || isWebSocket 
                     || body !== ${Decls().EmptyContent}
                 )

@@ -18,13 +18,13 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.client.phone.Phone
 
 val scope = MainScope()
-val phone = Phone(HttpClient(Js))
+val client = HttpClient(Js)
+val phone = Phone(client, withWss = false)
 
 fun main() {
     val container = document.createElement("div") as HTMLDivElement
     document.body!!.appendChild(container)
     container.style.fontSize = "100px"
-
     scope.launch {
         phone.AccountApi()
             .search(101)

@@ -14,8 +14,8 @@ import pers.shawxingkwok.phone.*
 
 context (CodeFormatter)
 internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDeclaration): String {
-    val pathWithoutBasicUrl = "${ksclass.apiNameInPhone}/${getPathEnd(ksclass)}"
-    val fullPath = "\$basicUrl/$pathWithoutBasicUrl"
+    val pathWithoutBaseUrl = "${ksclass.apiNameInPhone}/${getPathEnd(ksclass)}"
+    val fullPath = "\$baseUrl/$pathWithoutBaseUrl"
 
     val core = when(val call = getCall(ksclass)) {
         is Call.Common ->
@@ -93,10 +93,7 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
                     Decls().clientWebSocketSession
 
             """
-            client.$sessionFunText(
-                host = host, port = port,
-                path = "$pathWithoutBasicUrl",
-            ){
+            client.$sessionFunText(path = "$pathWithoutBaseUrl"){
                 enableWssIfNeeded(${call.isRaw})
                 ${getClientRequestPart(ksclass)}
             }

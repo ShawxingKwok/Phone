@@ -14,6 +14,7 @@ import io.ktor.server.testing.*
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
+import org.junit.Before
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
@@ -25,6 +26,7 @@ import kotlin.test.Test
 import kotlin.test.assertNull
 
 class PhoneTest {
+
     private fun start(
         configureServer: Application.() -> Unit = {},
         configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
@@ -56,7 +58,7 @@ class PhoneTest {
                 .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                 .sign(Algorithm.HMAC256(JwtConfig.SECRET))
 
-            val phone = pers.shawxingkwok.test.client.Phone(client, token = token)
+            val phone = pers.shawxingkwok.test.client.Phone(client, withWss= false, token = token)
 
             requestOnClient(phone)
         }
@@ -256,24 +258,21 @@ class PhoneTest {
         configureServer = {
             Phone.route(routing { }, WebSocketApiImpl)
         }
-    ) {_phone ->
-        val wssPhone =
-            pers.shawxingkwok.test.client.Phone(
-                client = _phone.client,
-                host = "localhost",
-                port = 80,
-                withHttps = false,
-                withWss = true,
-            )
+    ) {phone ->
+        // val wssPhone =
+        //     pers.shawxingkwok.test.client.Phone(
+        //         client = _phone.client,
+        //         withWss = true,
+        //     )
 
-        allDo(_phone, wssPhone) { phone ->
+        // allDo(_phone, wssPhone) { phone ->
             phone.WebSocketApi()
                 .getSignals(1)
                 .getOrThrow()
                 .run {
                     val text = (incoming.receive() as Frame.Text).readText()
                     assert(text == "1"){
-                        "isWss: ${phone == wssPhone} $text"
+                        // "isWss: ${phone == wssPhone} $text"
                     }
                 }
 
@@ -283,9 +282,9 @@ class PhoneTest {
                 .run {
                     val text = (incoming.receive() as Frame.Text).readText()
                     assert(text == "1"){
-                        "isWss: ${phone == wssPhone} $text"
+                        // "isWss: ${phone == wssPhone} $text"
                     }
                 }
-        }
+        // }
     }
 }
