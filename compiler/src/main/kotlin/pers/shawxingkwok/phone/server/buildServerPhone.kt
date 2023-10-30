@@ -34,6 +34,17 @@ internal fun buildServerPhone() {
             """
         }}
         
+        class BadRequestException(msg: Any) : Exception(msg.toString())
+
+        inline fun checkRequest(condition: Boolean, getMsg: () -> Any){
+            if (!condition)
+                ~throw BadRequestException(getMsg())!~
+        }
+        
+        fun errorBadRequest(msg: Any): Nothing {
+            throw BadRequestException(msg)
+        }
+
         object Phone{
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
@@ -58,6 +69,19 @@ internal fun buildServerPhone() {
             }}
             
             ${getCoderFunctions()}
+    
+            private inline fun PipelineContext<Unit, ApplicationCall>.catchBadRequestException(act: () -> Unit){
+                try {
+                    act()
+                }catch (e: BadRequestException){
+                    respondBadRequest(e.message!!)
+                }
+            }
+            
+            private fun PipelineContext<Unit, ApplicationCall>.respondBadRequest(text: String){
+                val code = HttpStatusCode(400, text)
+                call.response.status(code)
+            }
             
             ${insertIf(MyProcessor.hasWebSocket){
                 """
@@ -85,10 +109,10 @@ internal fun buildServerPhone() {
                     route.route("/${ksclass.apiNameInPhone}"){
                         ${ksclass.apiPropNameInPhone}.run { doOtherTasks() }
                         
-                        ${mayEmbraceWithAuth(ksclass) {
+                        ${ksclass.mayEmbraceWithAuth {
                             ksclass.getNeededFunctions().joinToString("\n\n") { ksfun ->
-                                mayEmbraceWithAuth(ksfun) {
-                                    ksfun.getServerRouteContent(ksclass)
+                                ksfun.mayEmbraceWithAuth {
+                                    ksfun.getServerRouteContent(ksclass)                                    
                                 }
                             }
                         }}

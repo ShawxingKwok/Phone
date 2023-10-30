@@ -28,7 +28,9 @@ fun main() {
     scope.launch {
         phone.AccountApi()
             .search(101)
-            .onFailure { container.textContent = "failed connection $it" }
+            .onFailure {
+                container.textContent = "${it.message}"
+            }
             .onSuccess {
                 container.textContent = when(it){
                     null -> "not found the user"

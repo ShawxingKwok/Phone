@@ -23,11 +23,12 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
         is Call.PartialContent -> call.tagType
     }
 
-    val start = call.method.routeName
+    val routeName = call.method.routeName
 
     return buildString {
         """
-        $start("/${getPathEnd(ksclass)}"){
+        $routeName("/${getPathEnd(ksclass)}"){
+            catchBadRequestException{
         """.trimStart()
             .let(::append)
 
@@ -42,7 +43,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
 
         val invokePart = buildString {
             append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
-            append(getServerParametersPart(ksclass, start))
+            append(getServerParametersPart(ksclass, routeName))
             append(")()")
         }
 
@@ -91,6 +92,6 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
         .trimStart().let(::append)
 
         append("call.response.status(HttpStatusCode.OK)\n")
-        append("}")
+        append("}\n}")
     }
 }

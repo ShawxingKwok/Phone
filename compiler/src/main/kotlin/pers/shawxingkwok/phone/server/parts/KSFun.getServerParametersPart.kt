@@ -11,14 +11,7 @@ context (CodeFormatter)
 internal fun KSFunctionDeclaration.getServerParametersPart(
     ksclass: KSClassDeclaration,
     start: String,
-    onError: (String) -> String = { text ->
-        """
-        call.respondText(
-            text = "$text",
-            status = HttpStatusCode.BadRequest
-        )
-        """.trim()
-    }
+    onError: (String) -> String = { """respondBadRequest("$it")""" }
 ) = buildString{
     if (parameters.any()) append("\n")
 

@@ -6,12 +6,10 @@ import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.phone.Decls
 import pers.shawxingkwok.phone.Phone
 
-internal inline fun CodeFormatter.mayEmbraceWithAuth(
-    decl: KSDeclaration,
-    getBody: () -> String,
-): String =
+context (CodeFormatter)
+internal inline fun KSDeclaration.mayEmbraceWithAuth(getBody: () -> String): String =
     buildString {
-        val auth = decl.getAnnotationByType(Phone.Auth::class)
+        val auth = getAnnotationByType(Phone.Auth::class)
 
         if (auth != null) {
             append("${Decls().authenticate}(\n")

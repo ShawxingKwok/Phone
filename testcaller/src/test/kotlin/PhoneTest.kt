@@ -6,6 +6,7 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
@@ -14,11 +15,9 @@ import io.ktor.server.testing.*
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
-import org.junit.Before
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
-import pers.shawxingkwok.ktutil.allDo
 import pers.shawxingkwok.test.server.*
 import java.io.File
 import java.util.*
@@ -26,9 +25,9 @@ import kotlin.test.Test
 import kotlin.test.assertNull
 
 class PhoneTest {
-
     private fun start(
         configureServer: Application.() -> Unit = {},
+        withWss: Boolean = false,
         configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
         requestOnClient: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit,
     ) =
@@ -58,7 +57,7 @@ class PhoneTest {
                 .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                 .sign(Algorithm.HMAC256(JwtConfig.SECRET))
 
-            val phone = pers.shawxingkwok.test.client.Phone(client, withWss= false, token = token)
+            val phone = pers.shawxingkwok.test.client.Phone(client, withWss = withWss, token = token)
 
             requestOnClient(phone)
         }
@@ -253,38 +252,36 @@ class PhoneTest {
             }
     }
 
-    @Test
-    fun ws() = start(
+    fun ws(withWss: Boolean) = start(
         configureServer = {
             Phone.route(routing { }, WebSocketApiImpl)
-        }
-    ) {phone ->
-        // val wssPhone =
-        //     pers.shawxingkwok.test.client.Phone(
-        //         client = _phone.client,
-        //         withWss = true,
-        //     )
-
-        // allDo(_phone, wssPhone) { phone ->
-            phone.WebSocketApi()
-                .getSignals(1)
-                .getOrThrow()
-                .run {
-                    val text = (incoming.receive() as Frame.Text).readText()
-                    assert(text == "1"){
-                        // "isWss: ${phone == wssPhone} $text"
-                    }
+        },
+        withWss = withWss,
+    ) { phone ->
+        phone.WebSocketApi()
+            .getSignals(1)
+            .getOrThrow()
+            .run {
+                val text = (incoming.receive() as Frame.Text).readText()
+                assert(text == "1") {
+                    "isWss: $withWss $text"
                 }
+            }
 
-            phone.WebSocketApi()
-                .getChats("1")
-                .getOrThrow()
-                .run {
-                    val text = (incoming.receive() as Frame.Text).readText()
-                    assert(text == "1"){
-                        // "isWss: ${phone == wssPhone} $text"
-                    }
+        phone.WebSocketApi()
+            .getChats("1")
+            .getOrThrow()
+            .run {
+                val text = (incoming.receive() as Frame.Text).readText()
+                assert(text == "1") {
+                    "isWss: $withWss $text"
                 }
-        // }
+            }
+    }
+
+    @Test
+    fun ws(){
+        ws(false)
+        ws(true)
     }
 }

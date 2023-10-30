@@ -6,6 +6,7 @@ import java.io.File
 
 object PartialContentApiImpl : Phone.PartialContentApi {
     override suspend fun partialGet(id: String): PipelineContextProvider<Pair<String, Long>> = {
+        // checkRequest(id.none()){}
         val file = File(".gitignore")
         val length = file.length()
         call.respondFile(file)

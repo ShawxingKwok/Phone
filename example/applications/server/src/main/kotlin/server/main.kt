@@ -40,8 +40,5 @@ private fun Application.configure() {
     }
     routing {
         Phone.routeAll(this, AccountApiImpl, ChatApiImpl)
-        get("/") {
-            call.respondText("Hello World!")
-        }
     }
 }
