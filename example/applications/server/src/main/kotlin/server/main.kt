@@ -33,7 +33,9 @@ private fun Application.configure() {
         allowHeader("MyCustomHeader")
         anyHost() // Don't do this in production if possible. Try to limit it.
     }
-    Phone.routeAll(routing {  }, AccountApiImpl, ChatApiImpl)
+
+    Phone.routeAll(routing {  }, DemoApiImpl)
+
     routing {
         get("/"){
             call.respondText("Successfully configured!")

@@ -12,7 +12,6 @@ import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.websocket.*
 import kotlinx.coroutines.launch
-import pers.shawxingkwok.client.phone.Phone
 
 val client = HttpClient(Android) {
     defaultRequest {

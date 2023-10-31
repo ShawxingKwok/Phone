@@ -4,7 +4,6 @@ import kotlinx.browser.document
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLDivElement
-import pers.shawxingkwok.client.phone.Phone
 
 val scope = MainScope()
 val client = HttpClient(Js)

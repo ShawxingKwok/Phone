@@ -98,7 +98,7 @@ internal fun buildClientPhone() {
             }
     
             private fun HttpRequestBuilder.enableWssIfNeeded(isRaw: Boolean){
-                if(!enablesWss) return
+                ${insertIf(MyProcessor.hasWebSocket){ "if(!enablesWss) return" }} 
                 url.protocol = URLProtocol.WSS
                 url.port = if(isRaw) port else url.protocol.defaultPort
             }
