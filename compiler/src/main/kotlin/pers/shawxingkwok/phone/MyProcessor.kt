@@ -21,9 +21,8 @@ internal object MyProcessor : KSProcessor{
         var value = UNSTARTED
     }
 
-    private val phoneInterfacePaths = resolver
-        .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-        .plus(resolver.getAnnotatedSymbols<Phone.Call.WebSocket, KSClassDeclaration>())
+    private val phoneInterfacePaths by fastLazy {
+        resolver.getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
         .also { ksclasses ->
             val cognominal= ksclasses
                 .groupBy { it.apiNameInPhone }
@@ -36,6 +35,7 @@ internal object MyProcessor : KSProcessor{
             }
         }
         .map { it.qualifiedName()!! }
+    }
 
     private val serializerPaths = resolver
         .getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
@@ -151,7 +151,6 @@ internal object MyProcessor : KSProcessor{
                     listOf(Args.ClientPackagePath, Args.ClientPackageName, "Phone"),
                 ){
                     (packagePath, packageName, fileName) ->
-
                     packagePath ?: return@allDo
 
                     val expectedEnd = packageName!!.replace(".", "/") + "/$fileName"

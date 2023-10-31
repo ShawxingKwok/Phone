@@ -12,6 +12,7 @@ kotlin {
         browser()
     }
     // other needed native platforms
+
     sourceSets {
         val commonMain by getting{
             dependencies{
@@ -25,7 +26,6 @@ kotlin {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", project(":compiler"))
     add("kspJvm", project(":compiler"))
 }
 
