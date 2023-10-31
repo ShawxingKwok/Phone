@@ -1,7 +1,6 @@
 package pers.shawxingkwok.phone
 
 import com.google.devtools.ksp.getClassDeclarationByName
-import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.*
 import pers.shawxingkwok.ksputil.*
 import pers.shawxingkwok.ktutil.allDo
@@ -61,15 +60,6 @@ internal object MyProcessor : KSProcessor{
         }
     }
 
-    val anyNotWebSocket by fastLazy {
-        check(Status.value != Status.UNSTARTED)
-        phones.any { ksclass ->
-            ksclass.getNeededFunctions().any {
-                !it.isAnnotationPresent(Phone.Call.WebSocket::class)
-            }
-        }
-    }
-
     // both nullable and non-nullable are mapped
     val serializers: Map<KSType, KSClassDeclaration> by fastLazy {
         check(Status.value != Status.UNSTARTED)
@@ -102,8 +92,11 @@ internal object MyProcessor : KSProcessor{
             condition = ksclasses.size <= 1
                 && (ksclasses.none() || ksclasses.first().classKind == ClassKind.OBJECT)
         ){
-            "`Phone.Crypto` could be annotated only on interfaces and a single object."
+            "`Phone.Crypto` is annotated on symbols in interfaces annotated with `Phone.Api`, " +
+            "or a single object implements `Phone.Cipher`."
         }
+
+        // crypto symbols need a cipher object, which is checked else where.
 
         val ksclass = ksclasses.firstOrNull() ?: return@fastLazy null
 
@@ -132,12 +125,11 @@ internal object MyProcessor : KSProcessor{
 
         val invalid = resolver
             .getAnnotatedSymbols<Phone.Api, KSClassDeclaration>()
-            .plus(resolver.getAnnotatedSymbols<Phone.Call.WebSocket, KSClassDeclaration>())
             .filterNot { it.accept(PhoneValidator, Unit) }
-            .toMutableList()
-
-        invalid += resolver.getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
-            .filterNot { it.accept(SerializerValidator, Unit) }
+            .plus(
+                resolver.getAnnotatedSymbols<Phone.Serializer, KSClassDeclaration>()
+                .filterNot { it.accept(SerializerValidator, Unit) }
+            )
 
         // also output to dest paths from ksp args
         when(Status.value){

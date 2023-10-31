@@ -4,17 +4,11 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
-import io.ktor.client.plugins.auth.providers.basic
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.websocket.*
@@ -44,13 +38,23 @@ class PhoneTest {
 
             val client = createClient {
                 configureClient()
+
                 install(io.ktor.client.plugins.websocket.WebSockets)
+
                 install(Auth) {
+                    val myRealm = "Access to the '/' path"
                     basic {
                         credentials {
                             BasicAuthCredentials(username = "jetbrains", password = "foobar")
                         }
-                        realm = "Access to the '/' path"
+                        realm = myRealm
+                    }
+
+                    digest {
+                        credentials {
+                            DigestAuthCredentials(username = "jetbrains", password = "foobar")
+                        }
+                        realm = myRealm
                     }
                 }
             }
@@ -123,56 +127,6 @@ class PhoneTest {
         }
     ) { phone ->
         assert(phone.AuthApi_Jwt().delete(1).getOrThrow() == 1)
-    }
-
-    @Test
-    fun commonJwt() = testApplication {
-        application {
-            authentication {
-                jwt("auth-jwt") {
-                    realm = JwtConfig.REALM
-
-                    JWT.require(Algorithm.HMAC256(JwtConfig.SECRET))
-                        .withAudience(JwtConfig.AUDIENCE)
-                        .withIssuer(JwtConfig.ISSUER)
-                        .build()
-                        .let(::verifier)
-
-                    validate { credential ->
-                        if (credential.payload.getClaim("username").asString() == "shawxing") {
-                            JWTPrincipal(credential.payload)
-                        } else {
-                            null
-                        }
-                    }
-
-                    challenge { defaultScheme, realm ->
-                        println("62: $defaultScheme $realm ${this.call.request.header(HttpHeaders.Authorization)}")
-                        call.respond(HttpStatusCode.Unauthorized, "Token is not valid or has expired")
-                    }
-                }
-            }
-
-            routing {
-                authenticate("auth-jwt") {
-                    post("/X") {
-                        call.response.status(HttpStatusCode.OK)
-                    }
-                }
-            }
-        }
-
-        val token = JWT.create()
-            .withAudience(JwtConfig.AUDIENCE)
-            .withIssuer(JwtConfig.ISSUER)
-            .withClaim("username", "shawxing")
-            .withExpiresAt(Date(System.currentTimeMillis() + 60000))
-            .sign(Algorithm.HMAC256(JwtConfig.SECRET))
-
-        client.post("/X"){
-            header(HttpHeaders.Authorization, "Bearer $token")
-        }
-        .status.let(::println)
     }
 
     @Test
@@ -330,5 +284,14 @@ class PhoneTest {
     fun ws() {
         ws(false)
         ws(true)
+    }
+
+    @Test
+    fun digest() = start (
+        configureServer = {
+            Phone.route(routing {  }, AuthApiImpl.Multi)
+        }
+    ){ phone ->
+        assert(phone.AuthApi_Multi().get(1).getOrThrow() == 1)
     }
 }

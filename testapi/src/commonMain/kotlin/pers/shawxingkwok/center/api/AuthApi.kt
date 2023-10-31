@@ -20,7 +20,7 @@ object AuthApi {
     @Phone.Api
     interface Multi{
         @Phone.Call.Common<Int>
-        @Phone.Auth("", "auth-basic")
+        @Phone.Auth("auth-digest", "")
         suspend fun get(id: Int): Any?
     }
 
