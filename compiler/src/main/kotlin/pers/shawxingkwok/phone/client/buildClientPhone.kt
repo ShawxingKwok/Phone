@@ -67,6 +67,13 @@ internal fun buildClientPhone() {
                 fun refreshJwtToken(token: String){
                     jwtToken = token
                 }
+                
+                private fun HttpRequestBuilder.addToken(url: String) {
+                    checkNotNull(jwtToken){
+                        "Set the jwt token in `Phone` before the request to ${'$'}url."
+                    }
+                    header(HttpHeaders.Authorization, "Bearer ${'$'}jwtToken")
+                }       
                 """
             }} 
             
@@ -95,14 +102,7 @@ internal fun buildClientPhone() {
                 url.protocol = URLProtocol.WSS
                 url.port = if(isRaw) port else url.protocol.defaultPort
             }
-                
-            private fun HttpRequestBuilder.addToken(url: String) {
-                checkNotNull(jwtToken){
-                    "Set the jwt token in `Phone` before the request to ${'$'}url."
-                }
-                header(HttpHeaders.Authorization, "Bearer ${'$'}jwtToken")
-            }
-        
+            
             private inline fun <reified T> ParametersBuilder.appendWithJson(
                 key: String,
                 value: T,
@@ -131,7 +131,7 @@ internal fun buildClientPhone() {
 context (CodeFormatter)
 private fun KSClassDeclaration.getBody(): String =
     """
-    open fun $apiNameInPhone(onRequestStart: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
+    open fun $apiNameInPhone(onStart: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
         ${getNeededFunctions().joinToString("\n\n"){ it.getClientFunctionContent(this) } }
     }
     """.trim()

@@ -50,7 +50,7 @@ internal fun buildServerPhone() {
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
                 interface ${ksclass.apiNameInPhone} : ${ksclass.qualifiedName()}{
-                    fun Route.doOtherTasks(){}
+                    fun Route.onStart(){}
                     
                     ${ksclass.getNeededFunctions().joinToString("\n\n"){ ksfun ->
                         val returnedText = when(val kind = ksfun.getCall(ksclass)) {
@@ -108,7 +108,7 @@ internal fun buildServerPhone() {
                 """
                 fun route(route: Route, ${ksclass.apiPropNameInPhone}: ${ksclass.apiNameInPhone}){
                     route.route("/${ksclass.apiNameInPhone}"){
-                        ${ksclass.apiPropNameInPhone}.run { doOtherTasks() }
+                        ${ksclass.apiPropNameInPhone}.run { onStart() }
                         
                         ${ksclass.mayEmbraceWithAuth {
                             ksclass.getNeededFunctions().joinToString("\n\n") { ksfun ->

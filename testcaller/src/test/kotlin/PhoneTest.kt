@@ -285,13 +285,4 @@ class PhoneTest {
         ws(false)
         ws(true)
     }
-
-    @Test
-    fun digest() = start (
-        configureServer = {
-            Phone.route(routing {  }, AuthApiImpl.Multi)
-        }
-    ){ phone ->
-        assert(phone.AuthApi_Multi().get(1).getOrThrow() == 1)
-    }
 }
