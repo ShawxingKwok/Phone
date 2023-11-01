@@ -4,12 +4,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface LoginResult {
-    @Serializable
-    data class Success(val user: User) : LoginResult
+    val msg: String
 
     @Serializable
-    data object NotSigned : LoginResult
+    data class Success(val user: User) : LoginResult{
+        override val msg: String = "Login successfully"
+    }
 
     @Serializable
-    data object PasswordWrong : LoginResult
+    data object NotSigned : LoginResult{
+        override val msg: String = "Not registered"
+    }
+
+    @Serializable
+    data object PasswordWrong : LoginResult{
+        override val msg: String = "Wrong password"
+    }
 }

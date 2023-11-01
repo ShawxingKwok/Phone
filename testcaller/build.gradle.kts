@@ -28,6 +28,8 @@ dependencies {
     implementation("io.ktor:ktor-server-partial-content-jvm")
     implementation("io.ktor:ktor-server-auto-head-response-jvm")
     implementation("io.ktor:ktor-server-auth-jwt-jvm")
+    implementation("io.ktor:ktor-server-sessions")
+    implementation("io.ktor:ktor-server-html-builder")
 
     testImplementation ("io.ktor:ktor-server-tests-jvm")
     testImplementation(libs.ktor.client.core)

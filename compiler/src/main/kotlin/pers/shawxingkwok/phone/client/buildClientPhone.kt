@@ -131,7 +131,7 @@ internal fun buildClientPhone() {
 context (CodeFormatter)
 private fun KSClassDeclaration.getBody(): String =
     """
-    open fun $apiNameInPhone(onStart: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
+    open fun $apiNameInPhone(extendRequest: (HttpRequestBuilder.() -> Unit)? = null) = object : $apiNameInPhone {                    
         ${getNeededFunctions().joinToString("\n\n"){ it.getClientFunctionContent(this) } }
     }
     """.trim()

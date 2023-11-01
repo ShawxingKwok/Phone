@@ -17,7 +17,7 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
         && getAnnotationByType(Phone.Auth::class)?.configurations?.any { it == Args.JwtAuthName } == true
 
     return """
-    onStart?.invoke(this)            
+    extendRequest?.invoke(this)            
 
     method = HttpMethod.$methodName
 

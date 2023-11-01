@@ -16,12 +16,6 @@ fun main() {
 }
 
 private fun Application.configure() {
-    install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(15)
-        timeout = Duration.ofSeconds(15)
-        maxFrameSize = Long.MAX_VALUE
-        masking = false
-    }
     install(CORS) {
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
@@ -35,10 +29,9 @@ private fun Application.configure() {
     }
 
     Phone.routeAll(routing {  }, DemoApiImpl)
-
     routing {
-        get("/"){
-            call.respondText("Successfully configured!")
+        get("/A"){
+            call.respondText("A", status = HttpStatusCode.OK)
         }
     }
 }
