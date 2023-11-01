@@ -29,9 +29,4 @@ private fun Application.configure() {
     }
 
     Phone.routeAll(routing {  }, DemoApiImpl)
-    routing {
-        get("/A"){
-            call.respondText("A", status = HttpStatusCode.OK)
-        }
-    }
 }
