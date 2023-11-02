@@ -41,6 +41,7 @@ ksp{
     arg("phone.client-package-name", "pers.shawxingkwok.client.phone")
 
     arg("phone.default-method", "post")
+
     // optional
     // arg("phone.jwt-auth-name", "")
 }

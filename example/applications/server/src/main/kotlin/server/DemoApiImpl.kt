@@ -11,7 +11,8 @@ private val fakeUsers = mutableListOf(
 )
 
 object DemoApiImpl : Phone.DemoApi {
-    override suspend fun login(id: Long, password: String): PipelineContextProvider<LoginResult> = {
+    override suspend fun login(id: Long, password: String): PipelineContextProvider<LoginResult> =
+    {
         val user = fakeUsers.firstOrNull { it.id == id }
 
         when{

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package pers.shawxingkwok.phone
 
 @Target
@@ -18,20 +20,26 @@ public annotation class Phone {
 
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.CLASS)
-    public annotation class Api(val method: Method = Method.Default)
+    public annotation class Api(val defaultMethod: Method = Method.Default)
 
     @Target
     public annotation class Call {
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
-        public annotation class Common<T>(val method: Method = Method.Default, val polymorphicId: String = "")
+        public annotation class Common<T>(
+            val method: Method = Method.Default,
+            val polymorphicId: String = ""
+        )
 
         /**
          * Commonly used with file downloads.
          */
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
-        public annotation class Manual<T>(val method: Method = Method.Default, val polymorphicId: String = "")
+        public annotation class Manual<T>(
+            val method: Method = Method.Default,
+            val polymorphicId: String = ""
+        )
 
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
@@ -41,9 +49,6 @@ public annotation class Phone {
             val isRaw: Boolean = false
         )
 
-        /**
-         * Method is limited `Head` and `Get`.
-         */
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.FUNCTION)
         public annotation class PartialContent<T>(val polymorphicId: String = "")

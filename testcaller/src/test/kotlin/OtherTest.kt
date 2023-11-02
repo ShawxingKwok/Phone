@@ -1,3 +1,4 @@
+import io.ktor.client.call.*
 import io.ktor.client.plugins.cookies.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -11,6 +12,7 @@ import kotlinx.html.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import junit.framework.TestCase.assertEquals
+import org.apache.http.protocol.ResponseContent
 import org.junit.Test
 
 class OtherTest {

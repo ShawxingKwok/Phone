@@ -11,37 +11,34 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.client.phone.Phone
 import react.*
-import react.dom.aria.AriaOrientation
-import react.dom.aria.ariaOrientation
 import react.dom.client.createRoot
 import react.dom.html.ReactHTML.button
 import react.dom.html.ReactHTML.form
-import react.dom.html.ReactHTML.h1
 import react.dom.html.ReactHTML.input
 import react.dom.html.ReactHTML.label
-import react.dom.html.ReactHTML.span
-import web.cssom.AutoLength
-import web.cssom.AutoLengthProperty
-import web.cssom.Margin
-import web.cssom.atrule.orientation
 
 val mainScope = MainScope()
+// Creates a global phone first
 val client = HttpClient(Js)
 val phone = Phone(client)
 
 fun main() {
-    val container = web.dom.document.getElementById("root") ?: error("Couldn't find container!")
+    val container = web.dom.document.getElementById("root")
+        ?: error("Couldn't find container!")
+
     val app = FC<Props> {
+        // `user` would be received from the server and passed to WelcomeScreen.
         var user by useState<User?>(null)
         if (user == null)
-            loginScreen{ user = it }
+            LoginScreen{ user = it }
         else
-            welcomeScreen(user!!)
+            WelcomeScreen(user!!)
     }
+
     createRoot(container).render(app.create())
 }
 
-fun welcomeScreen(user: User){
+fun WelcomeScreen(user: User){
     document.body!!.innerHTML = ""
     document.body!!.append {
         h1 {
@@ -50,10 +47,10 @@ fun welcomeScreen(user: User){
     }
 }
 
-fun ChildrenBuilder.loginScreen(setUser: (User) -> Unit){
+fun ChildrenBuilder.LoginScreen(setUser: (User) -> Unit){
     form {
         label {
-            +"Username:"
+            +"User id:"
             input {
                 id = "idInput"
             }

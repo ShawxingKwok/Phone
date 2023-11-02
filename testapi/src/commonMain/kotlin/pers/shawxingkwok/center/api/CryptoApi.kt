@@ -11,13 +11,13 @@ object CryptoApi {
             name: @Phone.Crypto String,
             password: String,
         )
-        : @Phone.Crypto Any?
+        : @Phone.Crypto Any
     }
 
     @Phone.Api
     @Phone.Crypto
     interface Whole {
         @Phone.Call.Common<List<String>>
-        suspend fun getChats(id: Long, name: String): Any?
+        suspend fun getChats(id: Long, name: String): Any
     }
 }
