@@ -1,9 +1,14 @@
 package server
 
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.server.phone.Phone
 import pers.shawxingkwok.server.phone.PipelineContextProvider
+import pers.shawxingkwok.server.phone.WebSocketConnector
+import java.io.File
 
 private val fakeUsers = mutableListOf(
     User(1, "William", "123456"),
@@ -20,5 +25,36 @@ object DemoApiImpl : Phone.DemoApi {
             user.password == password -> LoginResult.Success(user)
             else -> LoginResult.PasswordWrong
         }
+    }
+
+    override suspend fun uploadFile(
+        name: String,
+        length: Long,
+        type: String?
+    )
+        : PipelineContextProvider<Unit> =
+    {
+
+    }
+
+    @Suppress("UNREACHABLE_CODE")
+    override suspend fun downloadFile(path: String): PipelineContextProvider<Pair<String, Long>> =
+    {
+        val file: File = TODO("search with path")
+        call.respondFile(file) // or with stream or channel
+
+        val type = file.name.substringAfterLast(".")
+        val length = file.length()
+
+        type to length
+    }
+
+    override suspend fun downloadBigFile(path: String): PipelineContextProvider<Pair<String, Long>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getChats(groupId: Long): WebSocketConnector =
+    {
+
     }
 }

@@ -40,6 +40,7 @@ object PhoneValidator : KSDefaultValidator() {
                     condition = ksfun.isAbstract
                         && Modifier.SUSPEND in ksfun.modifiers
                         && ksfun.typeParameters.none()
+                        && ksfun.returnType!!.resolve() == resolver.builtIns.anyType
                         && ksfun.extensionReceiver == null
                         && ksfun.annotations.filter {
                                 it.annotationType.resolve().declaration.qualifiedName()!!
@@ -47,7 +48,7 @@ object PhoneValidator : KSDefaultValidator() {
                             }.count() == 1
                 ) {
                     "In each `Phone` interface, all functions, including those from super classes but except overridden, " +
-                    "must be abstract, suspend, without extensional receivers and type parameters, " +
+                    "must be abstract, suspend, return `Any`, without extensional receivers and type parameters, " +
                     "and carry an annotation in `Phone.Call`."
                 }
             }

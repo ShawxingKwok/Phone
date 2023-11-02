@@ -11,8 +11,8 @@ object ManualApiImpl :  Phone.ManualApi {
     }
 
     override suspend fun exchange(id: String): PipelineContextProvider<List<String>> = {
-        val receivedBytes = call.receive<ByteArray>()
-        call.respond(receivedBytes)
+        val channel = call.receiveChannel()
+        call.respond(channel)
         listOf(id)
     }
 

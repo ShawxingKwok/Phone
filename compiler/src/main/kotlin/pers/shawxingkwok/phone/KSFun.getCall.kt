@@ -84,7 +84,8 @@ internal fun KSFunctionDeclaration.getCall(ksclass: KSClassDeclaration): Call =
             Phone.Call.WebSocket::class.simpleName -> {
                 val call = getAnnotationByType(Phone.Call.WebSocket::class)!!
                 val polymorphicId = call.polymorphicId.takeIf { it.any() }
-                Call.WebSocket(call.method, polymorphicId, call.isRaw)
+                val method = call.method.takeUnless { it == Phone.Method.Default } ?: defaultMethod
+                Call.WebSocket(method, polymorphicId, call.isRaw)
             }
 
             else -> InFuture()

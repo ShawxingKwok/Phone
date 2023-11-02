@@ -9,15 +9,19 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.launch
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.client.phone.Phone
 import pers.shawxingkwok.myapplication.databinding.ActivityLoginBinding
+import java.io.File
+import java.io.FileOutputStream
 
 val client = HttpClient(Android)
-val phone = Phone(client, "http://10.0.2.2:80")
+val phone = Phone(client, "http://10.0.2.2:80", enablesWss = false)
 
 lateinit var user: User
     private set
@@ -70,4 +74,59 @@ class LoginActivity : AppCompatActivity() {
     private fun showShortToast(msg: String){
         Toast.makeText(this@LoginActivity, msg, Toast.LENGTH_SHORT).show()
     }
+}
+
+@Suppress("UNREACHABLE_CODE")
+suspend fun foo() {
+    val path: String = TODO()
+    val file = File(path)
+
+    phone.DemoApi()
+        .uploadFile(
+            name = file.name.substringBeforeLast("."),
+            length = file.length(),
+            type = file.name.substringAfterLast("."),
+        )
+        .onFailure {
+
+        }
+        .onSuccess {
+
+        }
+
+    phone.DemoApi()
+        .downloadFile("xx")
+        .onFailure {
+
+        }
+        .onSuccess { (tag, resp) ->
+            val (type, length) = tag
+            val channel = resp.bodyAsChannel()
+            // ...
+        }
+
+    phone.DemoApi()
+        .downloadBigFile("xx")
+        .onFailure {  }
+        .onSuccess { handler ->
+            val (type, totalLength) = handler.tag
+
+            val outFile: File = TODO()
+            var currentLength = outFile.length()
+            val output = FileOutputStream(outFile, true)
+            val chunkSize = 1024
+
+            while (currentLength < totalLength) {
+                val data = handler.get(currentLength..< currentLength + chunkSize).body<ByteArray>()
+                output.write(data)
+                currentLength += chunkSize
+            }
+        }
+
+    phone.DemoApi()
+        .getChats(1)
+        .onFailure {  }
+        .onSuccess {
+
+        }
 }

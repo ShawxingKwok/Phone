@@ -20,7 +20,7 @@ import react.dom.html.ReactHTML.label
 val mainScope = MainScope()
 // Creates a global phone first
 val client = HttpClient(Js)
-val phone = Phone(client)
+val phone = Phone(client, enablesWss = false)
 
 fun main() {
     val container = web.dom.document.getElementById("root")

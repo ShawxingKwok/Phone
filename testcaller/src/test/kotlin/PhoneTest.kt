@@ -16,6 +16,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.server.websocket.*
 import io.ktor.server.websocket.WebSockets
+import io.ktor.util.cio.*
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.json.Json
@@ -215,9 +216,11 @@ class PhoneTest {
         phone.ManualApi()
             .getUnit("S")
 
+        val file = File(".gitignore")
         phone.ManualApi {
-            setBody(byteArrayOf(1))
-        }
+                val channel = file.readChannel()
+                setBody(channel)
+            }
             .exchange("122")
             .getOrThrow()
             .let { (headInfo, response) ->
@@ -225,7 +228,7 @@ class PhoneTest {
                     headInfo
                 }
                 val bytes = response.readBytes()
-                assert(bytes.contentEquals(byteArrayOf(1))) {
+                assert(bytes.contentEquals(file.readBytes())) {
                     bytes.joinToString()
                 }
             }
