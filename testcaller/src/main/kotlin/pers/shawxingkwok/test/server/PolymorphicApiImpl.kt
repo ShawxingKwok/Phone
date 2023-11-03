@@ -4,15 +4,15 @@ import io.ktor.server.application.*
 import io.ktor.util.pipeline.*
 
 object PolymorphicApiImpl :  Phone.PolymorphicApi{
-    override suspend fun foo(): PipelineContextProvider<String> = {
+    override suspend fun foo(): HttpResponser<String> = {
         "foo"
     }
 
-    override suspend fun foo(i: Long): PipelineContextProvider<Long> = {
+    override suspend fun foo(i: Long): HttpResponser<Long> = {
         i
     }
 
-    override suspend fun foo(j: Int): PipelineContextProvider<Int> = {
+    override suspend fun foo(j: Int): HttpResponser<Int> = {
         j
     }
 }

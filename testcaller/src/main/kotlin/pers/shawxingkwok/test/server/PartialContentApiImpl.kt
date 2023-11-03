@@ -5,7 +5,7 @@ import io.ktor.server.response.*
 import java.io.File
 
 object PartialContentApiImpl : Phone.PartialContentApi {
-    override suspend fun partialGet(id: String): PipelineContextProvider<Pair<String, Long>> = {
+    override suspend fun partialGet(id: String): HttpResponser<Pair<String, Long>> = {
         // checkRequest(id.none()){}
         val file = File(".gitignore")
         val length = file.length()
@@ -13,7 +13,7 @@ object PartialContentApiImpl : Phone.PartialContentApi {
         id to length
     }
 
-    override suspend fun partialGetUnit(id: String): PipelineContextProvider<Unit> = {
+    override suspend fun partialGetUnit(id: String): HttpResponser<Unit> = {
         call.respondFile(File(".gitignore"))
     }
 }

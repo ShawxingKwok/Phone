@@ -27,7 +27,7 @@ internal fun buildServerPhone() {
         ),
     ){
         """
-        typealias PipelineContextProvider<T> = suspend PipelineContext<Unit, ApplicationCall>.() -> T
+        typealias HttpResponser<T> = suspend PipelineContext<Unit, ApplicationCall>.() -> T
         ${insertIf(MyProcessor.hasWebSocket){
             """
             typealias WebSocketConnector = suspend ${Decls().DefaultWebSocketServerSession}.() -> Unit
@@ -54,9 +54,9 @@ internal fun buildServerPhone() {
                     
                     ${ksclass.getNeededFunctions().joinToString("\n\n"){ ksfun ->
                         val returnedText = when(val kind = ksfun.getCall(ksclass)) {
-                            is Call.Common -> "PipelineContextProvider<${kind.returnType.text}>"
-                            is Call.Manual -> "PipelineContextProvider<${kind.tagType}>"
-                            is Call.PartialContent -> "PipelineContextProvider<${kind.tagType}>"
+                            is Call.Common -> "HttpResponser<${kind.returnType.text}>"
+                            is Call.Manual -> "HttpResponser<${kind.tagType}>"
+                            is Call.PartialContent -> "HttpResponser<${kind.tagType}>"
                             is Call.WebSocket -> 
                                 if (kind.isRaw)
                                     "WebSocketRawConnector"

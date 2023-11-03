@@ -1,12 +1,11 @@
 package server
 
 import io.ktor.server.application.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
+import pers.shawxingkwok.server.phone.HttpResponser
 import pers.shawxingkwok.server.phone.Phone
-import pers.shawxingkwok.server.phone.PipelineContextProvider
 import pers.shawxingkwok.server.phone.WebSocketConnector
 import java.io.File
 
@@ -16,7 +15,7 @@ private val fakeUsers = mutableListOf(
 )
 
 object DemoApiImpl : Phone.DemoApi {
-    override suspend fun login(id: Long, password: String): PipelineContextProvider<LoginResult> =
+    override suspend fun login(id: Long, password: String): HttpResponser<LoginResult> =
     {
         val user = fakeUsers.firstOrNull { it.id == id }
 
@@ -32,13 +31,13 @@ object DemoApiImpl : Phone.DemoApi {
         length: Long,
         type: String?
     )
-        : PipelineContextProvider<Unit> =
+        : HttpResponser<Unit> =
     {
 
     }
 
     @Suppress("UNREACHABLE_CODE")
-    override suspend fun downloadFile(path: String): PipelineContextProvider<Pair<String, Long>> =
+    override suspend fun downloadFile(path: String): HttpResponser<Pair<String, Long>> =
     {
         val file: File = TODO("search with path")
         call.respondFile(file) // or with stream or channel
@@ -49,7 +48,7 @@ object DemoApiImpl : Phone.DemoApi {
         type to length
     }
 
-    override suspend fun downloadBigFile(path: String): PipelineContextProvider<Pair<String, Long>> {
+    override suspend fun downloadBigFile(path: String): HttpResponser<Pair<String, Long>> {
         TODO("Not yet implemented")
     }
 

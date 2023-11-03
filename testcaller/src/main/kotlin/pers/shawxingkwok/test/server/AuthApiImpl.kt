@@ -9,28 +9,28 @@ import pers.shawxingkwok.center.model.User
 
 object AuthApiImpl{
     object Partial : Phone.AuthApi_Partial{
-        override suspend fun delete(id: Int): PipelineContextProvider<Int> =
+        override suspend fun delete(id: Int): HttpResponser<Int> =
         {
             id
         }
     }
 
     object Whole : Phone.AuthApi_Whole{
-        override suspend fun delete(id: Int): PipelineContextProvider<Int> =
+        override suspend fun delete(id: Int): HttpResponser<Int> =
         {
             id
         }
     }
 
     object Multi : Phone.AuthApi_Multi{
-        override suspend fun get(id: Int): PipelineContextProvider<Int> =
+        override suspend fun get(id: Int): HttpResponser<Int> =
         {
             id
         }
     }
 
     object Jwt : Phone.AuthApi_Jwt{
-        override suspend fun delete(id: Int): PipelineContextProvider<Int> =
+        override suspend fun delete(id: Int): HttpResponser<Int> =
         {
             id
         }
