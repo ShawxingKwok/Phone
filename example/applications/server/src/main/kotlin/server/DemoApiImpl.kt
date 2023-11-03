@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
-import pers.shawxingkwok.server.phone.HttpResponser
+import pers.shawxingkwok.server.phone.Callback
 import pers.shawxingkwok.server.phone.Phone
 import pers.shawxingkwok.server.phone.WebSocketConnector
 import java.io.File
@@ -15,7 +15,7 @@ private val fakeUsers = mutableListOf(
 )
 
 object DemoApiImpl : Phone.DemoApi {
-    override suspend fun login(id: Long, password: String): HttpResponser<LoginResult> =
+    override suspend fun login(id: Long, password: String): Callback<LoginResult> =
     {
         val user = fakeUsers.firstOrNull { it.id == id }
 
@@ -31,13 +31,13 @@ object DemoApiImpl : Phone.DemoApi {
         length: Long,
         type: String?
     )
-        : HttpResponser<Unit> =
+        : Callback<Unit> =
     {
 
     }
 
     @Suppress("UNREACHABLE_CODE")
-    override suspend fun downloadFile(path: String): HttpResponser<Pair<String, Long>> =
+    override suspend fun downloadFile(path: String): Callback<Pair<String, Long>> =
     {
         val file: File = TODO("search with path")
         call.respondFile(file) // or with stream or channel
@@ -48,7 +48,7 @@ object DemoApiImpl : Phone.DemoApi {
         type to length
     }
 
-    override suspend fun downloadBigFile(path: String): HttpResponser<Pair<String, Long>> {
+    override suspend fun downloadBigFile(path: String): Callback<Pair<String, Long>> {
         TODO("Not yet implemented")
     }
 

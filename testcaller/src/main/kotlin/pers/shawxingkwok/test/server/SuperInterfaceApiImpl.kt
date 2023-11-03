@@ -4,11 +4,11 @@ import io.ktor.server.application.*
 import io.ktor.util.pipeline.*
 
 object SuperInterfaceApiImpl : Phone.SuperInterfaceApi {
-    override suspend fun bar(): HttpResponser<Int> = {
+    override suspend fun bar(): Callback<Int> = {
         1
     }
 
-    override suspend fun foo(): HttpResponser<Int> = {
+    override suspend fun foo(): Callback<Int> = {
         1
     }
 }

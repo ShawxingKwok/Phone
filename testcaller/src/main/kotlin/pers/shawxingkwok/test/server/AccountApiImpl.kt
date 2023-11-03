@@ -7,16 +7,16 @@ import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 
 object AccountApiImpl : Phone.AccountApi{
-    override suspend fun login(email: String, password: String, code: List<String>): ContextAction<LoginResult> =
+    override suspend fun login(email: String, password: String, code: List<String>): Callback<LoginResult> =
     {
         LoginResult.NotSigned
     }
 
-    override suspend fun delete(id: Long): ContextAction<Unit> = {
+    override suspend fun delete(id: Long): Callback<Unit> = {
 
     }
 
-    override suspend fun search(id: Long): ContextAction<User?> = {
+    override suspend fun search(id: Long): Callback<User?> = {
         User(id, "William", 21)
     }
 }

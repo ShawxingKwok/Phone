@@ -9,13 +9,8 @@ public annotation class Phone {
         public fun decrypt(bytes: ByteArray): ByteArray
     }
 
-    public enum class Method(public val routeName: String) {
-        Default(""),
-        Get("get"),
-        Post("post"),
-        Put("put"),
-        Delete("delete"),
-        Patch("patch")
+    public enum class Method {
+        Default, Get, Post, Put, Delete, Patch
     }
 
     @Retention(AnnotationRetention.SOURCE)
