@@ -20,6 +20,7 @@ internal fun buildServerPhone() {
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
             "io.ktor.util.pipeline.PipelineContext",
+            "io.ktor.util.pipeline.PipelineInterceptor",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",
@@ -27,7 +28,7 @@ internal fun buildServerPhone() {
         ),
     ){
         """
-        typealias HttpResponser<T> = suspend PipelineContext<Unit, ApplicationCall>.() -> T
+        typealias Callback<T> = suspend PipelineContext<Unit, ApplicationCall>.() -> T
         ${insertIf(MyProcessor.hasWebSocket){
             """
             typealias WebSocketConnector = suspend ${Decls().DefaultWebSocketServerSession}.() -> Unit
@@ -42,10 +43,6 @@ internal fun buildServerPhone() {
                 ~throw BadRequestException(getMsg())!~
         }
         
-        fun errorBadRequest(msg: Any): Nothing {
-            throw BadRequestException(msg)
-        }
-
         object Phone{
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
@@ -54,9 +51,9 @@ internal fun buildServerPhone() {
                     
                     ${ksclass.getNeededFunctions().joinToString("\n\n"){ ksfun ->
                         val returnedText = when(val kind = ksfun.getCall(ksclass)) {
-                            is Call.Common -> "HttpResponser<${kind.returnType.text}>"
-                            is Call.Manual -> "HttpResponser<${kind.tagType}>"
-                            is Call.PartialContent -> "HttpResponser<${kind.tagType}>"
+                            is Call.Common -> "Callback<${kind.returnType.text}>"
+                            is Call.Manual -> "Callback<${kind.tagType}>"
+                            is Call.PartialContent -> "Callback<${kind.tagType}>"
                             is Call.WebSocket -> 
                                 if (kind.isRaw)
                                     "WebSocketRawConnector"
@@ -71,13 +68,20 @@ internal fun buildServerPhone() {
             
             ${getCoderFunctions()}
     
-            private inline fun PipelineContext<Unit, ApplicationCall>.catchBadRequestException(act: () -> Unit){
-                try {
-                    act()
-                }catch (e: BadRequestException){
-                    respondBadRequest(e.message!!)
-                }
-            }
+            private fun Route.caughtRoute(
+                path: String,
+                method: HttpMethod,
+                interceptor: PipelineInterceptor<Unit, ApplicationCall>
+            ): Route =
+                ~route(path, method) {
+                    handle {
+                        try {
+                            interceptor(this, Unit)
+                        }catch (e: BadRequestException){
+                            respondBadRequest(e.message!!)
+                        }
+                    }
+                }!~
             
             private fun PipelineContext<Unit, ApplicationCall>.respondBadRequest(text: String){
                 val code = HttpStatusCode(400, text)
