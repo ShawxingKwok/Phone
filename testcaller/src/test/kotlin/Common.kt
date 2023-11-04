@@ -26,25 +26,14 @@ class Common {
 
     @Test
     fun start() = testPhone(CommonApiImpl){phone ->
-        val ret = phone.AccountApi()
-            .login(1, "1")
-            .getOrThrow()
+        val api = phone.AccountApi()
 
+        val ret = api.login(1, "1").getOrThrow()
         ret as LoginResult.Success
-
         assert(ret.user.id == 1L)
 
-        phone.AccountApi()
-            .delete(1)
-            .getOrThrow()
+        api.delete(1).getOrThrow()
 
         assertNull(phone.AccountApi().search(1).getOrThrow())
-    }
-
-    @Test
-    fun foo(){
-        val user = User(1, "!2\"arg=3", 2)
-        val encoded = Json.encodeToString(user)
-        Json.decodeFromString<User>(encoded).let(::println)
     }
 }

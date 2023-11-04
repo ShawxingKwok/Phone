@@ -22,7 +22,7 @@ object AuthApi {
     interface Multi{
         @Phone.Call.Common<Int>
         @Phone.Auth("", "auth-digest")
-        suspend fun get(id: Int): Any
+        suspend fun delete(id: Int): Any
     }
 
     @Phone.Api

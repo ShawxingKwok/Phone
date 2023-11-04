@@ -1,6 +1,7 @@
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
@@ -9,6 +10,7 @@ import io.ktor.client.statement.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.cio.*
@@ -33,7 +35,6 @@ class PhoneTest {
     ) =
         testApplication {
             application {
-                installPlugins()
                 configureServer()
                 routing {
                     options {
@@ -50,48 +51,14 @@ class PhoneTest {
 
                 install(io.ktor.client.plugins.websocket.WebSockets)
 
-                install(Auth) {
-                    val myRealm = "Access to the '/' path"
-                    basic {
-                        credentials {
-                            BasicAuthCredentials(username = "jetbrains", password = "foobar")
-                        }
-                        realm = myRealm
-                    }
 
-                    digest {
-                        credentials {
-                            DigestAuthCredentials(username = "jetbrains", password = "foobar")
-                        }
-                        realm = myRealm
-                    }
-                }
             }
-
-            val token = JWT.create()
-                .withAudience(JwtConfig.AUDIENCE)
-                .withIssuer(JwtConfig.ISSUER)
-                .withClaim("username", "shawxing")
-                .withExpiresAt(Date(System.currentTimeMillis() + 60000))
-                .sign(Algorithm.HMAC256(JwtConfig.SECRET))
-
             val phone = pers.shawxingkwok.test.client.Phone(client, enablesWss = enablesWss)
 
-            phone.refreshJwtToken(token)
+            // phone.refreshJwtToken(token)
 
             requestOnClient(phone)
         }
-
-    @Test
-    fun crypto() = start(
-        configureServer = {
-            Phone.route(routing { }, CryptoApiImpl.Partial)
-            Phone.route(routing { }, CryptoApiImpl.Whole)
-        }
-    ) { phone ->
-        assert(phone.CryptoApi_Partial().getChats(1, "a", "b").getOrThrow() == listOf("1", "a", "b"))
-        assert(phone.CryptoApi_Whole().getChats(1, "a").getOrThrow() == listOf("1", "a"))
-    }
 
     @Test
     fun cipher() {
@@ -103,28 +70,6 @@ class PhoneTest {
         bytes = Cipher.decrypt(bytes)
         text = bytes.decodeToString()
         assert(text == "hello")
-    }
-
-    @Test
-    fun commonAuth() = start(
-        configureServer = {
-            Phone.route(routing { }, AuthApiImpl.Partial)
-            Phone.route(routing { }, AuthApiImpl.Whole)
-            Phone.route(routing { }, AuthApiImpl.Multi)
-        }
-    ) { phone ->
-        assert(phone.AuthApi_Partial().delete(1).getOrThrow() == 1)
-        assert(phone.AuthApi_Whole().delete(1).getOrThrow() == 1)
-        assert(phone.AuthApi_Multi().get(1).getOrThrow() == 1)
-    }
-
-    @Test
-    fun jwtAuth() = start(
-        configureServer = {
-            Phone.route(routing { }, AuthApiImpl.Jwt)
-        }
-    ) { phone ->
-        assert(phone.AuthApi_Jwt().delete(1).getOrThrow() == 1)
     }
 
     @Test

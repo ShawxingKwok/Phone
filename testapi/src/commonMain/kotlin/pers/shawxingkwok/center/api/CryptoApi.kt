@@ -12,6 +12,10 @@ object CryptoApi {
             password: String,
         )
         : @Phone.Crypto Any
+
+        @Phone.Crypto
+        @Phone.Call.Common<List<String>>
+        suspend fun _getChats(id: Long, name: String): Any
     }
 
     @Phone.Api
