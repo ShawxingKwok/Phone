@@ -17,7 +17,6 @@ import io.ktor.util.cio.*
 import kotlinx.coroutines.launch
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
-import pers.shawxingkwok.client.phone.Phone
 import pers.shawxingkwok.client.phone.onReceivedSuccess
 import pers.shawxingkwok.myapplication.databinding.ActivityLoginBinding
 import java.io.File

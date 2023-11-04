@@ -8,8 +8,6 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import pers.shawxingkwok.server.phone.Phone
-import java.time.Duration
 
 fun main() {
     embeddedServer(Netty) { configure() }.start(wait = true)

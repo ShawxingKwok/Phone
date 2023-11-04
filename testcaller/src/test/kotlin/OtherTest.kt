@@ -10,6 +10,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.html.*
 import io.ktor.http.*
+import io.ktor.server.plugins.*
 import io.ktor.server.testing.*
 import io.ktor.util.cio.*
 import junit.framework.TestCase.assertEquals
@@ -37,10 +38,6 @@ class OtherTest {
             setBody(FormDataContent(params))
         }
         assertEquals("user_session", loginResponse.setCookie()[0].name)
-    }
-
-    @Test
-    fun foo() = testApplication {
     }
 }
 

@@ -23,8 +23,10 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
         is Call.PartialContent -> call.tagType
     }
 
+    val start = call.method.name.replaceFirstChar { it.lowercase() }
+
     return buildString {
-        append("""caughtRoute("/${getPathEnd(ksclass)}", HttpMethod.${call.method.name}){""")
+        append("""$start("/${getPathEnd(ksclass)}"){""")
         append("\n")
 
         if (parameters.any())
@@ -38,7 +40,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
 
         val invokePart = buildString {
             append("${ksclass.apiPropNameInPhone}.${simpleName()}(")
-            append(getServerParametersPart(ksclass, "caughtRoute"))
+            append(getServerParametersPart(ksclass, start))
             append(")()")
         }
 

@@ -36,13 +36,6 @@ internal fun buildServerPhone() {
             """
         }}
         
-        class BadRequestException(msg: Any) : Exception(msg.toString())
-
-        inline fun checkRequest(condition: Boolean, getMsg: () -> Any){
-            if (!condition)
-                ~throw BadRequestException(getMsg())!~
-        }
-        
         object Phone{
             ${MyProcessor.phones.joinToString(""){ ksclass ->
                 """
@@ -68,21 +61,6 @@ internal fun buildServerPhone() {
             
             ${getCoderFunctions()}
     
-            private fun Route.caughtRoute(
-                path: String,
-                method: HttpMethod,
-                interceptor: PipelineInterceptor<Unit, ApplicationCall>
-            ): Route =
-                ~route(path, method) {
-                    handle {
-                        try {
-                            interceptor(this, Unit)
-                        }catch (e: BadRequestException){
-                            respondBadRequest(e.message!!)
-                        }
-                    }
-                }!~
-            
             private fun PipelineContext<Unit, ApplicationCall>.respondBadRequest(text: String){
                 val code = HttpStatusCode(400, text)
                 call.response.status(code)

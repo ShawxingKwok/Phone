@@ -9,7 +9,6 @@ import kotlinx.html.dom.append
 import org.w3c.dom.HTMLInputElement
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
-import pers.shawxingkwok.client.phone.Phone
 import react.*
 import react.dom.client.createRoot
 import react.dom.html.ReactHTML.button
@@ -20,7 +19,7 @@ import react.dom.html.ReactHTML.label
 val mainScope = MainScope()
 // Creates a global phone first
 val client = HttpClient(Js)
-val phone = Phone(client, enablesWss = false)
+val phone = Phone(client)
 
 fun main() {
     val container = web.dom.document.getElementById("root")

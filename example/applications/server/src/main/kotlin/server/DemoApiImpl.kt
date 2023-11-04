@@ -5,9 +5,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
-import pers.shawxingkwok.server.phone.Callback
-import pers.shawxingkwok.server.phone.Phone
-import pers.shawxingkwok.server.phone.WebSocketConnector
+import pers.shawxingkwok.server.phone.*
 import java.io.File
 
 private val fakeUsers = mutableListOf(
@@ -25,42 +23,5 @@ object DemoApiImpl : Phone.DemoApi {
             user.password == password -> LoginResult.Success(user)
             else -> LoginResult.PasswordWrong
         }
-    }
-
-    override suspend fun search(id: Long): Callback<User?> =
-    {
-        TODO("Returns User or null")
-    }
-
-    override suspend fun uploadFile(
-        name: String,
-        length: Long,
-        type: String?
-    )
-        : Callback<Unit> =
-    {
-        val channel = call.receiveChannel()
-        TODO("handles channel")
-    }
-
-    @Suppress("UNREACHABLE_CODE")
-    override suspend fun downloadFile(path: String): Callback<Pair<String, Long>> =
-    {
-        val file: File = TODO("search with path")
-        call.respondFile(file) // or with stream or channel
-
-        val type = file.name.substringAfterLast(".")
-        val length = file.length()
-
-        type to length
-    }
-
-    override suspend fun downloadBigFile(path: String): Callback<Pair<String, Long>> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getChats(groupId: Long): WebSocketConnector =
-    {
-
     }
 }
