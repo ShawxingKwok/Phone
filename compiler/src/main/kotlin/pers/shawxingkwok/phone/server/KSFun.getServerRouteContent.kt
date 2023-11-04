@@ -50,7 +50,11 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
         }
 
         when{
-            retType == resolver.builtIns.unitType -> "$invokePart\n"
+            retType == resolver.builtIns.unitType ->
+                """
+                $invokePart
+                call.response.status(HttpStatusCode.OK)
+                """
 
             call is Call.Common && retType.isMarkedNullable ->
                 """
@@ -60,6 +64,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
                 else{                    
                     $`val text = encode~~`
                     call.respondText(text)                            
+                    call.response.status(HttpStatusCode.OK)
                 }
                 """
 
@@ -68,6 +73,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
                 val ret = $invokePart                
                 $`val text = encode~~`
                 call.respondText(text)           
+                call.response.status(HttpStatusCode.OK)
                 """
 
             retType.isMarkedNullable ->
@@ -77,6 +83,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
                     $`val text = encode~~`
                     call.response.header("Phone-Tag", text)                                            
                 }    
+                call.response.status(HttpStatusCode.OK)
                 """
 
             else ->
@@ -84,11 +91,11 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
                 val ret = $invokePart                
                 $`val text = encode~~`
                 call.response.header("Phone-Tag", text)          
+                call.response.status(HttpStatusCode.OK)
                 """
         }
         .trimStart().let(::append)
 
-        append("call.response.status(HttpStatusCode.OK)\n")
         append("}")
     }
 }

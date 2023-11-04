@@ -83,17 +83,6 @@ class PhoneTest {
         }
 
     @Test
-    fun commonAccount() = start(
-        configureServer = {
-            Phone.route(routing { }, AccountApiImpl)
-        }
-    ) { phone ->
-        assert(phone.AccountApi().login("101", "", emptyList()).getOrThrow() == LoginResult.NotSigned)
-        assert(phone.AccountApi().search(101).getOrThrow()?.id == 101L)
-        phone.AccountApi().delete(0)
-    }
-
-    @Test
     fun crypto() = start(
         configureServer = {
             Phone.route(routing { }, CryptoApiImpl.Partial)

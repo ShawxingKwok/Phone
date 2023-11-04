@@ -18,7 +18,10 @@ application{
 dependencies {
     implementation(libs.ktor.server.core.jvm)
     implementation(libs.ktor.server.netty.jvm)
+    implementation(libs.serialization.json)
+    implementation(libs.serialization.core)
     implementation(libs.shawxing.ktUtil)
+    implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation(project(":testapi"))
     implementation("io.ktor:ktor-server-auth-jvm")
     implementation("io.ktor:ktor-server-websockets")
@@ -30,10 +33,13 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt-jvm")
     implementation("io.ktor:ktor-server-sessions")
     implementation("io.ktor:ktor-server-html-builder")
+    implementation("io.ktor:ktor-server-content-negotiation")
 
     testImplementation ("io.ktor:ktor-server-tests-jvm")
+    testImplementation("io.ktor:ktor-server-test-host")
+
+    testImplementation("io.ktor:ktor-client-content-negotiation")
     testImplementation(libs.ktor.client.core)
-    testImplementation("io.ktor:ktor-client-websockets")
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-client-auth")
     testImplementation("io.ktor:ktor-client-websockets")
