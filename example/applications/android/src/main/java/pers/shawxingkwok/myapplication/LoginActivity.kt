@@ -11,11 +11,14 @@ import androidx.lifecycle.lifecycleScope
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
+import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.util.cio.*
 import kotlinx.coroutines.launch
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.client.phone.Phone
+import pers.shawxingkwok.client.phone.onReceivedSuccess
 import pers.shawxingkwok.myapplication.databinding.ActivityLoginBinding
 import java.io.File
 import java.io.FileOutputStream
@@ -81,17 +84,19 @@ suspend fun foo() {
     val path: String = TODO()
     val file = File(path)
 
-    phone.DemoApi()
+    phone.DemoApi{
+            setBody(file.readChannel())
+        }
         .uploadFile(
             name = file.name.substringBeforeLast("."),
             length = file.length(),
             type = file.name.substringAfterLast("."),
         )
         .onFailure {
-
+            TODO()
         }
         .onSuccess {
-
+            TODO()
         }
 
     phone.DemoApi()
@@ -127,6 +132,24 @@ suspend fun foo() {
         .getChats(1)
         .onFailure {  }
         .onSuccess {
+
+        }
+
+    phone.DemoApi()
+        .search(1)
+        .onFailure {
+            TODO()
+        }
+        .onSuccess {
+            TODO()
+        }
+
+    phone.DemoApi()
+        .getChats(1)
+        .onFailure {
+
+        }
+        .onReceivedSuccess {
 
         }
 }

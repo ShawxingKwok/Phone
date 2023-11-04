@@ -10,6 +10,9 @@ interface DemoApi {
     @Phone.Call.Common<LoginResult>
     suspend fun login(id: Long, password: String): Any
 
+    @Phone.Call.Common<User?>
+    suspend fun search(id: Long): Any
+
     @Phone.Call.Common<Unit>
     suspend fun uploadFile(name: String, length: Long, type: String?): Any
 
@@ -19,6 +22,6 @@ interface DemoApi {
     @Phone.Call.PartialContent<Pair<String, Long>>
     suspend fun downloadBigFile(path: String): Any
 
-    @Phone.Call.WebSocket
+    @Phone.Call.WebSocket(isRaw = true)
     suspend fun getChats(groupId: Long): Any
 }

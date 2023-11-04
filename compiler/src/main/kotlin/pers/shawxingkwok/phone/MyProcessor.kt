@@ -68,19 +68,23 @@ internal object MyProcessor : KSProcessor{
         val _serializers = serializerPaths
             .map { resolver.getClassDeclarationByName(it)!! }
             .associateBy { ksclass ->
-                ksclass.superTypes
+                val typeRef = ksclass.superTypes
                     .map { it.resolve() }
                     .first { it.declaration.qualifiedName() == "kotlinx.serialization.KSerializer" }
                     .arguments
                     .first()
                     .type!!
-                    .resolve()
+
+                val type = typeRef.resolve()
+
+                Log.check(typeRef, !type.isMarkedNullable){
+                    "The nullability is needless for $typeRef in `KSerializer`."
+                }
+
+                type
             }
 
-        _serializers + _serializers.mapKeys { (ksType, _) ->
-            if (ksType.isMarkedNullable) ksType.makeNotNullable()
-            else ksType.makeNullable()
-        }
+        _serializers + _serializers.mapKeys { (ksType, _) -> ksType.makeNullable() }
     }
 
     val cipherKSObj: KSClassDeclaration? by fastLazy {

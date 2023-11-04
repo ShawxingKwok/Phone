@@ -1,6 +1,7 @@
 package server
 
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
@@ -26,6 +27,11 @@ object DemoApiImpl : Phone.DemoApi {
         }
     }
 
+    override suspend fun search(id: Long): Callback<User?> =
+    {
+        TODO("Returns User or null")
+    }
+
     override suspend fun uploadFile(
         name: String,
         length: Long,
@@ -33,7 +39,8 @@ object DemoApiImpl : Phone.DemoApi {
     )
         : Callback<Unit> =
     {
-
+        val channel = call.receiveChannel()
+        TODO("handles channel")
     }
 
     @Suppress("UNREACHABLE_CODE")

@@ -13,6 +13,7 @@ object AuthApi {
     @Phone.Auth
     @Phone.Api
     interface Whole{
+        @Phone.Auth("auth-digest")
         @Phone.Call.Common<Int>
         suspend fun delete(id: Int): Any
     }

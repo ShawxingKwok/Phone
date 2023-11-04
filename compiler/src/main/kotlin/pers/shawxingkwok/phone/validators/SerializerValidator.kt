@@ -22,7 +22,7 @@ object SerializerValidator : KSDefaultValidator() {
                 symbol = classDeclaration,
                 condition = kserializerType != null
             ) {
-                "Custom serializers should declare KSerializer in the basic super types."
+                "Custom serializers should declare `KSerializer` in the basic super types."
             }
         }
 
