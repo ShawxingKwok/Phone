@@ -1,11 +1,12 @@
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+package pers.shawxingkwok.test.details
+
+import org.junit.Assert.assertNull
 import org.junit.Test
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.test.server.Callback
 import pers.shawxingkwok.test.server.Phone
-import kotlin.test.assertNull
+import pers.shawxingkwok.test.util.testPhone
 
 class Common {
     object CommonApiImpl : Phone.AccountApi{
@@ -25,7 +26,7 @@ class Common {
     }
 
     @Test
-    fun start() = testPhone(CommonApiImpl){phone ->
+    fun start() = testPhone(CommonApiImpl) { phone ->
         val api = phone.AccountApi()
 
         val ret = api.login(1, "1").getOrThrow()

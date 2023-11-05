@@ -1,7 +1,10 @@
+package pers.shawxingkwok.test.details
+
 import org.junit.Test
 import pers.shawxingkwok.center.model.Time
 import pers.shawxingkwok.test.server.Callback
 import pers.shawxingkwok.test.server.Phone
+import pers.shawxingkwok.test.util.testPhone
 
 class CustomSerializer {
     object CustomSerializerApiImpl : Phone.CustomSerializerApi {
@@ -11,7 +14,7 @@ class CustomSerializer {
     }
 
     @Test
-    fun start() = testPhone(CustomSerializerApiImpl){ phone ->
+    fun start() = testPhone(CustomSerializerApiImpl) { phone ->
         val a = Time(1, 2, 3)
         val b = Time(4, 5, 6)
         val expect = Time(5, 7, 9)

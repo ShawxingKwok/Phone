@@ -1,6 +1,7 @@
+package pers.shawxingkwok.test.util
+
 import io.ktor.client.*
 import io.ktor.client.engine.*
-import io.ktor.client.plugins.auth.providers.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -11,7 +12,7 @@ import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.valueParameters
 
 fun testPhone(
-    apiImpl: Any,
+    api: Any,
     configureServer: Application.() -> Unit = {},
     configureClient: HttpClientConfig<out HttpClientEngineConfig>.() -> Unit = {},
     enablesWss: Boolean = false,
@@ -28,11 +29,11 @@ fun testPhone(
             .filter { it.name == "route" }
             .first {
                 val paramType = it.valueParameters[1].type
-                val argType = apiImpl::class.starProjectedType
+                val argType = api::class.starProjectedType
 
                 paramType == argType || paramType.isSupertypeOf(argType)
             }
-            .call(pers.shawxingkwok.test.server.Phone, routing { }, apiImpl)
+            .call(pers.shawxingkwok.test.server.Phone, routing { }, api)
         }
 
         act(phone)

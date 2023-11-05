@@ -1,7 +1,7 @@
+package pers.shawxingkwok.test.details
+
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.client.*
-import io.ktor.client.engine.*
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.http.*
@@ -14,9 +14,9 @@ import io.ktor.server.testing.*
 import org.junit.Test
 import pers.shawxingkwok.test.server.Callback
 import pers.shawxingkwok.test.server.Phone
+import pers.shawxingkwok.test.util.testPhone
 import java.security.MessageDigest
 import java.util.*
-import kotlin.test.assertFalse
 
 class Auth {
     object JwtConfig {
@@ -33,7 +33,8 @@ class Auth {
         enablesWss: Boolean = false,
         act: suspend ApplicationTestBuilder.(pers.shawxingkwok.test.client.Phone) -> Unit
     ) =
-        testPhone(apiImpl,
+        testPhone(
+            apiImpl,
             configureServer = {
                 install(Authentication) {
                     basic {
@@ -48,8 +49,11 @@ class Auth {
                     }
 
                     digest("auth-digest") {
-                        fun getMd5Digest(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(str.toByteArray(
-                            Charsets.UTF_8))
+                        fun getMd5Digest(str: String): ByteArray = MessageDigest.getInstance("MD5").digest(
+                            str.toByteArray(
+                                Charsets.UTF_8
+                            )
+                        )
 
                         val myRealm = "Access to the '/' path"
 
