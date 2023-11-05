@@ -16,10 +16,12 @@ import io.ktor.server.testing.*
 import io.ktor.util.cio.*
 import io.ktor.websocket.*
 import kotlinx.serialization.builtins.ByteArraySerializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import pers.shawxingkwok.center.Cipher
 import pers.shawxingkwok.center.model.LoginResult
 import pers.shawxingkwok.center.model.Time
+import pers.shawxingkwok.center.model.User
 import pers.shawxingkwok.test.server.*
 import java.io.File
 import java.util.*
