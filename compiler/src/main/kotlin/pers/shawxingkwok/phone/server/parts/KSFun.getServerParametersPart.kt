@@ -37,11 +37,12 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
             else
                 type.text
 
+        append("$paramName = params[\"$paramName\"]\n")
+
         val needsDecoded =
             param.getCipherText(ksclass) != null
-            || (type != resolver.builtIns.stringType && type != resolver.builtIns.stringType.makeNullable())
-
-        append("$paramName = params[\"$paramName\"]\n")
+            || param.isVararg
+            || type != resolver.builtIns.stringType && type != resolver.builtIns.stringType.makeNullable()
 
         if (needsDecoded)
             """
@@ -55,7 +56,7 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
             }!~
             """.trim().plus("\n").let(::append)
 
-        if (!type.isMarkedNullable)
+        if (!type.isMarkedNullable || param.isVararg)
             append("~?: return@$start ${onError("Not found `${paramName}` in received parameters.")}!~\n")
 
         when(get(lastIndex - 1)){

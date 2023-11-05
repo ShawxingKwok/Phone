@@ -26,33 +26,3 @@ object TimeSerializer : KSerializer<Time> {
         encoder.encodeSerializableValue(Surrogate.serializer(), surrogate)
     }
 }
-
-@Phone.Serializer
-object TimeArrayOutSerializer : KSerializer<Array<out Time>>{
-    override val descriptor: SerialDescriptor
-        get() = TODO("Not yet implemented")
-
-    override fun deserialize(decoder: Decoder): Array<out Time> {
-        TODO("Not yet implemented")
-    }
-
-    override fun serialize(encoder: Encoder, value: Array<out Time>) {
-        TODO("Not yet implemented")
-    }
-
-}
-
-@Phone.Serializer
-object TimeListSerializer : KSerializer<List<Time>>{
-    override val descriptor: SerialDescriptor
-        get() = TODO("Not yet implemented")
-
-    override fun deserialize(decoder: Decoder): List<Time> {
-        TODO("Not yet implemented")
-    }
-
-    override fun serialize(encoder: Encoder, value: List<Time>) {
-        TODO("Not yet implemented")
-    }
-
-}

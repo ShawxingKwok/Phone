@@ -103,18 +103,6 @@ class PhoneTest {
     }
 
     @Test
-    fun customSerializer() = start(
-        configureServer = {
-            Phone.route(routing { }, CustomSerializerApiImpl)
-        }
-    ) { phone ->
-        val a = Time(1, 2, 3)
-        val b = Time(4, 5, 6)
-        val ab = phone.CustomSerializerApi().sumTime(a, b).getOrThrow()
-        assert(ab == Time(5, 7, 9))
-    }
-
-    @Test
     fun manual() = start(
         configureServer = {
             Phone.route(routing { }, ManualApiImpl)

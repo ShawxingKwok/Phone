@@ -9,19 +9,19 @@ import pers.shawxingkwok.center.model.Time
 import pers.shawxingkwok.phone.Phone
 
 @Phone.Serializer
-object TimeArraySerializer : KSerializer<Array<Time?>>{
+object TimeArrayOutSerializer : KSerializer<Array<out Time?>>{
     // Or convert to Array<IntArray?> directly in this case
     @Serializable
-    private class Converter(val value: Array<@Serializable(TimeSerializer::class) Time?>)
+    private class Surrogate(val value: Array<out @Serializable(TimeSerializer::class) Time?>)
 
     override val descriptor: SerialDescriptor
-        get() = buildClassSerialDescriptor("TimeArrContainer")
+        get() = buildClassSerialDescriptor("TimeArrayOut")
 
-    override fun deserialize(decoder: Decoder): Array<Time?> {
-        return decoder.decodeSerializableValue(Converter.serializer()).value
+    override fun deserialize(decoder: Decoder): Array<out Time?> {
+        return decoder.decodeSerializableValue(Surrogate.serializer()).value
     }
 
-    override fun serialize(encoder: Encoder, value: Array<Time?>) {
-        encoder.encodeSerializableValue(Converter.serializer(), Converter(value))
+    override fun serialize(encoder: Encoder, value: Array<out Time?>) {
+        encoder.encodeSerializableValue(Surrogate.serializer(), Surrogate(value))
     }
 }
