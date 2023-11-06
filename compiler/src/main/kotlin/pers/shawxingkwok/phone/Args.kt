@@ -16,6 +16,8 @@ internal object Args {
         else -> error("Set phone.default-method with `get`, `post`, `put`, `delete`, or `patch` in build.gradle(.kts).")
     }
 
+    val ClientPhoneModifiers = Environment.options["phone.client-phone-modifiers"] ?: "open"
+
     val ServerPackagePath = Environment.options["phone.server-package-path"]
 
     val ServerPackageName = Environment.options["phone.server-package-name"]

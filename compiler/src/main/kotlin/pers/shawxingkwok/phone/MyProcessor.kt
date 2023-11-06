@@ -91,10 +91,12 @@ internal object MyProcessor : KSProcessor{
         val ksclasses = resolver.getAnnotatedSymbols<Phone.Crypto, KSClassDeclaration>()
             .filterNot { it.classKind == ClassKind.INTERFACE }
 
+        if (ksclasses.none())
+            return@fastLazy null
+
         Log.check(
             symbols = ksclasses,
-            condition = ksclasses.size <= 1
-                && (ksclasses.none() || ksclasses.first().classKind == ClassKind.OBJECT)
+            condition = ksclasses.singleOrNull()?.classKind == ClassKind.OBJECT
         ){
             "`Phone.Crypto` is annotated on symbols in interfaces annotated with `Phone.Api`, " +
             "or a single object implements `Phone.Cipher`."
@@ -102,7 +104,7 @@ internal object MyProcessor : KSProcessor{
 
         // crypto symbols need a cipher object, which is checked else where.
 
-        val ksclass = ksclasses.firstOrNull() ?: return@fastLazy null
+        val ksclass = ksclasses.first()
 
         val superCipherType = resolver
             .getClassDeclarationByName(Phone.Cipher::class.qualifiedName!!)!!

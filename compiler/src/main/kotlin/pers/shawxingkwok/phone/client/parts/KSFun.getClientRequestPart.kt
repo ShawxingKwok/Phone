@@ -28,10 +28,8 @@ internal fun KSFunctionDeclaration.getClientRequestPart(
         addParameters(${getCall(ksclass) is Call.WebSocket}){
             ${parameters.getText(ksclass)}
         }
-        """.trim()
+        """
     }}
-
-    onEachRequestEnd()
     """.trim()
 }
 

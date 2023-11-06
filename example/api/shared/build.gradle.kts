@@ -43,5 +43,6 @@ ksp{
     arg("phone.default-method", "post")
 
     // optional
-    // arg("phone.jwt-auth-name", "")
+    // arg("phone.jwt-auth-name", "<your jwt auth name>")
+    // arg("phone.client-phone-modifiers", "internal abstract") // open by default
 }

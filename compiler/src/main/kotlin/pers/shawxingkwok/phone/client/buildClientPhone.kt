@@ -4,7 +4,6 @@ package pers.shawxingkwok.phone.client
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import pers.shawxingkwok.ksputil.CodeFormatter
-import pers.shawxingkwok.ksputil.getAnnotationByType
 import pers.shawxingkwok.ksputil.qualifiedName
 import pers.shawxingkwok.phone.*
 import pers.shawxingkwok.phone.client.parts.getClientHeader
@@ -47,7 +46,7 @@ internal fun buildClientPhone() {
             """
         }}
         
-        open class Phone(
+        ${Args.ClientPhoneModifiers} class Phone(
             private val client: HttpClient,
             private val baseUrl: String = "http://localhost:80",
             ${insertIf(MyProcessor.hasWebSocket){ "private val enablesWss: Boolean," }}
@@ -76,8 +75,6 @@ internal fun buildClientPhone() {
                 }       
                 """
             }} 
-            
-            protected open fun HttpRequestBuilder.onEachRequestEnd() {}
             
             private fun HttpRequestBuilder.addParameters(
                 isWebSocket: Boolean,
