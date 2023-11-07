@@ -7,7 +7,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.partialcontent.*
@@ -18,16 +17,13 @@ import io.ktor.server.websocket.*
 import io.ktor.server.websocket.WebSockets
 import io.ktor.util.*
 import io.ktor.websocket.*
-import io.ktor.websocket.*
 import org.junit.Test
 import pers.shawxingkwok.center.model.Time
-import pers.shawxingkwok.test.client.onReceivedSuccess
 import pers.shawxingkwok.test.server.Callback
 import pers.shawxingkwok.test.server.Phone
 import pers.shawxingkwok.test.server.WebSocketConnector
 import pers.shawxingkwok.test.util.testPhone
 import java.io.File
-import java.time.Duration
 
 private val file = File(".gitignore")
 

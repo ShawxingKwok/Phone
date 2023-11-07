@@ -20,7 +20,6 @@ internal fun buildServerPhone() {
             "io.ktor.server.response.*",
             "io.ktor.server.routing.*",
             "io.ktor.util.pipeline.PipelineContext",
-            "io.ktor.util.pipeline.PipelineInterceptor",
             "kotlinx.serialization.json.Json",
             "kotlinx.serialization.encodeToString",
             "kotlinx.serialization.KSerializer",

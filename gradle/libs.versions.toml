@@ -27,7 +27,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.0" }
 serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.6.0" }
 shawxing-ktUtil = { group = "io.github.shawxingkwok", name = "kt-util", version = "1.0.2" }
-shawxing-kspUtil = { group = "io.github.shawxingkwok", name = "ksp-util", version = "1.0.3" }
+shawxing-kspUtil = { group = "io.github.shawxingkwok", name = "ksp-util", version = "1.0.4" }
 
 ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.7.3" }
