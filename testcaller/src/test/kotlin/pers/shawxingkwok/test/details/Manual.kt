@@ -55,9 +55,9 @@ class Manual {
 
         val file = File(".gitignore")
         phone.ManualApi {
-            val channel = file.readChannel()
-            setBody(channel)
-        }
+                val channel = file.readChannel()
+                setBody(channel)
+            }
             .exchange("122")
             .getOrThrow()
             .let { (headInfo, response) ->

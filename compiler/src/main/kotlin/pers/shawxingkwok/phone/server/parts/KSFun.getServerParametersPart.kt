@@ -39,7 +39,7 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
         $paramName = try{
                 ~val text = params["$paramName"] ?: return@$start ${onError("Not found `${paramName}` in received parameters.")}
                 decode<$paramTypeText>(text, ${param.getSerializerText()}, ${param.getCipherText(ksclass)})
-            }catch(tr: Throwable){
+            }catch(_: Throwable){
                 ${onError("The parameter `${paramName}` is incorrectly serialized to \${params[\"${paramName}\"]}.")}
                 return@$start
             },!~
