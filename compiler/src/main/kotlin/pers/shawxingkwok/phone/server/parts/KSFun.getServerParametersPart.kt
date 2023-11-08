@@ -12,10 +12,8 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
     ksclass: KSClassDeclaration,
     start: String,
     onError: (String) -> String = { """respondBadRequest("$it")""" }
-) = buildString{
-    if (parameters.any()) append("\n")
-
-    parameters.forEach { param ->
+) =
+    parameters.joinToString("", prefix = "\n") { param ->
         val paramName = param.name!!.asString()
         val type = param.type.resolve()
 
@@ -37,34 +35,14 @@ internal fun KSFunctionDeclaration.getServerParametersPart(
             else
                 type.text
 
-        append("$paramName = params[\"$paramName\"]\n")
-
-        val needsDecoded =
-            param.getCipherText(ksclass) != null
-            || param.isVararg
-            || type != resolver.builtIns.stringType && type != resolver.builtIns.stringType.makeNullable()
-
-        if (needsDecoded)
-            """
-            ~?.let{
-                try{
-                    decode<${paramTypeText.removeSuffix("?")}>(it, ${param.getSerializerText()}, ${param.getCipherText(ksclass)})
-                }catch(tr: Throwable){
-                    ${onError("The parameter `${paramName}` is incorrectly serialized.\\n${'$'}tr")}
-                    return@$start
-                }
-            }!~
-            """.trim().plus("\n").let(::append)
-
-        if (!type.isMarkedNullable || param.isVararg)
-            append("~?: return@$start ${onError("Not found `${paramName}` in received parameters.")}!~\n")
-
-        when(get(lastIndex - 1)){
-            '~' -> insert(lastIndex - 2, ",")
-            ']' -> insert(lastIndex, ",")
-            else -> error("")
-        }
-
-        append("\n\n")
+        """
+        $paramName = try{
+                ~val text = params["$paramName"] ?: return@$start ${onError("Not found `${paramName}` in received parameters.")}
+                decode<$paramTypeText>(text, ${param.getSerializerText()}, ${param.getCipherText(ksclass)})
+            }catch(tr: Throwable){
+                ${onError("The parameter `${paramName}` is incorrectly serialized to \${params[\"${paramName}\"]}.")}
+                return@$start
+            },!~
+            
+        """.trimStart()
     }
-}

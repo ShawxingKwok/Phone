@@ -106,13 +106,12 @@ internal fun buildClientPhone() {
                 serializer: KSerializer<T & Any>?,
                 cipher: Phone.Cipher?,
             ){
-                if (value == null) return
                 val newV = encode(value, serializer, cipher)
                 append(key, newV)
             }
         
             private fun HttpResponse.check() {
-                check(status == HttpStatusCode.OK || status == HttpStatusCode.NoContent){
+                check(status == HttpStatusCode.OK){
                     "Unaccepted ${'$'}this"
                 }
             }

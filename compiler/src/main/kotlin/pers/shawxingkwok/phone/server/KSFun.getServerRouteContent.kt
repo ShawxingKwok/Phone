@@ -18,8 +18,8 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
 
     val retType = when(call){
         is Call.WebSocket -> return getServerWebSocketContent(ksclass, call)
-        is Call.Manual -> call.tagType
         is Call.Common -> call.returnType
+        is Call.Manual -> call.tagType
         is Call.PartialContent -> call.tagType
     }
 
@@ -50,25 +50,7 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
         }
 
         when{
-            retType == resolver.builtIns.unitType ->
-                """
-                $invokePart
-                
-                call.response.status(HttpStatusCode.OK)
-                """
-
-            call is Call.Common && retType.isMarkedNullable ->
-                """
-                val ret = $invokePart
-                                
-                if (ret == null) 
-                    ~call.response.status(HttpStatusCode.NoContent)!~
-                else{                    
-                    $`val text = encode~~`
-                    call.respondText(text)                            
-                    call.response.status(HttpStatusCode.OK)
-                }
-                """
+            retType == resolver.builtIns.unitType -> invokePart + "\n"
 
             call is Call.Common ->
                 """
@@ -76,31 +58,20 @@ internal fun KSFunctionDeclaration.getServerRouteContent(ksclass: KSClassDeclara
                                 
                 $`val text = encode~~`
                 call.respondText(text)           
-                call.response.status(HttpStatusCode.OK)
                 """
 
-            retType.isMarkedNullable ->
-                """
-                val ret = $invokePart
-                                
-                if (ret != null){
-                    $`val text = encode~~`
-                    call.response.header("Phone-Tag", text)                                            
-                }    
-                call.response.status(HttpStatusCode.OK)
-                """
-
+            // Manual or PartialContent
             else ->
                 """
                 val ret = $invokePart              
                   
                 $`val text = encode~~`
                 call.response.header("Phone-Tag", text)          
-                call.response.status(HttpStatusCode.OK)
                 """
         }
         .trimStart().let(::append)
 
+        append("\ncall.response.status(HttpStatusCode.OK)\n")
         append("}")
     }
 }

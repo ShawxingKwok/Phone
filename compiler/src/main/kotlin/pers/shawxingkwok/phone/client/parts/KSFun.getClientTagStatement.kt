@@ -13,10 +13,7 @@ internal fun KSFunctionDeclaration.getClientTagStatement(ksclass: KSClassDeclara
     val serializerText = tagType.getSerializerText()
 
     return """
-    val tag: ${tagType.text} = response.headers["Phone-Tag"]
-        ~?.let{ decode(it, $serializerText, ${getCipherTextForReturn(ksclass)}) }!~                        
-        ${insertIf(!tagType.isMarkedNullable){
-            "~?: error(\"Missed the head info of which the type is ${tagType.text}.\") !~"
-        }}     
+    val text = response.headers["Phone-Tag"] ?: error("Not found the header `Phone-Tag`.")
+    val tag = decode<${tagType.text}>(text, $serializerText, ${getCipherTextForReturn(ksclass)}) 
     """
 }

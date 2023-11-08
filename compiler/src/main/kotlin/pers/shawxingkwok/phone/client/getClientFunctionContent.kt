@@ -26,16 +26,9 @@ internal fun KSFunctionDeclaration.getClientFunctionContent(ksclass: KSClassDecl
                 
             response.check()
                 
-            ${insertIf(call.returnType.isMarkedNullable) {
-                """
-                if(response.status == HttpStatusCode.NoContent)
-                    ~return@runCatching null!~
-                """.trim()
-                }}
-
             ${insertIf(call.returnType != resolver.builtIns.unitType) {
                 val serializerText = call.returnType.getSerializerText()
-                "decode(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"
+                "decode<${call.returnType.text}>(response.bodyAsText(), $serializerText, ${getCipherTextForReturn(ksclass)})"
             }}
             """
 
