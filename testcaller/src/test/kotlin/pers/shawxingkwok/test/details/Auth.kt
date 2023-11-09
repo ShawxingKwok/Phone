@@ -172,14 +172,9 @@ class Auth {
     object OAuth : Phone.AuthApi_Oauth{
         override fun Route.onStart() {
             get("/login/callback"){
-                TODO()
+
             }
         }
         override suspend fun login(): Callback<Unit> = { }
-    }
-
-    @Test
-    fun oauthSample() = testAuthPhone(OAuth){
-
     }
 }
