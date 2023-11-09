@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.publish)
 }
 
-val isSnapshot = true
+val isSnapshot = false
 
 kotlin {
     explicitApiWarning()
