@@ -27,7 +27,7 @@ tasks.withType<KotlinCompile>().configureEach{
 }
 
 mavenPublishing {
-    val isSnapshot = true
+    val isSnapshot = false
     val version = "1.0.0-1.0.0"
     coordinates("io.github.shawxingkwok", "phone-compiler", if (isSnapshot) "$version-SNAPSHOT" else version)
     pom {
