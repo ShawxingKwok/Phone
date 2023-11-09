@@ -10,6 +10,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import org.junit.Test
 import pers.shawxingkwok.test.server.Callback
@@ -166,5 +167,19 @@ class Auth {
         phone.refreshJwtToken(token)
 
         assert(phone.AuthApi_Jwt().delete(1).getOrThrow() == 1)
+    }
+
+    object OAuth : Phone.AuthApi_Oauth{
+        override fun Route.onStart() {
+            get("/login/callback"){
+                TODO()
+            }
+        }
+        override suspend fun login(): Callback<Unit> = { }
+    }
+
+    @Test
+    fun oauthSample() = testAuthPhone(OAuth){
+
     }
 }

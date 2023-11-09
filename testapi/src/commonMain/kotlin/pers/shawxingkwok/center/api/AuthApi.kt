@@ -31,4 +31,11 @@ object AuthApi {
         @Phone.Call.Common<Int>
         suspend fun delete(id: Int): Any
     }
+
+    @Phone.Api
+    interface Oauth{
+        @Phone.Auth("auth-oauth")
+        @Phone.Call.Common<Unit>(method = Phone.Method.Get)
+        suspend fun login(): Any
+    }
 }
